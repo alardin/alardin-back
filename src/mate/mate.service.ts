@@ -128,7 +128,7 @@ export class MateService {
         }
     }
 
-    private async validateMate(myId: number, mateId: number) {
+    async validateMate(myId: number, mateId: number) {
         return await this.matesRepository.findOneOrFail({
             where: [
                 { Sender_id: myId, Receiver_id: mateId },

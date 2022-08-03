@@ -58,7 +58,7 @@ export class AlarmController {
         type: OnlyStatusResponse
     })
     @Post('join')
-    participateInAlarm() {
+    joinAlarm() {
         
     }
 

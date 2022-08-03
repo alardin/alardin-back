@@ -1,4 +1,5 @@
-import { OmitType } from "@nestjs/swagger";
+import { OmitType, PickType } from "@nestjs/swagger";
+import { Alarms } from "src/entities/alarms.entity";
 import { AlarmsDto } from "./alarms.dto";
 
-export class CreateAlarmDto extends OmitType(AlarmsDto, ['id', 'created_at', 'updated_at', 'members']) {}
+export class CreateAlarmDto extends PickType(Alarms, ['is_private', 'time', 'is_repeated', 'Game_id', 'music_volume']) {}

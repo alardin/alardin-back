@@ -16,11 +16,18 @@ export class Alarms {
     id: number;
 
     @ApiProperty({
-        name: 'time_setting',
-        example: '2022-07-22:09:00:00'
+        name: 'time',
+        example: '15:30'
     })
     @Column()
-    time_setting: string;
+    time: string;
+
+    @ApiProperty({
+        name: 'is_repeated',
+        example: "123"
+    })
+    @Column('varchar', { name: 'is_repeated'})
+    is_repeated: string;
 
     @ApiProperty({
         name: 'is_private',
@@ -29,19 +36,19 @@ export class Alarms {
     @Column()
     is_private: boolean;
 
-    @ApiProperty({
-        name: 'is_repeated',
-        example: true
-    })
-    @Column()
-    is_repeated: boolean;
 
     @ApiProperty({
         name: 'music_volume',
         example: 70
     })
-    @Column()
+    @Column({ default: 100 })
     music_volume: number;
+
+    @Column('int', { name: 'member_count', nullable: true })
+    member_count: number | null;
+
+    @Column({ default: 2 })
+    max_members: number;
 
     @CreateDateColumn()
     created_at: Date;

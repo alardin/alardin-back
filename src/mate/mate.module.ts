@@ -11,6 +11,7 @@ import { Alarms } from 'src/entities/alarms.entity';
 @Module({
   imports: [PushNotificationModule, TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms])],
   providers: [MateService],
-  controllers: [MateController]
+  controllers: [MateController],
+  exports: [MateService]
 })
 export class MateModule {}
