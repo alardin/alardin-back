@@ -1,12 +1,11 @@
-import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Alarms } from 'src/entities/alarms.entity';
 import { MateRequestRecords } from 'src/entities/mate-request.records.entity';
 import { Mates } from 'src/entities/mates.entity';
 import { Users } from 'src/entities/users.entity';
-import { KakaoService } from 'src/external/kakao/kakao.service';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
-import { DataSource, FindOptionsUtils, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MateService {
@@ -84,7 +83,7 @@ export class MateService {
                 .andWhere('Sender_id = :id', { myId })
                 .execute();
         } catch(e) {
-            throw new InternalServerErrorException();
+            throw new ForbiddenException('Invalid request');
         }
     }
 
@@ -111,7 +110,7 @@ export class MateService {
         try {
             await this.matesRepository.save(newMate);
         } catch(e) {
-            throw new InternalServerErrorException();
+            throw new ForbiddenException('Invalid request');
         }
     }
 
@@ -124,7 +123,7 @@ export class MateService {
         try {
             await this.mateReqRepository.save(newMateReq);
         } catch (error) {
-            throw new InternalServerErrorException();
+            throw new ForbiddenException('Invalid request');
         }
     }
 

@@ -1,9 +1,8 @@
-import { ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { exec } from 'child_process';
-import { validate } from 'class-validator';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
+import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { MateService } from 'src/mate/mate.service';
 import { DataSource, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -17,6 +16,8 @@ export class AlarmService {
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
+        @InjectRepository(GamePurchaseRecords)
+        private readonly gamePurRepository: Repository<GamePurchaseRecords>,
         private dataSource: DataSource
     ) {}
 
@@ -26,6 +27,14 @@ export class AlarmService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
+            const is_owned = Boolean(await this.gamePurRepository.createQueryBuilder('gpr')
+                                .innerJoin('gpr.Game', 'g', 'g.id = :gameId', { gameId: body.Game_id })
+                                .innerJoin('gpr.User', 'u', 'u.id = :myId', { myId })
+                                .getOne());
+            if(!is_owned) {
+                throw new ForbiddenException();
+            }
+            
             newAlarm = await queryRunner.manager.getRepository(Alarms).save({
                 Host_id: myId,
                 member_count: 1,
@@ -38,7 +47,7 @@ export class AlarmService {
             });
         } catch(e) {
             await queryRunner.rollbackTransaction();
-            throw new InternalServerErrorException('Transaction Error');
+            throw new ForbiddenException('Invalid request');
 
         } finally {
             await queryRunner.release();
@@ -63,6 +72,11 @@ export class AlarmService {
         return 'OK';
     }
 
+    // private 이면
+        // host가 나랑 mate인지 확인
+    // 내가 들어갈 수 있는 인원인지 확인
+    // 알람 멤버에 나 추가
+    // 알람 멤버 수 업데이트
     async joinAlarm(myId:number, alarmId: number) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -90,7 +104,7 @@ export class AlarmService {
                 .execute();
         } catch(e) {
             await queryRunner.rollbackTransaction();
-            throw new InternalServerErrorException();
+            throw new ForbiddenException('Invalid request');
         } finally {
             await queryRunner.release();
         }

@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessAndRefreshToken } from 'src/auth/auth';
 import { AuthService } from 'src/auth/auth.service';
@@ -68,7 +68,7 @@ export class UsersService {
 
                 } catch (e) {
                     await queryRunner.rollbackTransaction();
-                    throw new InternalServerErrorException('Transaction error');
+                    throw new ForbiddenException('Invalid request');
                 } finally {
                     await queryRunner.release();
                     const appTokens =  this.authService.login({ id: newUser.id, email: newUser.email });
@@ -167,7 +167,7 @@ export class UsersService {
             .execute();
             return 'OK';
         } catch(e) {
-            throw new InternalServerErrorException();
+            throw new ForbiddenException('Invalid request');
         }
     }
     
