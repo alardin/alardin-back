@@ -7,7 +7,7 @@ import { Assets } from "./assets.entity";
 import { GamesRatings } from "./games.ratings.entity";
 import { Mates } from "./mates.entity";
 import { CoinUseRecords } from "./coin.use.records.entity";
-import { PremiumOrder } from "./premium.order.entity";
+import { PremiumOrders } from "./premium.orders.entity";
 import { Games } from "./games.entity";
 import { GamePurchaseRecords } from "./game.purchase.records.entity";
 import { Premiums } from "./premiums.entity";
@@ -15,7 +15,7 @@ import { AlarmResults } from "./alarm.results.entity";
 import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Notifications } from "./notifications.entity";
 import { MateRequestRecords } from "./mate-request.records.entity";
-import { PremiumRefund } from "./premium.refund.entity";
+import { PremiumRefunds } from "./premium.refunds.entity";
 
 @Entity({ schema: 'alardin', name: 'users' })
 export class Users {
@@ -123,8 +123,8 @@ export class Users {
     @JoinColumn({ name: 'Asset_id', referencedColumnName: 'id' })
     assets: Assets;
 
-    @OneToMany(() => PremiumRefund, premiumRefund => premiumRefund.User)
-    Premium_refunds: PremiumRefund[];
+    @OneToMany(() => PremiumRefunds, premiumRefunds => premiumRefunds.User)
+    Premium_refunds: PremiumRefunds[];
 
     @OneToMany(() => Mates, mates => mates.Sender)
     Mate1: Mates[];
@@ -190,25 +190,8 @@ export class Users {
     })
     Purchased_games: Games[];
 
-    @OneToMany(() => PremiumOrder, premiumOrder => premiumOrder.User)
-    Premium_orders: PremiumOrder[];
-
-    @ManyToMany(() => Premiums, premiums => premiums.Subscribers, {
-        onDelete: 'NO ACTION',
-        onUpdate: 'CASCADE'
-    })
-    @JoinTable({
-        name: 'premium_subscribe_records',
-        joinColumn: {
-            name: 'User_id',
-            referencedColumnName: 'id'
-        },
-        inverseJoinColumn: {
-            name: 'Premium_id',
-            referencedColumnName: 'id'
-        }
-    })
-    Subscribed_premiums: Premiums[];
+    @OneToMany(() => PremiumOrders, premiumOrder => premiumOrder.User)
+    Premium_orders: PremiumOrders[];
 
     @OneToMany(() => AlarmPlayRecords, alarmPlayRecords => alarmPlayRecords.User)
     Alarm_play_records: AlarmPlayRecords[];

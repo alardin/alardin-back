@@ -16,6 +16,9 @@ export class CoinUseRecords {
     @Column()
     remain_coin: number;
 
+    @Column({ name: 'User_id', nullable: true })
+    User_id: number | null;
+    
     @ManyToOne(() => Users, (users) => users.Users_asset_records, {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL'

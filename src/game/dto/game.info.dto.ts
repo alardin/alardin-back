@@ -5,4 +5,4 @@ import { AlarmResults } from 'src/entities/alarm.results.entity'
 export class GameInfoDto extends OmitType(IntersectionType(
     AlarmResults,
     AlarmsDto
-), ['created_at', 'id', 'is_private', 'is_repeated', 'music_volume', 'time_setting', 'updated_at',]) {}
+), ['created_at', 'id', 'is_private', 'is_repeated', 'music_volume', 'time', 'is_repeated','updated_at',]) {}

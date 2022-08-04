@@ -9,9 +9,11 @@ import { GamePurchaseRecords } from "./entities/game.purchase.records.entity";
 import { Games } from "./entities/games.entity";
 import { GamesRatings } from "./entities/games.ratings.entity";
 import { GamesScreenshots } from "./entities/games.screenshots.entity";
+import { MateRequestRecords } from "./entities/mate-request.records.entity";
 import { Mates } from "./entities/mates.entity";
 import { Notifications } from "./entities/notifications.entity";
-import { PremiumOrder } from "./entities/premium.order.entity";
+import { PremiumOrders } from "./entities/premium.orders.entity";
+import { PremiumRefunds } from "./entities/premium.refunds.entity";
 import { Premiums } from "./entities/premiums.entity";
 import { Users } from "./entities/users.entity";
 
@@ -34,10 +36,12 @@ export const typeOrmModuleOptions: TypeOrmModuleOptions = {
         GamesRatings,
         GamesScreenshots,
         Mates,
+        MateRequestRecords,
         Notifications,
-        PremiumOrder,
         Premiums,
-        Users
+        Users,
+        PremiumOrders,
+        PremiumRefunds,
     ],
     logging: true,
     synchronize: false

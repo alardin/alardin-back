@@ -9,6 +9,9 @@ export class GamesScreenshots {
     @Column('varchar', { name: 'screenshot_url', length: 2048 })
     screenshot_url: string;
 
+    @Column({ name: 'Game_id', nullable: true })
+    Game_id: number | null;
+
     @ManyToOne(() => Games, games=>games.Games_screenshots, {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL'

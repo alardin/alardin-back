@@ -7,6 +7,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const ctx = host.switchToHttp()
         const response = ctx.getResponse<Response>();
         console.log(exception)
+        console.log(exception.cause)
         const errStatus = exception.getStatus(), errMessage = exception.message;
         return response.status(errStatus).json({ status: 'FAIL', data: errMessage });
     }

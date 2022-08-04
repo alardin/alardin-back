@@ -1,5 +1,8 @@
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Delete, Get, Post, Put, Query } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { userInfo } from 'os';
+import { take } from 'rxjs';
+import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
 import { GameAnswerDto } from './dto/game.answer.dto';
@@ -10,10 +13,6 @@ import { GameResponse } from './dto/game.response.dto';
 import { GameService } from './game.service';
 
 @ApiTags('games')
-@ApiHeader({
-    name: 'Authorization',
-    example: 'Token'
-})
 @Controller('api/games')
 export class GameController {
     constructor(
@@ -27,42 +26,19 @@ export class GameController {
         status: 200,
         type: [Games]
     })
+    /**
+     * 가져올 갯수 지정 필요
+     */
     @Get()
-    getAllGames() {
-
+    async getAllGames(@Query('skip') skip: number, @Query('take') take: number) {
+        this.gameService.getAllGames(skip, take);
     }
 
     @ApiOperation({
-        summary: '특정 게임 조회',
-        description: 'gameId에 해당하는 게임 조회'
+        summary: '게임 등록'
     })
-    @ApiParam({
-        name: 'gameId',
-        example: 1
-    })
-    @ApiResponse({
-        status: 200,
-        type: Games
-    })
-    @Get(':gameId')
-    getOneGame() {
-
-    }
-
-    @ApiOperation({
-        summary: '게임 구매',
-        description: '알람코인을 사용해서 gameId에 해당하는 게임 구매'
-    })
-    @ApiParam({
-        name: 'gameId',
-        example: 1
-    })
-    @ApiResponse({
-        status: 200,
-        type: OnlyStatusResponse
-    })
-    @Post(':gameId')
-    purchaseGame() {
+    @Post()
+    async createNewGame() {
 
     }
 
@@ -172,6 +148,40 @@ export class GameController {
     @Post('save')
     saveGame() {
 
+    }
+
+    @ApiOperation({
+        summary: '특정 게임 조회',
+        description: 'gameId에 해당하는 게임 조회'
+    })
+    @ApiParam({
+        name: 'gameId',
+        example: 1
+    })
+    @ApiResponse({
+        status: 200,
+        type: Games
+    })
+    @Get(':gameId')
+    getGameDetailById(@User() user, gameId: number) {
+        return this.gameService.getGameDetailsById(user.id, gameId);
+    }
+
+    @ApiOperation({
+        summary: '게임 구매',
+        description: '알람코인을 사용해서 gameId에 해당하는 게임 구매'
+    })
+    @ApiParam({
+        name: 'gameId',
+        example: 1
+    })
+    @ApiResponse({
+        status: 200,
+        type: OnlyStatusResponse
+    })
+    @Post(':gameId')
+    purchaseGame() {
+        
     }
 
 }

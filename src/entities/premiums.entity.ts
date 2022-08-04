@@ -1,7 +1,6 @@
 import { IsUrl } from "class-validator";
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Users } from "./users.entity";
-import { PremiumOrder } from "./premium.order.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { PremiumOrders } from "./premium.orders.entity";
 
 @Entity({ schema: 'alardin', name: 'premiums' })
 export class Premiums {
@@ -22,10 +21,7 @@ export class Premiums {
     @IsUrl()
     thumbnail_img_url: string;
 
-    @OneToMany(() => PremiumOrder, premiumOrder => premiumOrder.Premium)
-    Premium_orders: PremiumOrder[];
-
-    @ManyToMany(() => Users, users => users.Subscribed_premiums)
-    Subscribers: Users[];
+    @OneToMany(() => PremiumOrders, premiumOrders => premiumOrders.Premium)
+    Premium_orders: PremiumOrders[];
 
 }
