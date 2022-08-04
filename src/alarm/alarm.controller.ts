@@ -1,11 +1,11 @@
-import { Controller, Post, Put, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, Put } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { userInfo } from 'os';
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
-import { Users } from 'src/entities/users.entity';
 import { AlarmService } from './alarm.service';
-import { CreateAlarmDto } from './dto/create.alarm.dto';
-import { ParticipateInAlarmDto } from './dto/participate.alarm.dto';
+import { CreateAlarmDto } from './dto/create-alarm.dto';
+import { JoinAlarmDto } from './dto/join-alarm.dto';
 
 @ApiTags('alarm')
 @Controller('alarm')
@@ -49,15 +49,15 @@ export class AlarmController {
         description: '메이트가 생성한 알람에 참여'
     })
     @ApiBody({
-        type: ParticipateInAlarmDto
+        type: JoinAlarmDto
     })
     @ApiResponse({
         status: 200,
         type: OnlyStatusResponse
     })
     @Post('join')
-    joinAlarm() {
-        
+    async joinAlarm(@User() user, @Body() { alarmId }: JoinAlarmDto) {
+        return await this.alarmService.joinAlarm(user.id, alarmId);
     }
 
 }

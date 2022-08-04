@@ -7,7 +7,7 @@ import { Alarms } from 'src/entities/alarms.entity';
 import { MateService } from 'src/mate/mate.service';
 import { DataSource, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { CreateAlarmDto } from './dto/create.alarm.dto';
+import { CreateAlarmDto } from './dto/create-alarm.dto';
 
 @Injectable()
 export class AlarmService {
