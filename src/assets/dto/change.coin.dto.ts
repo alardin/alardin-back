@@ -1,5 +1,12 @@
-export class ChangeCoinDto {
-    public price: number;
+type NonNegativeInteger<T extends number> =
+    number extends T 
+        ? never 
+        : `${T}` extends `-${string}` | `${string}.${string}`
+            ? never 
+            : T;
 
-    public type: 'buy game' | 'charge';
+export class ChangeCoinDto {
+    public amount: number;
+
+    public type: 'BUY GAME' | 'CHARGE';
 }

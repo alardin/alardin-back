@@ -8,7 +8,7 @@ import { Assets } from 'src/entities/assets.entity';
 import { Users } from 'src/entities/users.entity';
 import { KakaoAccountUsed } from 'src/external/kakao/kakao';
 import { KakaoService } from 'src/external/kakao/kakao.service';
-import { RedisService } from 'src/internal/redis/redis.service';
+import { RedisService } from 'src/redis/redis.service';
 import { DataSource, Repository } from 'typeorm';
 import { AuthDto } from './dto/auth.dto';
 import { EditProfileDto } from './dto/edit-profile.dto';

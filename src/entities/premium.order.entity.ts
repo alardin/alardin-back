@@ -33,14 +33,14 @@ export class PremiumOrder {
     @OneToMany(() => PremiumRefund, premiumRefund => premiumRefund.Premium_order)
     Premium_refunds: PremiumRefund[];
 
-    @ManyToOne(() => Users, users => users.Premium_subscribe_records, {
+    @ManyToOne(() => Users, users => users.Premium_orders, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
     })
     @JoinColumn([{ name: 'User_id', referencedColumnName: 'id' }])
     User: Users;
 
-    @ManyToOne(() => Premiums, premiums => premiums.Premium_records, {
+    @ManyToOne(() => Premiums, premiums => premiums.Premium_orders, {
         onDelete: 'CASCADE', 
         onUpdate: 'CASCADE'
     })

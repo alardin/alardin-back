@@ -11,7 +11,7 @@ import { GamesRatings } from "./entities/games.ratings.entity";
 import { GamesScreenshots } from "./entities/games.screenshots.entity";
 import { Mates } from "./entities/mates.entity";
 import { Notifications } from "./entities/notifications.entity";
-import { PremiumSubscribeRecords } from "./entities/premium.subscribe.records.entity";
+import { PremiumOrder } from "./entities/premium.order.entity";
 import { Premiums } from "./entities/premiums.entity";
 import { Users } from "./entities/users.entity";
 
@@ -35,7 +35,7 @@ export const typeOrmModuleOptions: TypeOrmModuleOptions = {
         GamesScreenshots,
         Mates,
         Notifications,
-        PremiumSubscribeRecords,
+        PremiumOrder,
         Premiums,
         Users
     ],

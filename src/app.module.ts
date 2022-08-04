@@ -11,13 +11,12 @@ import { UsersModule } from './users/users.module';
 import { PushNotificationModule } from './push-notification/push-notification.module';
 import { KakaoModule } from './external/kakao/kakao.module';
 import { AgoraModule } from './external/agora/agora.module';
-import { AssetModule } from './internal/asset/asset.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmModuleOptions } from './typeorm.config';
-import { RedisModule } from './internal/redis/redis.module';
+import { RedisModule } from './redis/redis.module';
 import * as Joi from 'joi';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 @Module({
@@ -42,7 +41,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
     GameModule, 
     AlarmModule, 
     AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AssetModule, AuthModule, RedisModule],
+    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, RedisModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,
