@@ -20,7 +20,7 @@ export class AlarmService {
         private dataSource: DataSource
     ) {}
 
-    async makeNewAlarm(myId: number, body: CreateAlarmDto) {
+    async createNewALarm(myId: number, body: CreateAlarmDto) {
         let newAlarm: Alarms;
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();

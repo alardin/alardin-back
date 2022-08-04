@@ -1,15 +1,13 @@
 import { Controller, Post, Put, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
+import { Users } from 'src/entities/users.entity';
 import { AlarmService } from './alarm.service';
 import { CreateAlarmDto } from './dto/create.alarm.dto';
 import { ParticipateInAlarmDto } from './dto/participate.alarm.dto';
 
 @ApiTags('alarm')
-@ApiHeader({
-    name: 'Authorization',
-    example: 'Token'
-})
 @Controller('alarm')
 export class AlarmController {
     constructor(
@@ -27,8 +25,8 @@ export class AlarmController {
         type: OnlyStatusResponse
     })
     @Post()
-    makeNewAlarm() {
-
+    async createNewAlarm(@User() user, body: CreateAlarmDto) {
+        return await this.alarmService.createNewALarm(user.id, body);
     }
 
     @ApiOperation({
