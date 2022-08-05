@@ -24,6 +24,6 @@ export class GamePlayKeywords {
     Images: GamePlayImages[];
 
     @ManyToOne(_ => Games, games => games.Game_play_keywords)
-    @JoinColumn([{ name: 'Game_id', referencedColumnName:' id' }])
+    @JoinColumn([{ name: 'Game_id', referencedColumnName:'id' }])
     Game: Games;
 }

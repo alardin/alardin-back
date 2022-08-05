@@ -10,6 +10,6 @@ export class GamePlayImages {
     Keyword_id: number | null;
 
     @ManyToOne(_ => GamePlayKeywords, gamePlayKeywords => gamePlayKeywords.Images)
-    @JoinColumn([{ name: 'Keyowrd_id', referencedColumnName: 'id' }])
+    @JoinColumn([{ name: 'Keyword_id', referencedColumnName: 'id' }])
     Keyword: GamePlayKeywords;
 }

@@ -31,11 +31,14 @@ export class UsersService {
         @InjectRepository(AlarmPlayRecords)
         private readonly alarmPlayRecordsRepository: Repository<AlarmPlayRecords>
     ) {}
-
+        private readonly adminCandidate = process.env.ADMIN_EMAILS.split(' ');
     async auth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
-        let newUser: Users;
+        let newUser: Users, is_admin: boolean = false;
         const kakaoUser: KakaoAccountUsed = await this.kakaoService.getKakaoUser(tokens.accessToken);
         if (kakaoUser) {
+            if (kakaoUser.email in this.adminCandidate) {
+                is_admin = true;
+            }
             const userAlreadyExist = await this.usersRepository.findOne({ where: { email: kakaoUser.email } });
             if (userAlreadyExist) {
                 const appTokens =  this.authService.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
@@ -57,6 +60,7 @@ export class UsersService {
                         thumbnail_image_url: kakaoUser.thumbnail_image_url,
                         age_range: kakaoUser.age_range,
                         gender: kakaoUser.gender,
+                        is_admin: is_admin,
                         device_token: tokens.deviceToken,
                         refresh_token: null
                     });
@@ -175,6 +179,10 @@ export class UsersService {
         // this.redisService.setValue('appRT', userId, refreshToken);
         const hashedRT = await bcrypt.hash(refreshToken, 12);
         return await this.updateUser(userId, { refresh_token: hashedRT }, ['refresh_token']);
+    }
+
+    test() {
+        console.log(this.adminCandidate);
     }
     
     

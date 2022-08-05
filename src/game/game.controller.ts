@@ -1,8 +1,8 @@
-import { Controller, Delete, Get, Post, Put, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { userInfo } from 'os';
-import { take } from 'rxjs';
+import { ForRoles } from 'src/common/decorators/for-roles.decorator';
 import { User } from 'src/common/decorators/user.decorator';
+import { RoleGuard } from 'src/common/guards/role.guard';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
 import { GameAnswerDto } from './dto/game.answer.dto';
@@ -29,6 +29,8 @@ export class GameController {
         /**
          * 가져올 갯수 지정 필요
          */
+    @ForRoles(['admin'])
+    @UseGuards(RoleGuard)
     @Get()
     async getAllGames(@Query('skip') skip: number, @Query('take') take: number) {
         this.gameService.getAllGames(skip, take);
@@ -41,6 +43,16 @@ export class GameController {
     async createNewGame() {
 
     }
+
+        @ApiOperation({
+            summary: '게임 이미지 데이터 추가'
+        })
+    @ForRoles(['admin'])
+    @UseGuards(RoleGuard)
+    @Put()
+        async addGameImages(myId: number, gameId: number) {
+
+        }
 
         @ApiOperation({
             summary: '채널 생성',

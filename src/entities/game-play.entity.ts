@@ -1,7 +1,9 @@
-import { Entity } from "typeorm";
+import { Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'game_play', schema: 'alardin' })
 export class GamePlay {
+    @PrimaryGeneratedColumn()
+    id: number;
     //  alarm
     // memebers
     // images

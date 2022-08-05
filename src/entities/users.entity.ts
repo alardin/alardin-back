@@ -97,6 +97,9 @@ export class Users {
     @Column('varchar', { name: 'gender' })
     gender: string;
 
+    @Column('boolean', { name: 'is_admin', default: false })
+    is_admin: boolean;
+
     @Column('varchar', { name: 'device_token', nullable: true })
     device_token: string | null;
 

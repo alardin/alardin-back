@@ -5,6 +5,9 @@ import { AlarmResults } from "./entities/alarm.results.entity";
 import { Alarms } from "./entities/alarms.entity";
 import { Assets } from "./entities/assets.entity";
 import { CoinUseRecords } from "./entities/coin.use.records.entity";
+import { GamePlay } from "./entities/game-play.entity";
+import { GamePlayImages } from "./entities/game-play.images.entity";
+import { GamePlayKeywords } from "./entities/game-play.keywords.entity";
 import { GamePurchaseRecords } from "./entities/game.purchase.records.entity";
 import { Games } from "./entities/games.entity";
 import { GamesRatings } from "./entities/games.ratings.entity";
@@ -42,6 +45,9 @@ export const typeOrmModuleOptions: TypeOrmModuleOptions = {
         Users,
         PremiumOrders,
         PremiumRefunds,
+        GamePlay,
+        GamePlayKeywords,
+        GamePlayImages
     ],
     logging: true,
     synchronize: false

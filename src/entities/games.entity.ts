@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Alarms } from "./alarms.entity";
-import { GamePlayKeywords } from "./game-play.keywords.entity";
+import { GamePlayKeywords } from './game-play.keywords.entity';
 import { GamePurchaseRecords } from "./game.purchase.records.entity";
 import { GamesRatings } from "./games.ratings.entity";
 import { GamesScreenshots } from "./games.screenshots.entity";
