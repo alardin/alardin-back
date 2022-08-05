@@ -1,9 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsBoolean, IsDate, IsIn, IsInt, IsNotEmpty, IsNumber, IsNumberString, IsPositive, IsString, Matches, Max, MaxLength, Min, MIN, ValidateIf } from "class-validator";
 import { IsPositiveInt } from "src/common/decorators/positive.integer.validator";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { AlarmMembers } from "./alarm.members.entity";
 import { AlarmResults } from "./alarm.results.entity";
+import { GameChannel } from "./game.channel.entity";
 import { Games } from "./games.entity";
 import { Users } from "./users.entity";
 
@@ -45,7 +46,6 @@ export class Alarms {
     @Column()
     is_private: boolean;
 
-
     @ApiProperty({
         name: 'music_volume',
         example: 70
@@ -82,6 +82,13 @@ export class Alarms {
 
     @Column('int', { name: 'Game_id', primary: true })
     Game_id: number;
+
+    @Column('int', { name: 'Game_channel_id', nullable: true })
+    Game_channel_id: number | null;
+
+    @OneToOne(() => GameChannel)
+    @JoinColumn({ name: 'Game_channel_id', referencedColumnName: 'id' })
+    Game_channel: GameChannel;
 
     @ManyToOne(() => Users, users => users.Hosted_alarms, {
         onDelete: 'NO ACTION',

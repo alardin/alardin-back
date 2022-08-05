@@ -8,6 +8,7 @@ import { CoinUseRecords } from "./entities/coin.use.records.entity";
 import { GamePlay } from "./entities/game-play.entity";
 import { GamePlayImages } from "./entities/game-play.images.entity";
 import { GamePlayKeywords } from "./entities/game-play.keywords.entity";
+import { GameChannel } from "./entities/game.channel.entity";
 import { GamePurchaseRecords } from "./entities/game.purchase.records.entity";
 import { Games } from "./entities/games.entity";
 import { GamesRatings } from "./entities/games.ratings.entity";
@@ -35,9 +36,6 @@ export const typeOrmModuleOptions: TypeOrmModuleOptions = {
         Assets,
         CoinUseRecords,
         GamePurchaseRecords,
-        Games,
-        GamesRatings,
-        GamesScreenshots,
         Mates,
         MateRequestRecords,
         Notifications,
@@ -45,7 +43,11 @@ export const typeOrmModuleOptions: TypeOrmModuleOptions = {
         Users,
         PremiumOrders,
         PremiumRefunds,
+        Games,
+        GamesRatings,
+        GamesScreenshots,
         GamePlay,
+        GameChannel,
         GamePlayKeywords,
         GamePlayImages
     ],
