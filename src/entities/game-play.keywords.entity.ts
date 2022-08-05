@@ -14,6 +14,9 @@ export class GamePlayKeywords {
     @Column('varchar', { name: 'keyword'})
     keyword: string;
 
+    @Column('int', { name: 'image_count', default: 0 })
+    image_count: number;
+
     @CreateDateColumn()
     created_at : Date;
     

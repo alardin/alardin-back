@@ -74,20 +74,32 @@ export class GameService {
 
         await queryRunner.startTransaction();
         await queryRunner.connect();
+        
+        // game 있는지 확인 
+        const game = await this.getGameById(gameId);
+        // keyword 있는지 확인
+        let gameKeyword = await this.gamePlayKeywordsRepository.findOne({ where: { keyword: gKI.keyword, Game_id: game.id }});
+        if (!gameKeyword) {
+            const newGPK = new GamePlayKeywords()
+            newGPK.Game_id = game.id;
+            newGPK.keyword = gKI.keyword;
+            gameKeyword = await this.gamePlayKeywordsRepository.save(newGPK);
+            await this.gamesRepoistory.createQueryBuilder()
+                    .update(Games, { keyword_count: () => 'keyword_count + 1' })
+                    .where('id = :id', { id: game.id })
+                    .execute();
+        }
 
         try {
-            // game 있는지 확인 
-            const game = await this.getGameById(gameId);
-            // keyword 있는지 확인
-            const gameKeyword = await this.gamePlayKeywordsRepository.findOneOrFail({ where: { keyword: gKI.keyword, Game_id: gameId }})
-                                        .catch(_ => { throw new ForbiddenException() });
-            
             for await (let url of gKI.images)  {
                 const newGPI = new GamePlayImages();
                 newGPI.Keyword_id = gameKeyword.id;
                 newGPI.url = url;
-                
                 await queryRunner.manager.getRepository(GamePlayImages).save(newGPI);
+                await queryRunner.manager.getRepository(GamePlayKeywords).createQueryBuilder()
+                            .update(GamePlayKeywords, { image_count: () => 'image_count + 1' })
+                            .where('id = :id', { id: gameKeyword.id })
+                            .execute();
             }
         } catch(e) {
             await queryRunner.rollbackTransaction();

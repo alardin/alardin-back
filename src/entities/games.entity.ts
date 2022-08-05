@@ -51,15 +51,8 @@ export class Games {
     @Column()
     thumbnail_url: string;
 
-    @ApiProperty({
-        name: 'screenshots_url',
-        example: [
-            'https://cdn.kakao.com/img/20220723_afienfadf_168082023.jpg',
-            'https://cdn.kakao.com/img/20220723_afienfadf_168082023.jpg'
-        ]
-    })
-    @Column()
-    screenshots_url: string;
+    @Column('int', { name: 'keyword_count', default: 0 })
+    keyword_count: number;
 
     @ApiProperty({
         name: 'rating',

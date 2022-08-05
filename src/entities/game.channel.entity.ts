@@ -20,9 +20,6 @@ export class GameChannel {
     @OneToOne(() => Alarms)
     @JoinColumn({ name: 'Alarm_id', referencedColumnName: 'id' })
     Alarm: Alarms;
-    // alarm
-    // memebers
-    // images
 
     @CreateDateColumn()
     created_at: Date;

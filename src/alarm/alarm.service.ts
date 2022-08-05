@@ -2,7 +2,10 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
+import { GamePlayImages } from 'src/entities/game-play.images.entity';
+import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
+import { Games } from 'src/entities/games.entity';
 import { MateService } from 'src/mate/mate.service';
 import { DataSource, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -45,6 +48,28 @@ export class AlarmService {
                 Alarm_id: newAlarm.id,
                 User_id: myId
             });
+            
+            const keywordCount = (await queryRunner.manager.getRepository(Games)
+                                .findOne({ where: { id: body.Game_id }}))
+                                .keyword_count;
+
+            const randomKeywordId = await queryRunner.manager.getRepository(GamePlayKeywords).createQueryBuilder('gpk')
+                            .select('gpk.id')
+                            .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId: body.Game_id })
+                            .skip(Math.floor(Math.random() * keywordCount))
+                            .limit(1)
+                            .execute();
+            const imageCount = (await queryRunner.manager.getRepository(GamePlayKeywords)
+                            .findOne({ where: { id: randomKeywordId }})).image_count;
+            const selectedGPIs = await queryRunner.manager.getRepository(GamePlayImages).createQueryBuilder('gpi')
+                    .select('gpi.*')
+                    .innerJoin('gpi.Keyword', 'k', 'k.id = :kId', { kId: randomKeywordId })
+                    .skip(Math.floor(Math.random() * (imageCount - 6)))
+                    .limit(6)
+                    .getMany();
+            
+            // push alarm
+            // random image select?
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException('Invalid request');

@@ -12,7 +12,7 @@ import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GamePlayImages } from 'src/entities/game-play.images.entity';
 
 @Module({
-  imports: [SingleModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlayKeywords, GamePlayImages])],
+  imports: [SingleModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlayKeywords, GamePlayImages ])],
   providers: [GameService],
   controllers: [GameController],
 })
