@@ -105,4 +105,7 @@ export class Alarms {
 
     @ManyToMany(() => Users, users => users.Joined_alarms)
     Members: Users[];
+
+    // Channel OneToOne
+    // 랜덤 시드 for 게임 keyword, 게임 이미지
 }

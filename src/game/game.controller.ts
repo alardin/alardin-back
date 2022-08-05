@@ -19,171 +19,176 @@ export class GameController {
         private readonly gameService: GameService
     ) {}
 
-    @ApiOperation({
-        summary: "전체 게임 목록 조회",
-    })
-    @ApiResponse({
-        status: 200,
-        type: [Games]
-    })
-    /**
-     * 가져올 갯수 지정 필요
-     */
+        @ApiOperation({
+            summary: "전체 게임 목록 조회",
+        })
+        @ApiResponse({
+            status: 200,
+            type: [Games]
+        })
+        /**
+         * 가져올 갯수 지정 필요
+         */
     @Get()
     async getAllGames(@Query('skip') skip: number, @Query('take') take: number) {
         this.gameService.getAllGames(skip, take);
     }
 
-    @ApiOperation({
-        summary: '게임 등록'
-    })
+        @ApiOperation({
+            summary: '게임 등록'
+        })
     @Post()
     async createNewGame() {
 
     }
 
-    @ApiOperation({
-        summary: '채널 생성',
-        description: '커뮤니케이션을 위한 미디어 스트림 채널 생성'
-    })
-    @ApiResponse({
-        status: 201,
-        type: OnlyStatusResponse
-    })
-    @ApiBody({
-        type: GameChannelDto
-    })
+        @ApiOperation({
+            summary: '채널 생성',
+            description: '커뮤니케이션을 위한 미디어 스트림 채널 생성'
+        })
+        @ApiResponse({
+            status: 201,
+            type: OnlyStatusResponse
+        })
+        @ApiBody({
+            type: GameChannelDto
+        })
     @Put('channel')
     createChannel() {
 
     }
 
-    @ApiOperation({
-        summary: '채널 종료',
-        description: '미디어 스트림 채널 종료'
-    })
-    @ApiBody({
-        type: GameChannelDto
-    })
-    @ApiResponse({
-        status: 200,
-        type: OnlyStatusResponse
-    })
+        @ApiOperation({
+            summary: '채널 종료',
+            description: '미디어 스트림 채널 종료'
+        })
+        @ApiBody({
+            type: GameChannelDto
+        })
+        @ApiResponse({
+            status: 200,
+            type: OnlyStatusResponse
+        })
     @Delete('channel')
     endChannel() {
 
     }
 
-    @ApiOperation({
-        summary: '채널 참가',
-        description: '미디어 스트림 채널 참가'
-    })
-    @ApiBody({
-        type: GameChannelDto
-    })
-    @ApiResponse({
-        status: 200,
-        type: OnlyStatusResponse
-    })
+        @ApiOperation({
+            summary: '채널 참가',
+            description: '미디어 스트림 채널 참가'
+        })
+        @ApiBody({
+            type: GameChannelDto
+        })
+        @ApiResponse({
+            status: 200,
+            type: OnlyStatusResponse
+        })
     @Post('channel/in')
     joinChannel() {
 
     }
 
-    @ApiOperation({
-        summary: '채널 나가기',
-        description: '미디어 스트림 채널 나가기'
-    })
-    @ApiBody({
-        type: GameChannelDto
-    })
-    @ApiResponse({
-        status: 200,
-        type: OnlyStatusResponse
-    })
+        @ApiOperation({
+            summary: '채널 나가기',
+            description: '미디어 스트림 채널 나가기'
+        })
+        @ApiBody({
+            type: GameChannelDto
+        })
+        @ApiResponse({
+            status: 200,
+            type: OnlyStatusResponse
+        })
     @Post('channel/out')
     leaveChannel() {
         
     }
 
-    @ApiOperation({
-        summary: '게임 이미지 목록 가져오기',
-        description: '멀티 게임 진행 시 필요한 이미지 목록 가져 옴'
-    })
-    @ApiResponse({
-        status: 200,
-        type: GameImagesDto
-    })
+        @ApiOperation({
+            summary: '게임 이미지 목록 가져오기',
+            description: '멀티 게임 진행 시 필요한 이미지 목록 가져 옴'
+        })
+        @ApiResponse({
+            status: 200,
+            type: GameImagesDto
+        })
     @Get('images')
     getImagesForGame() {
 
     }
 
-    @ApiOperation({
-        summary: '정답 제출 및 검사',
-        description: '사용자가 제출한 정답과 실제 정답 비교'
-    })
-    @ApiBody({
-        type: GameAnswerDto
-    })
-    @ApiResponse({
-        status: 200,
-        type: GameResponse
-    })
+        @ApiOperation({
+            summary: '정답 제출 및 검사',
+            description: '사용자가 제출한 정답과 실제 정답 비교'
+        })
+        @ApiBody({
+            type: GameAnswerDto
+        })
+        @ApiResponse({
+            status: 200,
+            type: GameResponse
+        })
     @Post('answer')
     checkAnswerImage() {
 
     }
 
-    @ApiOperation({
-        summary: '게임 결과 저장'
-    })
-    @ApiBody({
-        type: GameInfoDto
-    })
-    @ApiResponse({
-        status: 201,
-        type: OnlyStatusResponse
-    })
+        @ApiOperation({
+            summary: '게임 결과 저장'
+        })
+        @ApiBody({
+            type: GameInfoDto
+        })
+        @ApiResponse({
+            status: 201,
+            type: OnlyStatusResponse
+        })
     @Post('save')
     saveGame() {
 
     }
 
+
+        @ApiOperation({
+            summary: '게임 평가',
+            description: '1~5점으로 게임 평가'
+        })
     @Post('rate')
     rateGame() {
         
     }
 
-    @ApiOperation({
-        summary: '특정 게임 조회',
-        description: 'gameId에 해당하는 게임 조회'
-    })
-    @ApiParam({
-        name: 'gameId',
-        example: 1
-    })
-    @ApiResponse({
-        status: 200,
-        type: Games
-    })
+        @ApiOperation({
+            summary: '특정 게임 조회',
+            description: 'gameId에 해당하는 게임 조회'
+        })
+        @ApiParam({
+            name: 'gameId',
+            example: 1
+        })
+        @ApiResponse({
+            status: 200,
+            type: Games
+        })
     @Get(':gameId')
     getGameDetailById(@User() user, gameId: number) {
         return this.gameService.getGameDetailsById(user.id, gameId);
     }
 
-    @ApiOperation({
-        summary: '게임 구매',
-        description: '알람코인을 사용해서 gameId에 해당하는 게임 구매'
-    })
-    @ApiParam({
-        name: 'gameId',
-        example: 1
-    })
-    @ApiResponse({
-        status: 200,
-        type: OnlyStatusResponse
-    })
+        @ApiOperation({
+            summary: '게임 구매',
+            description: '알람코인을 사용해서 gameId에 해당하는 게임 구매'
+        })
+        @ApiParam({
+            name: 'gameId',
+            example: 1
+        })
+        @ApiResponse({
+            status: 200,
+            type: OnlyStatusResponse
+        })
     @Post(':gameId')
     async purchaseGame(@User() user, gameId: number) {
         return await this.gameService.purchaseGame(user.id, gameId);
