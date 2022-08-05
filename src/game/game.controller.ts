@@ -150,6 +150,11 @@ export class GameController {
 
     }
 
+    @Post('rate')
+    rateGame() {
+        
+    }
+
     @ApiOperation({
         summary: '특정 게임 조회',
         description: 'gameId에 해당하는 게임 조회'
@@ -180,8 +185,8 @@ export class GameController {
         type: OnlyStatusResponse
     })
     @Post(':gameId')
-    purchaseGame() {
-        
+    async purchaseGame(@User() user, gameId: number) {
+        return await this.gameService.purchaseGame(user.id, gameId);
     }
 
 }
