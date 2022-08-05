@@ -2,11 +2,14 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assets } from 'src/entities/assets.entity';
 import { CoinUseRecords } from 'src/entities/coin.use.records.entity';
+import { GamePlayImages } from 'src/entities/game-play.images.entity';
+import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { Games } from 'src/entities/games.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { DataSource, Repository } from 'typeorm';
+import { GameKeywordImages } from './types/game-keyword-images.type';
 
 type GameDetail = {
     game: Games;
@@ -27,6 +30,10 @@ export class GameService {
         private readonly usersRepository: Repository<Users>,
         @InjectRepository(Assets)
         private readonly assetsRepositry: Repository<Assets>,
+        @InjectRepository(GamePlayKeywords)
+        private readonly gamePlayKeywordsRepository: Repository<GamePlayKeywords>,
+        @InjectRepository(GamePlayImages)
+        private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
         private dataSource: DataSource,
 
     ) {}
@@ -56,6 +63,41 @@ export class GameService {
         };
     }
 
+    //transaction
+        // game 있는지 확인 
+        // keyword 있는지 확인
+        // 있으면 추가, 위에 아무거나 걸리면 exception
+        // 추가할 거를 모아서 하게끔??
+    async addGameImages(myId: number, gameId: number, gKI: GameKeywordImages) {
+        
+        const queryRunner = this.dataSource.createQueryRunner();
+
+        await queryRunner.startTransaction();
+        await queryRunner.connect();
+
+        try {
+            // game 있는지 확인 
+            const game = await this.getGameById(gameId);
+            // keyword 있는지 확인
+            const gameKeyword = await this.gamePlayKeywordsRepository.findOneOrFail({ where: { keyword: gKI.keyword, Game_id: gameId }})
+                                        .catch(_ => { throw new ForbiddenException() });
+            
+            for await (let url of gKI.images)  {
+                const newGPI = new GamePlayImages();
+                newGPI.Keyword_id = gameKeyword.id;
+                newGPI.url = url;
+                
+                await queryRunner.manager.getRepository(GamePlayImages).save(newGPI);
+            }
+        } catch(e) {
+            await queryRunner.rollbackTransaction();
+            throw new ForbiddenException();
+        } finally {
+            await queryRunner.release();
+        }
+
+        return 'OK';
+    }
     async purchaseGame(myId: number, gameId: number) {
         // transaction
             // 살 수 있는지 확인

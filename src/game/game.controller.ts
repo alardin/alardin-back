@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
 import { User } from 'src/common/decorators/user.decorator';
@@ -11,9 +11,9 @@ import { GameImagesDto } from './dto/game.imagess.dto';
 import { GameInfoDto } from './dto/game.info.dto';
 import { GameResponse } from './dto/game.response.dto';
 import { GameService } from './game.service';
+import { GameKeywordImages } from './types/game-keyword-images.type';
 
-@ApiTags('games')
-@Controller('api/games')
+@Controller('api/game')
 export class GameController {
     constructor(
         private readonly gameService: GameService
@@ -49,10 +49,10 @@ export class GameController {
         })
     @ForRoles(['admin'])
     @UseGuards(RoleGuard)
-    @Put()
-        async addGameImages(myId: number, gameId: number) {
-
-        }
+    @Put(':gameId/images')
+    async addGameImages(@User() user, @Param('gameId') gameId, @Body() gKI: GameKeywordImages) {
+        return this.gameService.addGameImages(user.id, gameId, gKI);
+    }
 
         @ApiOperation({
             summary: '채널 생성',
