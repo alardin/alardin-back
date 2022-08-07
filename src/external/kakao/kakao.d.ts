@@ -1,4 +1,5 @@
 export interface KakaoAccount {
+    id: number;
     profile_nickname_needs_agreement: boolean;
     profile_image_needs_agreement: boolean;
     profile: {
@@ -25,6 +26,7 @@ export interface KakaoAccount {
 }
 
 export interface KakaoAccountUsed {
+  id: number;
   email: string;
   nickname: string;
   thumbnail_image_url: string;

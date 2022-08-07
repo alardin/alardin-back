@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.0.4",
     "@nestjs/typeorm": "^9.0.0",
+    "agora-access-token": "^2.0.4",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "cache-manager": "^4.1.0",

@@ -10,9 +10,11 @@ import { Users } from 'src/entities/users.entity';
 import { Assets } from 'src/entities/assets.entity';
 import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GamePlayImages } from 'src/entities/game-play.images.entity';
+import { GamePlay } from 'src/entities/game-play.entity';
+import { AgoraModule } from 'src/external/agora/agora.module';
 
 @Module({
-  imports: [SingleModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlayKeywords, GamePlayImages ])],
+  imports: [GameModule, SingleModule, AgoraModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlay, GamePlayKeywords, GamePlayImages ])],
   providers: [GameService],
   controllers: [GameController],
 })

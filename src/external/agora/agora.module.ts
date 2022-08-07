@@ -4,6 +4,7 @@ import { AgoraService } from './agora.service';
 
 @Module({
   controllers: [AgoraController],
-  providers: [AgoraService]
+  providers: [AgoraService],
+  exports: [AgoraService]
 })
 export class AgoraModule {}

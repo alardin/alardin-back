@@ -1,10 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
+import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
 import { RoleGuard } from 'src/common/guards/role.guard';
+import { AgoraInterceptor } from 'src/common/interceptors/agora.interceptor';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
+import { AgoraService } from 'src/external/agora/agora.service';
+import { GenerateTokenDto } from 'src/external/dto/generate-token.dto';
 import { GameAnswerDto } from './dto/game.answer.dto';
 import { GameChannelDto } from './dto/game.channel.dto';
 import { GameImagesDto } from './dto/game.imagess.dto';
@@ -16,7 +20,8 @@ import { GameKeywordImages } from './types/game-keyword-images.type';
 @Controller('api/game')
 export class GameController {
     constructor(
-        private readonly gameService: GameService
+        private readonly gameService: GameService,
+        private readonly agoraService: AgoraService
     ) {}
 
         @ApiOperation({
@@ -65,9 +70,15 @@ export class GameController {
         @ApiBody({
             type: GameChannelDto
         })
-    @Put('channel')
-    createChannel() {
 
+    @Public()
+    @UseInterceptors(AgoraInterceptor)
+    @Post('channel')
+    createChannel(
+        @Body() body: GenerateTokenDto,
+        @Query('expiry') expiry: number | undefined
+    ) {
+        return this.agoraService.generateRTCToken(body.channelName, body.role, body.tokenType, body.uid, expiry);
     }
 
         @ApiOperation({

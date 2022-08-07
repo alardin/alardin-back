@@ -25,6 +25,7 @@ export class KakaoService {
         const kakaoAccount = await this.getKakaoProfile(accessToken);
         if (kakaoAccount) {
             return {
+                id: kakaoAccount.id,
                 email: kakaoAccount.email,
                 nickname: kakaoAccount.profile.nickname,
                 thumbnail_image_url: kakaoAccount.profile.thumbnail_image_url,
@@ -38,6 +39,7 @@ export class KakaoService {
     
     private async getKakaoProfile(accessToken: string): Promise<KakaoAccount> {
         const { data: {
+            id,
             kakao_account
         } } = await axios.get(this.kakaoMeUrl, {
             headers: {
@@ -58,6 +60,7 @@ export class KakaoService {
 
     async getKakaoProfileTest(): Promise<KakaoAccount> {
         const { data: {
+            id,
             kakao_account
         } } = await axios.get(this.kakaoMeUrl, {
             headers: {

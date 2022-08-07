@@ -50,10 +50,11 @@ export class UsersService {
                 return appTokens;
             } else {
                 const queryRunner = this.dataSource.createQueryRunner();
-                queryRunner.connect();
-                queryRunner.startTransaction();
+                await queryRunner.connect();
+                await queryRunner.startTransaction();
                 try {
                     newUser = await queryRunner.manager.getRepository(Users).save({
+                        kakao_id: kakaoUser.id,
                         email: kakaoUser.email,
                         nickname: kakaoUser.nickname,
                         profile_image_url: kakaoUser.profile_image_url,
@@ -64,6 +65,7 @@ export class UsersService {
                         device_token: tokens.deviceToken,
                         refresh_token: null
                     });
+
                     await queryRunner.manager.getRepository(Assets).save({
                         User_id: newUser.id
                     });
@@ -96,6 +98,7 @@ export class UsersService {
          * generate new access & refresh token
          * https://velog.io/@jkijki12/Jwt-Refresh-Token-%EC%A0%81%EC%9A%A9%EA%B8%B0
     */
+   
     async refreshTokens(userId: number, refreshToken: string) {
         const { id, email, refresh_token } = await this.getUser(userId);
         const tokenMatched = await bcrypt.compare(refreshToken, refresh_token);
@@ -179,10 +182,6 @@ export class UsersService {
         // this.redisService.setValue('appRT', userId, refreshToken);
         const hashedRT = await bcrypt.hash(refreshToken, 12);
         return await this.updateUser(userId, { refresh_token: hashedRT }, ['refresh_token']);
-    }
-
-    test() {
-        console.log(this.adminCandidate);
     }
     
     

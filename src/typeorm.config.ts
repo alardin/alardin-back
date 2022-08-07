@@ -10,6 +10,7 @@ import { GamePlayImages } from "./entities/game-play.images.entity";
 import { GamePlayKeywords } from "./entities/game-play.keywords.entity";
 import { GameChannel } from "./entities/game.channel.entity";
 import { GamePurchaseRecords } from "./entities/game.purchase.records.entity";
+import { GameUsedImages } from "./entities/game.used-images.entity";
 import { Games } from "./entities/games.entity";
 import { GamesRatings } from "./entities/games.ratings.entity";
 import { GamesScreenshots } from "./entities/games.screenshots.entity";
@@ -46,10 +47,11 @@ export const typeOrmModuleOptions: TypeOrmModuleOptions = {
         Games,
         GamesRatings,
         GamesScreenshots,
+        GamePlayImages,
+        GamePlayKeywords,
+        GameUsedImages,
         GamePlay,
         GameChannel,
-        GamePlayKeywords,
-        GamePlayImages
     ],
     logging: true,
     synchronize: false

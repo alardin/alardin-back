@@ -8,6 +8,7 @@ import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { Games } from 'src/entities/games.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
+import { AgoraService } from 'src/external/agora/agora.service';
 import { DataSource, Repository } from 'typeorm';
 import { GameKeywordImages } from './types/game-keyword-images.type';
 
@@ -20,6 +21,7 @@ type GameDetail = {
 @Injectable()
 export class GameService {
     constructor(
+        private readonly agoraService: AgoraService,
         @InjectRepository(Games)
         private readonly gamesRepoistory: Repository<Games>,
         @InjectRepository(GamesScreenshots)
@@ -160,4 +162,8 @@ export class GameService {
                             .catch(_ => { throw new NotFoundException('Game Not Found') });
     }
 
+
+    async generateRTCToken(channelName: string, role: string, tokenType: string, uid: string, expiry: number) {
+
+    }
 }

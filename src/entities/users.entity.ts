@@ -10,7 +10,6 @@ import { CoinUseRecords } from "./coin.use.records.entity";
 import { PremiumOrders } from "./premium.orders.entity";
 import { Games } from "./games.entity";
 import { GamePurchaseRecords } from "./game.purchase.records.entity";
-import { Premiums } from "./premiums.entity";
 import { AlarmResults } from "./alarm.results.entity";
 import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Notifications } from "./notifications.entity";
@@ -25,6 +24,10 @@ export class Users {
     })
     @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
     id: number;
+
+    @IsNotEmpty()
+    @Column('bigint', { name: 'kakao_id' })
+    kakao_id: number;
 
     @IsEmail()
     @IsNotEmpty()
