@@ -1,7 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { IsNumber } from "class-validator";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Alarms } from "./alarms.entity";
+import { GameChannel } from "./game.channel.entity";
 import { Users } from "./users.entity";
 
 @Entity({ schema: 'alardin', name: 'alarm_results'})
@@ -28,11 +30,12 @@ export class AlarmResults {
     end_time: Date;
 
     @ApiProperty({
-        name: 'total_time',
+        name: 'play_time',
+        description: 'end_time - start_time',
         example: '180'
     })
-    @Column('int', { name: 'total_time' })
-    total_time: number;
+    @Column('int', { name: 'play_time' })
+    play_time: number;
 
     @ApiProperty({
         name: 'is_bot_used',
@@ -40,6 +43,19 @@ export class AlarmResults {
     })
     @Column('boolean', { name: 'is_bot_used' })
     is_bot_used: boolean;
+
+    @Column('int', { name: 'trial', nullable: true })
+    trial: number | null;
+
+    @Column('boolean', { name: 'is_cleared', default: null })
+    is_cleared: boolean | null;
+
+    @Column({ name: 'Game_channel_id', nullable: true })
+    Game_channel_id: number | null;
+
+    @OneToOne(() => GameChannel)
+    @JoinColumn({ name: 'Game_channel_id', referencedColumnName: 'id' })
+    Game_channel: GameChannel;
 
     @ManyToOne(() => Alarms, alarms => alarms.Alarm_results, {
         onDelete: 'CASCADE',

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Alarms } from "./alarms.entity";
 
@@ -12,10 +12,15 @@ export class GameChannel {
     @Column({ name: 'name' })
     name: string;
 
+    @IsNumber()
+    @Column({ name: 'player_count', nullable: true })
+    player_count: number | null;
+
     @IsNotEmpty()
     @IsString()
     @Column({ name: 'Alarm_id' })
     Alarm_id: number;
+
 
     @OneToOne(() => Alarms)
     @JoinColumn({ name: 'Alarm_id', referencedColumnName: 'id' })

@@ -162,8 +162,4 @@ export class GameService {
                             .catch(_ => { throw new NotFoundException('Game Not Found') });
     }
 
-
-    async generateRTCToken(channelName: string, role: string, tokenType: string, uid: string, expiry: number) {
-
-    }
 }

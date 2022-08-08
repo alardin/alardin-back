@@ -41,7 +41,6 @@ export class AgoraService {
             default:
                 throw new BadRequestException();
         }
-        console.log(token);
         return {
             rtcToken: token
         };
