@@ -5,8 +5,6 @@ import { GamePlayImages } from "./game-play.images.entity";
 
 @Entity({ name: 'game_used_images', schema: 'alardin' })
 export class GameUsedImages {
-    @PrimaryGeneratedColumn()
-    id: number;
 
     @CreateDateColumn()
     created_at: Date;
@@ -22,6 +20,6 @@ export class GameUsedImages {
     Game_play: GamePlay;
 
     @ManyToOne(() => GamePlayImages, GamePlayImages => GamePlayImages.Game_used_images)
-    @JoinColumn({ name: 'Game_play_id', referencedColumnName: 'id' })
+    @JoinColumn({ name: 'Game_play_image_id', referencedColumnName: 'id' })
     Game_play_image: GamePlayImages
 }
