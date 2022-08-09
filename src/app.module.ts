@@ -15,11 +15,9 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RedisModule } from './redis/redis.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AwsService } from './aws/aws.service';
 import { AwsModule } from './aws/aws.module';
-import { join } from 'path';
 import { MySqlConfigModule } from './config/database/config.module';
 import { MySqlConfigService } from './config/database/config.service';
 @Module({
@@ -34,7 +32,7 @@ import { MySqlConfigService } from './config/database/config.service';
     GameModule, 
     AlarmModule, 
     AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, RedisModule, AwsModule],
+    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,
