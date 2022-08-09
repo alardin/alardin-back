@@ -20,36 +20,36 @@ export class Games {
         name: 'name',
         example: '스페이스 크루'
     })
-    @Column()
+    @Column({ name: 'name' })
     name: string;
 
     @ApiProperty({
         name: 'category',
         example: '1234'
     })
-    @Column()
+    @Column({ name: 'category'})
     category: string;
 
     @ApiProperty({
         name: 'price',
         example: 200
     })
-    @Column()
+    @Column({ name: 'price' })
     price: number;
 
     @ApiProperty({
         name: 'description',
         example: '더 마인드에 스컬킹이 합쳐진 협동 트릭 테이킹 게임'
     })
-    @Column()
+    @Column({ name: 'description', default: '' })
     description: string;
 
     @ApiProperty({
         name: 'thumbnail_url',
         example:'https://cdn.kakao.com/img/20220723_afienfadf_168082023.jpg'
     })
-    @Column()
-    thumbnail_url: string;
+    @Column({ name: 'thumbnail_url', nullable: true })
+    thumbnail_url: string | null;
 
     @Column('int', { name: 'keyword_count', default: 0 })
     keyword_count: number;
@@ -60,6 +60,12 @@ export class Games {
     })
     @Column('int', { name: 'rating', default: 0 })
     rating: number;
+
+    @Column('int', { name: 'min_player', nullable: true })
+    min_player: number | null;
+
+    @Column('int', { name: 'max_player', nullable: true })
+    max_player: number | null;
 
     @OneToMany(() => GamesScreenshots, gamesScreenshots => gamesScreenshots.Game)
     Games_screenshots: GamesScreenshots[];

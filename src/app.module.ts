@@ -15,33 +15,35 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmModuleOptions } from './typeorm.config';
 import { RedisModule } from './redis/redis.module';
-import * as Joi from 'joi';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { AwsService } from './aws/aws.service';
+import { AwsModule } from './aws/aws.module';
+import { join } from 'path';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: Joi.object({
-        PORT: Joi.number(),
-        KAKAO_ADMIN_KEY: Joi.string(),
-        JWT_SECRET: Joi.string(),
-        DB_USERNAME: Joi.string(),
-        DB_PASSWORD: Joi.string(),
-        DB_DATABASE: Joi.string(),
-        DB_PORT: Joi.number(),
-        DB_HOST: Joi.string(),
-        REDIS_HOST: Joi.string(),
-        REDIS_PORT: Joi.number(),
-      })
     }),
-    TypeOrmModule.forRoot(typeOrmModuleOptions),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USERNAME, 
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
+      entities: [join(__dirname + '../entites/**/*.entity.ts')],
+      logging: true,
+      synchronize: false,
+      migrations: [process.env.NODE_ENV === 'prod' ? join(__dirname, '../../dist/migrations/*{.ts,.js}') 
+                      : join(__dirname, '../migrations/*{.ts,.js}')],
+      migrationsTableName: 'migrations',
+  }),
     MateModule, 
     GameModule, 
     AlarmModule, 
     AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, RedisModule],
+    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, RedisModule, AwsModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,
@@ -49,7 +51,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
   }, {
     provide: APP_GUARD,
     useClass: JwtAuthGuard
-  }],
+  }, AwsService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
