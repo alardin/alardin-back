@@ -14,16 +14,16 @@ export class AlarmController {
         private readonly alarmService: AlarmService
     ) {}
 
-    @ApiOperation({
-        summary: '새 알람 생성'
-    })
-    @ApiBody({
-        type: CreateAlarmDto
-    })
-    @ApiResponse({
-        status: 201,
-        type: OnlyStatusResponse
-    })
+        @ApiOperation({
+            summary: '새 알람 생성'
+        })
+        @ApiBody({
+            type: CreateAlarmDto
+        })
+        @ApiResponse({
+            status: 201,
+            type: OnlyStatusResponse
+        })
     @Post()
     async createNewAlarm(@User() user, body: CreateAlarmDto) {
         return await this.alarmService.createNewALarm(user.id, body);
@@ -31,6 +31,7 @@ export class AlarmController {
 
     @ApiOperation({
         summary: '알람 수정',
+        description: 'developing'
     })
     @ApiBody({
         type: CreateAlarmDto
@@ -44,17 +45,17 @@ export class AlarmController {
 
     }
 
-    @ApiOperation({
-        summary: '메이트 알람 참가',
-        description: '메이트가 생성한 알람에 참여'
-    })
-    @ApiBody({
-        type: JoinAlarmDto
-    })
-    @ApiResponse({
-        status: 200,
-        type: OnlyStatusResponse
-    })
+        @ApiOperation({
+            summary: '메이트 알람 참가',
+            description: '메이트가 생성한 알람에 참여'
+        })
+        @ApiBody({
+            type: JoinAlarmDto
+        })
+        @ApiResponse({
+            status: 200,
+            type: OnlyStatusResponse
+        })
     @Post('join')
     async joinAlarm(@User() user, @Body() { alarmId }: JoinAlarmDto) {
         return await this.alarmService.joinAlarm(user.id, alarmId);
