@@ -31,9 +31,7 @@ export class AuthService {
     async validateRefreshToken(userId: number, email: string, refreshToken: any): Promise<Users> | null {
         const user = await this.usersRepository.findOneOrFail({ where: { id: userId, email }})
             .catch(_ => { throw new InvalidTokenException() });
-        console.log(user);
         const tokenMatched = await bcrypt.compare(refreshToken, user.refresh_token);
-        console.log(refreshToken);
         if (!tokenMatched) {
             return null;
         }

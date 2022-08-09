@@ -13,11 +13,8 @@ import { RefreshTokenGuard } from 'src/common/guards/refresh-token.guard';
 import { AppTokens } from './dto/app-tokens.dto';
 import { NotLoggedInGuard } from 'src/common/guards/not-logged-in.guard';
 import { Public } from 'src/common/decorators/public.decorator';
+import { OthersProfileDto } from './dto/others.profile.dto';
 
-@ApiHeader({
-    name: 'Authorization',
-    example: 'Token'
-})
 @ApiTags('users')
 @Controller('api/users')
 export class UsersController {
@@ -44,6 +41,10 @@ export class UsersController {
         @ApiBody({
             type: AuthDto
         })
+        @ApiResponse({
+            status: 201,
+            type: AppTokens
+        })
     @Public()
     @UseGuards(NotLoggedInGuard)
     @Post('auth')
@@ -57,12 +58,22 @@ export class UsersController {
         this.usersService.logout(user.id);
         // appAccessToken 파기, kakaoAT, kakaoRT 파기
     }
-        
+        @ApiOperation({
+            summary: 'access token 재발급',
+            description: 'refresh token 이용해서 access token 재발급'
+        })
+        @ApiQuery({
+            name: 'refreshToken',
+            example: 'jwt refresh token'
+        })
+        @ApiResponse({
+            status: 200,
+            type: AppTokens
+        })
     @Public()
     @UseGuards(RefreshTokenGuard)
     @Get('refresh')
     async refreshToken(@User() user: Users, @Query('refreshToken') refreshToken) {
-        console.log(user);
         return await this.usersService.refreshTokens(user.id, refreshToken);
     }
 
@@ -87,22 +98,20 @@ export class UsersController {
             description: '로그인한 사용자의 알람 기록 조회'
         })
         @ApiQuery({
-            name: 'start_date',
+            name: 'skip',
             required: true,
-            description: '조회 시작할 날짜'
         })
         @ApiQuery({
-            name: 'period',
+            name: 'take',
             required: true,
-            description: '조회할 일수'
         })
         @ApiResponse({
             status: 200,
             type: AlarmResults
         })
-    @Get('alarm-records')
-    async getAlarmRecords(@User() user) {
-        return await this.usersService.getUserAlarmRecords(user.id);
+    @Get('alarm-results')
+    async getAlarmRecords(@User() user, @Query('skip') skip: number, @Query('take') take: number) {
+        return await this.usersService.getUserAlarmRecords(user.id, skip, take);
     }
     
         @ApiOperation({
@@ -125,14 +134,14 @@ export class UsersController {
             summary: '특정 id 사용자 정보 조회',
             description: '특정 id 사용자의 프로필 정보 조회'
         })
-        @ApiResponse({
-            status: 200,
-            type: Users,
-        })
         @ApiParam({
             name: 'targetId',
             example: 1,
             description: '조회할 사용자의 id'
+        })
+        @ApiResponse({
+            status: 200,
+            type: OthersProfileDto,
         })
     @Get(':targetId')
     async getUserProfile(@Param('targetId') targetId, @User() user) {

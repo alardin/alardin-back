@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
@@ -27,6 +27,12 @@ export class GameController {
         @ApiOperation({
             summary: "전체 게임 목록 조회",
         })
+        @ApiQuery({
+            name:' skip'
+        })
+        @ApiQuery({
+            name: 'take'
+        })
         @ApiResponse({
             status: 200,
             type: [Games]
@@ -42,7 +48,8 @@ export class GameController {
     }
 
         @ApiOperation({
-            summary: '게임 등록'
+            summary: '게임 등록',
+            description: '데이터 확정되면 추가'
         })
     @Post()
     async createNewGame() {
@@ -51,6 +58,13 @@ export class GameController {
 
         @ApiOperation({
             summary: '게임 이미지 데이터 추가'
+        })
+        @ApiBody({
+            type: GameKeywordImages
+        })
+        @ApiResponse({
+            status: 201,
+            type: OnlyStatusResponse
         })
     @ForRoles(['admin'])
     @UseGuards(RoleGuard)

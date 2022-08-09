@@ -129,17 +129,21 @@ export class UsersService {
     }
     
     async editUserProfile(myId: number, { nickname, profile_image_url, thumbnail_image_url, bio }: EditProfileDto) {
-        return await this.updateUser(myId, { nickname, profile_image_url, thumbnail_image_url, bio });
+        await this.updateUser(myId, { nickname, profile_image_url, thumbnail_image_url, bio });
+        return 'OK';
     }
     
-    async getUserAlarmRecords(myId: number): Promise<AlarmPlayRecords[]> {
+    async getUserAlarmRecords(myId: number, skip: number, take: number): Promise<AlarmPlayRecords[]> {
         return await this.alarmPlayRecordsRepository.createQueryBuilder('apr')
         .innerJoinAndSelect('apr.User', 'u', 'u.id = :myId', { myId })
+        .skip(skip)
+        .take(take)
         .getMany();
     }
     
     async getUsersHostedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
+        .select('alarms.Game_id, h.*')
         .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :myId', { myId })
         .getMany();
     }

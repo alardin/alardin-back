@@ -22,7 +22,7 @@ export class AuthDto {
     
     @ApiProperty({
         name: 'deviceToken',
-        description: 'device token for FCM'
+        description: 'device token'
     })
     @IsString()
     @IsNotEmpty()

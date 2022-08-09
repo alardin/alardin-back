@@ -66,20 +66,15 @@ export class MateService {
  
     }
 
-    async removeMate(myId: number, id: number) {
+    async removeMate(myId: number, mateId: number) {
         // push?
         // db row 삭제
-        const mate = await this.getMateById(id);
-        if (mate.Sender_id == myId) {
-            await this.validateMate(myId, mate.Receiver_id);
-        } else if (mate.Receiver_id == myId) {
-            await this.validateMate(myId, mate.Sender_id);
-        }
+        const mate = await this.validateMate(myId, mateId);
         try {
             await this.matesRepository.createQueryBuilder()
                 .softDelete()
                 .from(Mates)
-                .where('id = :id', { id })
+                .where('id = :id', { id: mate.id })
                 .andWhere('Sender_id = :id', { myId })
                 .execute();
         } catch(e) {
