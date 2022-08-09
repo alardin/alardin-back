@@ -22,9 +22,7 @@ import { AwsModule } from './aws/aws.module';
 import { join } from 'path';
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
@@ -35,7 +33,7 @@ import { join } from 'path';
       entities: [join(__dirname + '../entites/**/*.entity.ts')],
       logging: true,
       synchronize: false,
-      migrations: [process.env.NODE_ENV === 'prod' ? join(__dirname, '../../dist/migrations/*{.ts,.js}') 
+      migrations: [process.env.NODE_ENV === 'production' ? join(__dirname, '../../dist/migrations/*{.ts,.js}') 
                       : join(__dirname, '../migrations/*{.ts,.js}')],
       migrationsTableName: 'migrations',
   }),
