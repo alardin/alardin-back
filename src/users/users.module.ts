@@ -6,12 +6,11 @@ import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { Users } from 'src/entities/users.entity';
 import { KakaoModule } from 'src/external/kakao/kakao.module';
-import { RedisModule } from 'src/redis/redis.module';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
 @Module({
-  imports: [KakaoModule, AuthModule, RedisModule,
+  imports: [KakaoModule, AuthModule,
     TypeOrmModule.forFeature([Users, Alarms, AlarmPlayRecords])],
   controllers: [UsersController],
   providers: [UsersService]
