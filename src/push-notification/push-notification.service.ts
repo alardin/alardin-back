@@ -13,7 +13,7 @@ export class PushNotificationService {
     ) {
     }
     private connection = admin.initializeApp({
-        credential: admin.credential.cert('firebase/service-account.json')
+        credential: admin.credential.cert('src/firebase/service-account.json')
     });
 
     async sendPush(userId: number, deviceToken: string, title: string, body: string) {
