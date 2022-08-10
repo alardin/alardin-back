@@ -5,7 +5,7 @@ import { InvalidTokenException } from 'src/common/exceptions/invalid-token.excep
 import { Users } from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
 import { AccessAndRefreshToken } from './auth';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
