@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import { AuthDto } from './dto/auth.dto';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { OthersProfileDto } from './dto/others.profile.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 
