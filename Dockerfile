@@ -12,8 +12,6 @@ RUN npm ci
 
 COPY --chown=node:node . .
 
-COPY --chown=
-
 USER node
 
 ###################
