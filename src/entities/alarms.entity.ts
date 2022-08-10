@@ -29,7 +29,8 @@ export class Alarms {
 
     @ApiProperty({
         name: 'is_repeated',
-        example: "123"
+        example: "123",
+        description: "월, 화, 수 반복"
     })
     @IsNumberString()
     @MaxLength(7)
@@ -61,6 +62,11 @@ export class Alarms {
     @Column('int', { name: 'member_count', default: 0 })
     member_count: number;
 
+    @ApiProperty({
+        name: 'max_members',
+        example: 2,
+        description: '최대 인원 수, 기본 값 2'
+    })
     @IsPositiveInt()
     @IsNotEmpty()
     @Column({ name: 'max_member', default: 2 })
@@ -80,6 +86,11 @@ export class Alarms {
     @Column('int', { name: 'Host_id', primary: true })
     Host_id: number;
 
+    @ApiProperty({
+        name: 'Game_id',
+        example: 1,
+        description: '플레이할 게임'
+    })
     @Column('int', { name: 'Game_id', primary: true })
     Game_id: number;
 
