@@ -19,5 +19,6 @@ import { GamesRatings } from 'src/entities/games.ratings.entity';
   imports: [GameModule, SingleModule, AgoraModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlay, GamePlayKeywords, GamePlayImages, GameUsedImages, GamesRatings ])],
   providers: [GameService],
   controllers: [GameController],
+  exports: [GameService]
 })
 export class GameModule {}

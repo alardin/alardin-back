@@ -3,12 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
+import { GameUsedImages } from 'src/entities/game.used-images.entity';
+import { GameModule } from 'src/game/game.module';
 import { MateModule } from 'src/mate/mate.module';
 import { AlarmController } from './alarm.controller';
 import { AlarmService } from './alarm.service';
 
 @Module({
-  imports: [MateModule, TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords])],
+  imports: [MateModule, GameModule, TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, GameUsedImages])],
   controllers: [AlarmController],
   providers: [AlarmService]
 })
