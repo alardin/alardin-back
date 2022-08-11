@@ -3,6 +3,7 @@ import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/s
 import { AlarmsDto } from 'src/alarm/dto/alarms.dto';
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
+import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { MateListDto } from './dto/mate-list.dto';
 import { MateRequestReponseDto } from './dto/mate-request.response.dto';
 import { RemoveMateDto } from './dto/remove.mate.dto';
@@ -17,10 +18,10 @@ export class MateController {
 
         @ApiOperation({
             summary: '메이트 목록 조회',
-            description: '카카오톡 친구 중 메이트 여부 확인 및 앱 설치 여부 확인'
+            description: '카카오톡 친구 목록, 메이트 목록 리턴'
         })
         @ApiResponse({
-            type: [MateListDto]
+            type: [MateListDto] 
         })
     @Get()
     async getMateList(@User() user) {

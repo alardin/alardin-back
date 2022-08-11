@@ -6,7 +6,7 @@ import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { Assets } from 'src/entities/assets.entity';
 import { Users } from 'src/entities/users.entity';
-import { KakaoAccountUsed } from 'src/external/kakao/kakao';
+import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
 import { KakaoService } from 'src/external/kakao/kakao.service';
 import { DataSource, Repository } from 'typeorm';
 import { AuthDto } from './dto/auth.dto';
