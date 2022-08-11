@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
-import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { Users } from 'src/entities/users.entity';

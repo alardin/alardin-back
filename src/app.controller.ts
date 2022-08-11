@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { Public } from './common/decorators/public.decorator';
+import { KakaoService } from './external/kakao/kakao.service';
 
 @Public()
 @Controller()
@@ -8,7 +9,7 @@ export class AppController {
   ) {}
 
   @Get()
-  index() {
+  async index() {
     return 'Alardin-backend';
   }
 }

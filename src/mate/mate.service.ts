@@ -4,6 +4,7 @@ import { Alarms } from 'src/entities/alarms.entity';
 import { MateRequestRecords } from 'src/entities/mate-request.records.entity';
 import { Mates } from 'src/entities/mates.entity';
 import { Users } from 'src/entities/users.entity';
+import { KakaoService } from 'src/external/kakao/kakao.service';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { Repository } from 'typeorm';
 
@@ -11,6 +12,7 @@ import { Repository } from 'typeorm';
 export class MateService {
     constructor(
         private readonly pushNotiService: PushNotificationService,
+        private readonly kakaoService: KakaoService,
         @InjectRepository(Mates)
         private readonly matesRepository: Repository<Mates>,
         @InjectRepository(Users)
@@ -21,18 +23,24 @@ export class MateService {
         private readonly alarmsRepository: Repository<Alarms>,
     ) {}
 
-    async getMateList(myId: number) {
+    async getMateList(myId: number, kakaoAccessToken: string) {
 
-        return await this.matesRepository.find({
+        const mates = await this.matesRepository.find({
             where: [
                 { Sender_id: myId },
                 { Receiver_id: myId }
             ],
+            select: ['id', 'Sender', 'Receiver'],
             relations: {
                 Sender: true,
                 Receiver: true
             }
         });
+        const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
+        return {
+            mates,
+            friends
+        };
     }
 
     async sendMateRequest(me: Users, receiverId: number) {
@@ -49,10 +57,10 @@ export class MateService {
 
     async responseToMateRequest(me: Users, senderId: number, response: string) {
         // if ok -> mate db save, 요청자에게 push
-        await this.mateReqRepository.findOneOrFail({ where: { Sender_id: senderId }})
+        const mateReq = await this.mateReqRepository.findOneOrFail({ where: { Sender_id: senderId }})
             .catch(_ => { throw new ForbiddenException() });
 
-        const sender = await this.getUserByUserId(senderId);
+        const sender = await this.getUserByUserId(mateReq.Sender_id);
 
         if (response === 'ACCEPT') {
             const title = 'Mate repsonse';
@@ -82,7 +90,7 @@ export class MateService {
         }
     }
 
-    async getMateHostAlarms(myId: number, mateId: number) {
+    async getAlarmsofMate(myId: number, mateId: number) {
         await this.validateMate(myId, mateId);
         return await this.alarmsRepository.createQueryBuilder('alarms')
             .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId })

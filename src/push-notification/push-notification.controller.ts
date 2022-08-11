@@ -12,34 +12,34 @@ export class PushNotificationController {
         private readonly pushNotificationService: PushNotificationService
     ) {}
 
-    @ApiOperation({
-        summary: 'push 알림 전송',
-        description: 'notification 타입 알림 전송'
-    })
-    @Post()
-    async sendPushNotification(
-        @User() user,
-        @Body() { deviceToken, title, body }: SendPushDto
-    ) {
-        return await this.pushNotificationService.sendPush(user.id, deviceToken, title, body);
-    }
+    // @ApiOperation({
+    //     summary: 'push 알림 전송',
+    //     description: 'notification 타입 알림 전송'
+    // })
+    // @Post()
+    // async sendPushNotification(
+    //     @User() user,
+    //     @Body() { deviceToken, title, body }: SendPushDto
+    // ) {
+    //     return await this.pushNotificationService.sendPush(user.id, deviceToken, title, body);
+    // }
 
-    @ApiOperation({
-        summary: 'push 데이터 전송',
-        description: 'data 타입 알림 전송'
-    })
-    @Post('data')
-    sendPushData() {
+    // @ApiOperation({
+    //     summary: 'push 데이터 전송',
+    //     description: 'data 타입 알림 전송'
+    // })
+    // @Post('data')
+    // sendPushData() {
 
-    }
+    // }
 
-    @ApiOperation({
-        summary: 'push 알림&데이터 전송',
-        description: 'notification & data 타입 알림 전송'
-    })
-    @Post('both')
-    sendPushBoth() {
+    // @ApiOperation({
+    //     summary: 'push 알림&데이터 전송',
+    //     description: 'notification & data 타입 알림 전송'
+    // })
+    // @Post('both')
+    // sendPushBoth() {
 
-    }
+    // }
 
 }

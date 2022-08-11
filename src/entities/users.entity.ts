@@ -109,6 +109,12 @@ export class Users {
     @Column('varchar', { name: 'refresh_token', nullable: true })
     refresh_token: string | null;
 
+    @Column('varchar', { name: 'kakao_access_token' })
+    kakao_access_token: string;
+
+    @Column('varchar', { name: 'kakao_refresh_token' })
+    kakao_refresh_token: string;
+
     @ApiProperty({
         name: 'enroll_date',
         example: '2022-07-24'

@@ -61,6 +61,8 @@ export class UsersService {
                         gender: kakaoUser.gender,
                         is_admin: is_admin,
                         device_token: tokens.deviceToken,
+                        kakao_access_token: tokens.accessToken,
+                        kakao_refresh_token: tokens.refreshToken,
                         refresh_token: null
                     });
 

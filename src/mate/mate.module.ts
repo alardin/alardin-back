@@ -7,9 +7,10 @@ import { PushNotificationModule } from 'src/push-notification/push-notification.
 import { Users } from 'src/entities/users.entity';
 import { MateRequestRecords } from 'src/entities/mate-request.records.entity';
 import { Alarms } from 'src/entities/alarms.entity';
+import { KakaoModule } from 'src/external/kakao/kakao.module';
 
 @Module({
-  imports: [PushNotificationModule, TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms])],
+  imports: [PushNotificationModule, KakaoModule, TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms])],
   providers: [MateService],
   controllers: [MateController],
   exports: [MateService]

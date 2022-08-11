@@ -1,10 +1,10 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 import { Users } from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
-import { KakaoAccount, KakaoAccountUsed } from './kakao';
+import { KakaoAccount, KakaoAccountUsed, KakaoFriend } from './kakao';
 @Injectable()
 export class KakaoService {
 
@@ -50,12 +50,18 @@ export class KakaoService {
         return kakao_account;
     }
 
-    async getKakaoFriends() {
-        const res = await axios.get(this.kakaoFriendsUrl, {
-            headers: {
-                'Authorization': `KakaoAK ${this.kakaoAdminKey}`
+    async getKakaoFriends(accessToken: string): Promise<KakaoFriend[]> {
+        const {
+            data: {
+                elements
             }
-        })
+        } = await axios.get(this.kakaoFriendsUrl, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+        
+        return elements;
     }
 
     async getKakaoProfileTest(): Promise<KakaoAccount> {

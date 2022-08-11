@@ -1,3 +1,5 @@
+import { ApiProperty } from "@nestjs/swagger";
+
 export interface KakaoAccount {
     id: number;
     profile_nickname_needs_agreement: boolean;
@@ -33,4 +35,42 @@ export interface KakaoAccountUsed {
   profile_image_url: string;
   age_range: string;
   gender: string;
+}
+
+export class KakaoFriend {
+  @ApiProperty({
+    name: 'profile_nickname',
+    example: '한성민'
+  })
+  profile_nickname: string;
+  
+  @ApiProperty({
+    name:' profile_thumbnail_image',
+    example: 'https://p.kakaocdn.net/th/talkp/wniWBRU5fT/KCRXeOtYTeGNvkkoEwoLaK/y7srg3_110x110_c.jpg'
+  })
+  profile_thumbnail_image: string;
+  
+  @ApiProperty({
+    name: 'allowed_msg',
+    example: true
+  })
+  allowed_msg: boolean;
+  
+  @ApiProperty({
+    name: 'id',
+    example: 2348974855
+  })
+  id: number;
+
+  @ApiProperty({
+    name: 'uuid',
+    example: 'IBchFCIVIBE9DDQFMwExCTsPIxQiESARJhk'
+  })
+  uuid: string;
+
+  @ApiProperty({
+    name: 'favorite',
+    example: false
+  })
+  favorite: boolean;
 }
