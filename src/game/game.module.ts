@@ -12,9 +12,11 @@ import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GamePlayImages } from 'src/entities/game-play.images.entity';
 import { GamePlay } from 'src/entities/game-play.entity';
 import { AgoraModule } from 'src/external/agora/agora.module';
+import { GameUsedImages } from 'src/entities/game.used-images.entity';
+import { GamesRatings } from 'src/entities/games.ratings.entity';
 
 @Module({
-  imports: [GameModule, SingleModule, AgoraModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlay, GamePlayKeywords, GamePlayImages ])],
+  imports: [GameModule, SingleModule, AgoraModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlay, GamePlayKeywords, GamePlayImages, GameUsedImages, GamesRatings ])],
   providers: [GameService],
   controllers: [GameController],
 })

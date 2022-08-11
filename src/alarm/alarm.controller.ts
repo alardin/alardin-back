@@ -8,7 +8,7 @@ import { CreateAlarmDto } from './dto/create-alarm.dto';
 import { JoinAlarmDto } from './dto/join-alarm.dto';
 
 @ApiTags('alarm')
-@Controller('alarm')
+@Controller('/api/alarm')
 export class AlarmController {
     constructor(
         private readonly alarmService: AlarmService

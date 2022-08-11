@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { userInfo } from 'os';
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
@@ -7,16 +8,20 @@ import { RoleGuard } from 'src/common/guards/role.guard';
 import { AgoraInterceptor } from 'src/common/interceptors/agora.interceptor';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
+import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
 import { GenerateTokenDto } from 'src/external/dto/generate-token.dto';
+import { CreateGameDto } from './dto/create-game.dto';
 import { GameAnswerDto } from './dto/game.answer.dto';
 import { GameChannelDto } from './dto/game.channel.dto';
-import { GameImagesDto } from './dto/game.imagess.dto';
 import { GameInfoDto } from './dto/game.info.dto';
-import { GameResponse } from './dto/game.response.dto';
+import { GameSummaryDto } from './dto/game.summary.dto';
+import { RateGameDto, RateResponse } from './dto/rate-game.dto';
+import { SaveGameDto } from './dto/save-game.dto';
 import { GameService } from './game.service';
 import { GameKeywordImages } from './types/game-keyword-images.type';
 
+@ApiTags('game')
 @Controller('api/game')
 export class GameController {
     constructor(
@@ -28,7 +33,8 @@ export class GameController {
             summary: "전체 게임 목록 조회",
         })
         @ApiQuery({
-            name:' skip'
+            name: 'skip',
+            example: 0
         })
         @ApiQuery({
             name: 'take'
@@ -40,20 +46,27 @@ export class GameController {
         /**
          * 가져올 갯수 지정 필요
          */
-    @ForRoles(['admin'])
-    @UseGuards(RoleGuard)
+    @Public()
     @Get()
     async getAllGames(@Query('skip') skip: number, @Query('take') take: number) {
-        this.gameService.getAllGames(skip, take);
+        return this.gameService.getAllGames(skip, take);
     }
 
         @ApiOperation({
             summary: '게임 등록',
             description: '데이터 확정되면 추가'
         })
+        @ApiBody({
+            type: CreateGameDto
+        })
+        @ApiResponse({
+            type: OnlyStatusResponse
+        })
+    @ForRoles(['admin'])
+    @UseGuards(RoleGuard)
     @Post()
-    async createNewGame() {
-
+    async createNewGame(@User() user, @Body() body: CreateGameDto) {
+        return this.gameService.createNewGame(user.id, body);
     }
 
         @ApiOperation({
@@ -69,25 +82,28 @@ export class GameController {
     @ForRoles(['admin'])
     @UseGuards(RoleGuard)
     @Put(':gameId/images')
-    async addGameImages(@User() user, @Param('gameId') gameId, @Body() gKI: GameKeywordImages) {
+    async addGameImages(@User() user: Users, @Param('gameId') gameId: number, @Body() gKI: GameKeywordImages) {
         return this.gameService.addGameImages(user.id, gameId, gKI);
     }
 
         @ApiOperation({
-            summary: '채널 생성',
-            description: '커뮤니케이션을 위한 미디어 스트림 채널 생성'
+            summary: 'agora 토큰 생성',
+            description: '커뮤니케이션을 위한 rtc 토큰 생성'
+        })
+        @ApiBody({
+            type: GenerateTokenDto
+        })
+        @ApiQuery({
+            name: 'expiry',
+            description: '채널 만료 시간, 제공하지 않으면 3600이 기본값 (1일)',
+            example: 3600
         })
         @ApiResponse({
             status: 201,
             type: OnlyStatusResponse
         })
-        @ApiBody({
-            type: GameChannelDto
-        })
-
-    @Public()
     @UseInterceptors(AgoraInterceptor)
-    @Post('channel')
+    @Post('rtc-token')
     createChannel(
         @Body() body: GenerateTokenDto,
         @Query('expiry') expiry: number | undefined
@@ -97,7 +113,7 @@ export class GameController {
 
         @ApiOperation({
             summary: '채널 종료',
-            description: '미디어 스트림 채널 종료'
+            description: 'developing - 미디어 스트림 채널 종료, 모바일과 의논'
         })
         @ApiBody({
             type: GameChannelDto
@@ -113,7 +129,7 @@ export class GameController {
 
         @ApiOperation({
             summary: '채널 참가',
-            description: '미디어 스트림 채널 참가'
+            description: 'developing - 미디어 스트림 채널 참가, 모바일과 의논'
         })
         @ApiBody({
             type: GameChannelDto
@@ -129,7 +145,7 @@ export class GameController {
 
         @ApiOperation({
             summary: '채널 나가기',
-            description: '미디어 스트림 채널 나가기'
+            description: 'developing - 미디어 스트림 채널 나가기'
         })
         @ApiBody({
             type: GameChannelDto
@@ -144,46 +160,17 @@ export class GameController {
     }
 
         @ApiOperation({
-            summary: '게임 이미지 목록 가져오기',
-            description: '멀티 게임 진행 시 필요한 이미지 목록 가져 옴'
-        })
-        @ApiResponse({
-            status: 200,
-            type: GameImagesDto
-        })
-    @Get('images')
-    getImagesForGame() {
-
-    }
-
-        @ApiOperation({
-            summary: '정답 제출 및 검사',
-            description: '사용자가 제출한 정답과 실제 정답 비교'
-        })
-        @ApiBody({
-            type: GameAnswerDto
-        })
-        @ApiResponse({
-            status: 200,
-            type: GameResponse
-        })
-    @Post('answer')
-    checkAnswerImage() {
-
-    }
-
-        @ApiOperation({
             summary: '게임 결과 저장'
         })
         @ApiBody({
-            type: GameInfoDto
+            type: SaveGameDto
         })
         @ApiResponse({
             status: 201,
             type: OnlyStatusResponse
         })
     @Post('save')
-    saveGame() {
+    saveGame(@User() user, @Body() body: SaveGameDto) {
 
     }
 
@@ -192,9 +179,16 @@ export class GameController {
             summary: '게임 평가',
             description: '1~5점으로 게임 평가'
         })
-    @Post('rate')
-    rateGame() {
-        
+        @ApiBody({
+            type: RateGameDto
+        })
+        @ApiResponse({
+            status: 200,
+            type: RateResponse
+        })
+    @Post(':gameId/rate')
+    rateGame(@User() user, @Body() { gameId, score }: RateGameDto) {
+        return this.gameService.rateGame(user.id, gameId, score );
     }
 
         @ApiOperation({
@@ -209,6 +203,7 @@ export class GameController {
             status: 200,
             type: Games
         })
+    @Public()
     @Get(':gameId')
     getGameDetailById(@User() user, gameId: number) {
         return this.gameService.getGameDetailsById(user.id, gameId);

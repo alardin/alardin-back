@@ -1,8 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsBoolean, IsDataURI, IsDate, IsDateString, IsNotEmpty } from "class-validator";
+import { IsPositiveInt } from "src/common/decorators/positive.integer.validator";
 import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Alarms } from "./alarms.entity";
 import { GameChannel } from "./game.channel.entity";
+import { Games } from "./games.entity";
 import { Users } from "./users.entity";
 
 @Entity({ schema: 'alardin', name: 'game_results'})
@@ -18,6 +21,8 @@ export class AlarmResults {
         name: 'start_time',
         example: '2022-07-22:09:00:00'
     })
+    @IsDateString()
+    @IsNotEmpty()
     @Column('date', { name: 'start_time' })
     start_time: Date;
 
@@ -25,6 +30,8 @@ export class AlarmResults {
         name: 'end_time',
         example: '2022-07-22:09:03:00'
     })
+    @IsDateString()
+    @IsNotEmpty()
     @Column('date', { name: 'end_time' })
     end_time: Date;
 
@@ -33,6 +40,8 @@ export class AlarmResults {
         description: 'end_time - start_time',
         example: '180'
     })
+    @IsPositiveInt()
+    @IsNotEmpty()
     @Column('int', { name: 'play_time' })
     play_time: number;
 
@@ -40,21 +49,46 @@ export class AlarmResults {
         name: 'is_bot_used',
         example: false,
     })
+    @IsBoolean()
+    @IsNotEmpty()
     @Column('boolean', { name: 'is_bot_used' })
     is_bot_used: boolean;
 
-    @Column('int', { name: 'trial', nullable: true })
-    trial: number | null;
+    @ApiProperty({
+        name: 'trial',
+        example: 3
+    })
+    @IsPositiveInt()
+    @IsNotEmpty()
+    @Column('int', { name: 'trial', default: 0 })
+    trial: number;
 
-    @Column('boolean', { name: 'is_cleared', default: null })
-    is_cleared: boolean | null;
+    @IsBoolean()
+    @IsNotEmpty()
+    @Column('boolean', { name: 'is_cleared', default: false })
+    is_cleared: boolean;
 
+    @ApiProperty({
+        name: 'gameChannelId',
+        example: 1
+    })
     @Column({ name: 'Game_channel_id', nullable: true })
     Game_channel_id: number | null;
+
+    @ApiProperty({
+        name: 'gameId',
+        example: 1
+    })
+    @Column({ name: 'Game_id', nullable: true })
+    Game_id: number;
 
     @OneToOne(() => GameChannel)
     @JoinColumn({ name: 'Game_channel_id', referencedColumnName: 'id' })
     Game_channel: GameChannel;
+
+    @ManyToOne(() => Games, games => games.Alarm_results)
+    @JoinColumn([{ name: 'Game_id', referencedColumnName: 'id' }])
+    Game: Games;
 
     @ManyToOne(() => Alarms, alarms => alarms.Alarm_results, {
         onDelete: 'CASCADE',

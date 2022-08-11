@@ -1,4 +1,3 @@
-import { create } from "domain";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { GamePlay } from "./game-play.entity";
 import { GamePlayImages } from "./game-play.images.entity";
