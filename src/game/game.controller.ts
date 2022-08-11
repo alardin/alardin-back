@@ -28,10 +28,12 @@ export class GameController {
             summary: "전체 게임 목록 조회",
         })
         @ApiQuery({
-            name:' skip'
+            name:' skip',
+            example: 0
         })
         @ApiQuery({
-            name: 'take'
+            name: 'take',
+            example: 100
         })
         @ApiResponse({
             status: 200,
@@ -40,8 +42,6 @@ export class GameController {
         /**
          * 가져올 갯수 지정 필요
          */
-    @ForRoles(['admin'])
-    @UseGuards(RoleGuard)
     @Get()
     async getAllGames(@Query('skip') skip: number, @Query('take') take: number) {
         this.gameService.getAllGames(skip, take);
