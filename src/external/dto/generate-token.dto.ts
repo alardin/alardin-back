@@ -1,19 +1,41 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsNumber, IsString, Matches } from "class-validator";
+import { execArgv } from "process";
 
 export class GenerateTokenDto {
     
+    @ApiProperty({
+        name: 'channelName',
+        example: 1,
+        description: '현재로는 alarmId를 쓸 생각'
+    })
     @IsNotEmpty()
     @IsString()
     channelName: string;
 
+    @ApiProperty({
+        name: 'role',
+        description: 'publisher | audience',
+        example: 'publisher'
+    })
     @IsNotEmpty()
-    @IsString()
+    @Matches(/^(publisher)|(audience)$/)
     role: string;
     
+    @ApiProperty({
+        name: 'tokenType',
+        description: 'userAccount | uid',
+        example: 'userAccount'
+    })
     @IsNotEmpty()
-    @IsString()
+    @Matches(/^(userAccount)|(uid)$/)
     tokenType: string;
 
+    @ApiProperty({
+        name:' uid',
+        description: '채널 내 사용자 구분 시 사용됨',
+        example: 1
+    })
     @IsNotEmpty()
     @IsString()
     uid: string;

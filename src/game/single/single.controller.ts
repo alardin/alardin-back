@@ -1,8 +1,9 @@
 import { Controller, Get, Post } from '@nestjs/common';
-import { ApiBody, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GameAnswerDto } from '../dto/game.answer.dto';
 import { SingleService } from './single.service';
 
+@ApiTags('single game')
 @Controller('api/game/single')
 export class SingleController {
 

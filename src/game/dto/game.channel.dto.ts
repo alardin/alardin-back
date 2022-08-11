@@ -2,8 +2,8 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class GameChannelDto {
     @ApiProperty({
-        name: 'channelId',
+        name: 'channel_name',
         example: '1_1_6',
     })
-    public channelId: string
+    public channel_name: string
 }
