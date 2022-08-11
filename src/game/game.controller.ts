@@ -170,8 +170,8 @@ export class GameController {
             type: OnlyStatusResponse
         })
     @Post('save')
-    saveGame(@User() user, @Body() body: SaveGameDto) {
-
+    async saveGame(@User() user, @Body() body: SaveGameDto) {
+        return await this.gameService.saveGame(user.id, body);
     }
 
 
