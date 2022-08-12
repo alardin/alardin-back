@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, PickType } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';
 import { Assets } from 'src/entities/assets.entity';
-import { GameSummaryDto } from 'src/game/dto/game.summary.dto';
+import { GameSummaryDto } from 'src/game/dto/game-summary.dto';
 import { AssetsService } from './assets.service';
 import { AssetsDto } from './dto/assets.dto';
 

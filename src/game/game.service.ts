@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Assets } from 'src/entities/assets.entity';
@@ -41,6 +42,8 @@ export class GameService {
         private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
         @InjectRepository(GamesRatings)
         private readonly gamesRatingsRepository: Repository<GamesRatings>,
+        @InjectRepository(AlarmMembers)
+        private readonly alarmMembersRepository: Repository<AlarmMembers>,
         private dataSource: DataSource,
 
     ) {}
@@ -82,12 +85,12 @@ export class GameService {
                     screenshot_url: url
                 });
             }
-            queryRunner.commitTransaction();
+           await queryRunner.commitTransaction();
         } catch(e) {
-            queryRunner.rollbackTransaction();
+            await queryRunner.rollbackTransaction();
             throw new ForbiddenException();
         } finally {
-            queryRunner.release();
+            await queryRunner.release();
         }
         return "OK";
     }
@@ -195,7 +198,7 @@ export class GameService {
         const game = await this.getGameById(gameId);
         const keywordCount = game.keyword_count;
 
-        const randomKeywordId = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
+        const [ { gpk_id: randomKeywordId }] = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
                                 .select('gpk.id')
                                 .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId: game.id })
                                 .skip(Math.floor(Math.random() * keywordCount))
@@ -271,6 +274,22 @@ export class GameService {
             await queryRunner.release();
         }
         return 'OK';
+    }
+
+    async startGame(myId: number, alarmId: number) {
+        const alarmMembers = await this.alarmMembersRepository.find({
+            where: {
+                Alarm_id: alarmId
+            },
+            relations: {
+                User: true
+            }
+        });
+        console.log(alarmMembers)
+        return 'hi'
+        // send push to member
+        // generate image per user
+
     }
     private async checkToOwnGame(myId: number, gameId: number) {
         return await this.gamePurRepository.createQueryBuilder('gpr')

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Assets } from "src/entities/assets.entity";
-import { GameSummaryDto } from "src/game/dto/game.summary.dto";
+import { GameSummaryDto } from "src/game/dto/game-summary.dto";
 
 export class AssetsDto extends Assets {
     @ApiProperty({

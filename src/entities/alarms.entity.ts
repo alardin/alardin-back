@@ -58,14 +58,14 @@ export class Alarms {
     @Column({ default: 100 })
     music_volume: number;
 
+    
     @IsPositiveInt()
     @Column('int', { name: 'member_count', default: 0 })
     member_count: number;
 
     @ApiProperty({
         name: 'max_members',
-        example: 2,
-        description: '최대 인원 수, 기본 값 2'
+        example: 2
     })
     @IsPositiveInt()
     @IsNotEmpty()
@@ -88,8 +88,7 @@ export class Alarms {
 
     @ApiProperty({
         name: 'Game_id',
-        example: 1,
-        description: '플레이할 게임'
+        example: 1
     })
     @Column('int', { name: 'Game_id', primary: true })
     Game_id: number;

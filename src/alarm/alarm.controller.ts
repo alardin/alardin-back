@@ -26,7 +26,7 @@ export class AlarmController {
             type: OnlyStatusResponse
         })
     @Post()
-    async createNewAlarm(@User() user, body: CreateAlarmDto) {
+    async createNewAlarm(@User() user, @Body() body: CreateAlarmDto) {
         return await this.alarmService.createNewAlarm(user.id, body);
     }
 

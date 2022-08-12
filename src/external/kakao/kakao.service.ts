@@ -47,7 +47,7 @@ export class KakaoService {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
             },
         }).catch(_ => { throw new InvalidTokenException()});
-        return kakao_account;
+        return { id, ...kakao_account };
     }
 
     async getKakaoFriends(accessToken: string): Promise<KakaoFriend[]> {
