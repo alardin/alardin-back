@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AlarmsDto } from 'src/alarm/dto/alarms.dto';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Users } from 'src/entities/users.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
@@ -14,6 +13,7 @@ import { AppTokens } from './dto/app-tokens.dto';
 import { NotLoggedInGuard } from 'src/common/guards/not-logged-in.guard';
 import { Public } from 'src/common/decorators/public.decorator';
 import { OthersProfileDto } from './dto/others.profile.dto';
+import { UserAlarmsDto } from './dto/user-alarms.dto';
 
 @ApiTags('users')
 @Controller('api/users')
@@ -83,7 +83,7 @@ export class UsersController {
         })
         @ApiResponse({
             status: 200,
-            type: [AlarmsDto]
+            type: UserAlarmsDto
         })
 
     @Get('joined-alarms')

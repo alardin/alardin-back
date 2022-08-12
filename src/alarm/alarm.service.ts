@@ -3,11 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { GamePlay } from 'src/entities/game-play.entity';
-import { GamePlayImages } from 'src/entities/game-play.images.entity';
-import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
-import { Games } from 'src/entities/games.entity';
 import { GameService } from 'src/game/game.service';
 import { MateService } from 'src/mate/mate.service';
 import { DataSource, Repository } from 'typeorm';
@@ -30,7 +27,7 @@ export class AlarmService {
         private dataSource: DataSource
     ) {}
 
-    async createNewALarm(myId: number, body: CreateAlarmDto) {
+    async createNewAlarm(myId: number, body: CreateAlarmDto) {
         let newAlarm: Alarms;
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -41,7 +38,7 @@ export class AlarmService {
                                 .innerJoin('gpr.User', 'u', 'u.id = :myId', { myId })
                                 .getOne();
             if(!isOwned) {
-                throw new ForbiddenException();
+                throw new ForbiddenException('Users can not play this game');
             }
             
             newAlarm = await queryRunner.manager.getRepository(Alarms).save({
@@ -73,7 +70,7 @@ export class AlarmService {
             // random image select?
         } catch(e) {
             await queryRunner.rollbackTransaction();
-            throw new ForbiddenException('Invalid request');
+            throw new ForbiddenException(e);
 
         } finally {
             await queryRunner.release();

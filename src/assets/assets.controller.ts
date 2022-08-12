@@ -3,7 +3,7 @@ import { ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags, PickType } from
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Assets } from 'src/entities/assets.entity';
-import { GameSummaryDto } from 'src/game/dto/game.summary.dto';
+import { GameSummaryDto } from 'src/game/dto/game-summary.dto';
 import { AssetsService } from './assets.service';
 import { AssetsDto } from './dto/assets.dto';
 import { ChangeCoinDto } from './dto/change.coin.dto';

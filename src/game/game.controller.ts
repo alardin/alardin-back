@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { userInfo } from 'os';
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
@@ -15,7 +16,7 @@ import { CreateGameDto } from './dto/create-game.dto';
 import { GameAnswerDto } from './dto/game.answer.dto';
 import { GameChannelDto } from './dto/game.channel.dto';
 import { GameInfoDto } from './dto/game.info.dto';
-import { GameSummaryDto } from './dto/game.summary.dto';
+import { GameSummaryDto } from './dto/game-summary.dto';
 import { RateGameDto, RateResponse } from './dto/rate-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
 import { GameService } from './game.service';
@@ -62,8 +63,8 @@ export class GameController {
         @ApiResponse({
             type: OnlyStatusResponse
         })
+    @UseGuards(new RoleGuard(new Reflector()))
     @ForRoles(['admin'])
-    @UseGuards(RoleGuard)
     @Post()
     async createNewGame(@User() user, @Body() body: CreateGameDto) {
         return this.gameService.createNewGame(user.id, body);
@@ -80,7 +81,7 @@ export class GameController {
             type: OnlyStatusResponse
         })
     @ForRoles(['admin'])
-    @UseGuards(RoleGuard)
+    @UseGuards(new RoleGuard(new Reflector()))
     @Put(':gameId/images')
     async addGameImages(@User() user: Users, @Param('gameId') gameId: number, @Body() gKI: GameKeywordImages) {
         return this.gameService.addGameImages(user.id, gameId, gKI);
@@ -187,8 +188,8 @@ export class GameController {
             type: RateResponse
         })
     @Post(':gameId/rate')
-    rateGame(@User() user, @Body() { gameId, score }: RateGameDto) {
-        return this.gameService.rateGame(user.id, gameId, score );
+    async rateGame(@User() user, @Body() { gameId, score }: RateGameDto) {
+        return await this.gameService.rateGame(user.id, gameId, score );
     }
 
         @ApiOperation({
@@ -203,10 +204,16 @@ export class GameController {
             status: 200,
             type: Games
         })
+    
+    @Post('start')
+    async startGame(@User() user, @Body() { alarmId }) {
+        return await this.gameService.startGame(user.id, alarmId);
+    }
+
     @Public()
     @Get(':gameId')
-    getGameDetailById(@User() user, gameId: number) {
-        return this.gameService.getGameDetailsById(user.id, gameId);
+    async getGameDetailById(@User() user, gameId: number) {
+        return await this.gameService.getGameDetailsById(user.id, gameId);
     }
 
         @ApiOperation({
@@ -222,7 +229,7 @@ export class GameController {
             type: OnlyStatusResponse
         })
     @Post(':gameId')
-    async purchaseGame(@User() user, gameId: number) {
+    async purchaseGame(@User() user, @Param('gameId') gameId: number) {
         return await this.gameService.purchaseGame(user.id, gameId);
     }
 

@@ -35,8 +35,9 @@ export class UsersService {
     async auth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
         let newUser: Users, is_admin: boolean = false;
         const kakaoUser: KakaoAccountUsed = await this.kakaoService.getKakaoUser(tokens.accessToken);
+
         if (kakaoUser) {
-            if (kakaoUser.email in this.adminCandidate) {
+            if (this.adminCandidate.find(e => e === kakaoUser.email)) {
                 is_admin = true;
             }
             const userAlreadyExist = await this.usersRepository.findOne({ where: { email: kakaoUser.email } });
@@ -67,7 +68,8 @@ export class UsersService {
                     });
 
                     await queryRunner.manager.getRepository(Assets).save({
-                        User_id: newUser.id
+                        User_id: newUser.id,
+                        coin: is_admin ? 9999999 : 0
                     });
 
                     await queryRunner.commitTransaction();
@@ -113,7 +115,7 @@ export class UsersService {
     
     async getUserProfile(myId: number, targetId: number): Promise<Users | OthersProfileDto> {
         const user = await this.usersRepository.findOneOrFail({ where: { id: targetId }})
-        .catch((e) => { throw new ForbiddenException('Access denied') });
+                    .catch((e) => { throw new ForbiddenException('Access denied') });
         if (user.id === myId) {
             return user;
         }
@@ -143,13 +145,40 @@ export class UsersService {
     
     async getUsersHostedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
-        .select('alarms.Game_id, h.*')
         .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :myId', { myId })
+        .select([
+            'alarms.id',
+            'alarms.time',
+            'alarms.is_repeated',
+            'alarms.is_private',
+            'alarms.music_volume',
+            'alarms.max_members',
+            'alarms.created_at', 
+            'h.id', 
+            'h.nickname',
+            'h.thumbnail_image_url'
+        ])
         .getMany();
     }
     async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
-        .innerJoinAndSelect('alarms.Members', 'm', 'm.id = :myId', { myId })
+        .innerJoinAndSelect('alarms.Game', 'game')
+        .innerJoinAndSelect('alarms.Members', 'members', 'members.id = :myId', { myId })
+        .select([
+            'alarms.id',
+            'alarms.time',
+            'alarms.is_repeated',
+            'alarms.is_private',
+            'alarms.music_volume',
+            'alarms.max_members',
+            'alarms.created_at', 
+            'game.id', 
+            'game.name',
+            'game.thumbnail_url',
+            'members.id', 
+            'members.nickname',
+            'members.thumbnail_image_url'
+        ])
         .getMany();
     }
     
