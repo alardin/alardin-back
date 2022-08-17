@@ -56,7 +56,7 @@ export class MateController {
             status: 200,
             type: OnlyStatusResponse
         })
-    @Post()
+    @Post('response')
     async responseToMateRequest(@User() user, @Body() { senderId, response }) {
         return await this.mateService.responseToMateRequest(user, senderId, response);
     }
