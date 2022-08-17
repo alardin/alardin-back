@@ -15,9 +15,11 @@ import { AgoraModule } from 'src/external/agora/agora.module';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
+import { Alarms } from 'src/entities/alarms.entity';
+import { PushNotificationModule } from 'src/push-notification/push-notification.module';
 
 @Module({
-  imports: [GameModule, SingleModule, AgoraModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlay, GamePlayKeywords, GamePlayImages, GameUsedImages, GamesRatings, AlarmMembers ])],
+  imports: [GameModule, PushNotificationModule, SingleModule, AgoraModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlay, GamePlayKeywords, GamePlayImages, GameUsedImages, GamesRatings, AlarmMembers, Alarms ])],
   providers: [GameService],
   controllers: [GameController],
   exports: [GameService]
