@@ -17,7 +17,7 @@ export class MateRequestRecords {
     Receiver_id: number | null;
 
     @ManyToOne(() => Users, users => users.Send_requests)
-    @JoinColumn({ name: 'Requester_id', referencedColumnName: 'id'})
+    @JoinColumn({ name: 'Sender_id', referencedColumnName: 'id'})
     Sender: Users;
     
     @ManyToOne(() => Users, users => users.Receiveds)
