@@ -5,17 +5,14 @@ import { Users } from "./users.entity";
 @Entity({schema: 'alardin', name: 'alarm_play_records'})
 export class AlarmPlayRecords {
 
-    @PrimaryColumn()
-    id: number;
-    
     @CreateDateColumn()
     created_at: Date;
 
-    @Column('int', { name: 'User_id', nullable: true })
-    User_id: number | null;
+    @Column('int', { name: 'User_id', primary: true })
+    User_id: number;
 
-    @Column('int', { name: 'Alarm_result_id', nullable: true })
-    Alarm_result_id: number | null;
+    @Column('int', { name: 'Alarm_result_id', primary: true })
+    Alarm_result_id: number;
 
     @ManyToOne(() => Users, users => users.Alarm_play_records)
     @JoinColumn([{ name: 'User_id', referencedColumnName: 'id' }])
