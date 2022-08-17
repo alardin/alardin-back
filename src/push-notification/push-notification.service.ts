@@ -30,6 +30,14 @@ export class PushNotificationService {
                         title,
                         body
                     },
+                    android: {
+                        priority: 'high'
+                    },
+                    apns:{
+                        "headers":{
+                          "apns-priority": "10"
+                        }
+                    },
                     token: deviceToken
             });
             await this.saveNotification(userId, title, body);
