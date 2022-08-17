@@ -3,9 +3,6 @@ import { Users } from "./users.entity";
 
 @Entity({ schema: 'alardin' })
 export class MateRequestRecords {
-    
-    @PrimaryGeneratedColumn()
-    id: number;
 
     @Column('varchar', { name: 'type' })
     type: string;
@@ -13,8 +10,8 @@ export class MateRequestRecords {
     @CreateDateColumn({ name: 'sended_at' })
     sended_at: Date;    
 
-    @Column({ name: 'Sender_id', nullable: true })
-    Sender_id: number | null;
+    @Column({ name: 'Sender_id', primary: true })
+    Sender_id: number;
 
     @Column({ name: 'Receiver_id', nullable: true })
     Receiver_id: number | null;
