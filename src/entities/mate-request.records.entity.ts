@@ -1,10 +1,10 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Users } from "./users.entity";
 
 @Entity({ schema: 'alardin' })
 export class MateRequestRecords {
     
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column('varchar', { name: 'type' })
@@ -16,7 +16,7 @@ export class MateRequestRecords {
     @Column({ name: 'Sender_id', nullable: true })
     Sender_id: number | null;
 
-    @Column({ name: 'Receiver_id', nullable: true})
+    @Column({ name: 'Receiver_id', nullable: true })
     Receiver_id: number | null;
 
     @ManyToOne(() => Users, users => users.Send_requests)
