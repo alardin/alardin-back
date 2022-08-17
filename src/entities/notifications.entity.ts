@@ -7,7 +7,7 @@ export class Notifications {
     id: number;
 
     @Column('int', { name: 'User_id', nullable: true })
-    User_id: string | null;
+    User_id: number | null;
 
     @Column('varchar', { name: 'title' })
     title: string;

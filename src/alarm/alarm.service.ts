@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { GamePlay } from 'src/entities/game-play.entity';
+import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { GameService } from 'src/game/game.service';
@@ -50,6 +51,12 @@ export class AlarmService {
             await queryRunner.manager.getRepository(AlarmMembers).save({
                 Alarm_id: newAlarm.id,
                 User_id: myId
+            });
+
+            await queryRunner.manager.getRepository(GameChannel).save({
+                name: String(newAlarm.id),
+                Alarm_id: newAlarm.id,
+                player_count: 0
             });
 
             const newGamePlay = await queryRunner.manager.getRepository(GamePlay).save({

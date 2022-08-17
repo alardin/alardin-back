@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsString, Matches } from "class-validator";
-import { execArgv } from "process";
 
 export class GenerateTokenDto {
     
@@ -20,7 +19,7 @@ export class GenerateTokenDto {
     })
     @IsNotEmpty()
     @Matches(/^(publisher)|(audience)$/)
-    role: string;
+    role: 'publisher' | 'audience';
     
     @ApiProperty({
         name: 'tokenType',
@@ -29,7 +28,7 @@ export class GenerateTokenDto {
     })
     @IsNotEmpty()
     @Matches(/^(userAccount)|(uid)$/)
-    tokenType: string;
+    tokenType: 'userAccount' | 'uid';
 
     @ApiProperty({
         name:' uid',

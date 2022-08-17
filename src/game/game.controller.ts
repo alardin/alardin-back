@@ -13,10 +13,7 @@ import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
 import { GenerateTokenDto } from 'src/external/dto/generate-token.dto';
 import { CreateGameDto } from './dto/create-game.dto';
-import { GameAnswerDto } from './dto/game.answer.dto';
-import { GameChannelDto } from './dto/game.channel.dto';
-import { GameInfoDto } from './dto/game.info.dto';
-import { GameSummaryDto } from './dto/game-summary.dto';
+import { JoinChannelDto } from './dto/join-channel.dto';
 import { RateGameDto, RateResponse } from './dto/rate-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
 import { GameService } from './game.service';
@@ -89,8 +86,8 @@ export class GameController {
     }
 
         @ApiOperation({
-            summary: 'agora 토큰 생성',
-            description: '커뮤니케이션을 위한 rtc 토큰 생성'
+            summary: 'agora 토큰 생성 및 채널 참가',
+            description: '커뮤니케이션을 위한 rtc 토큰 생성 및 저장된 채널에 참가'
         })
         @ApiBody({
             type: GenerateTokenDto
@@ -105,62 +102,14 @@ export class GameController {
             type: OnlyStatusResponse
         })
     @UseInterceptors(AgoraInterceptor)
-    @Post('rtc-token')
-    createChannel(
-        @Body() body: GenerateTokenDto,
+    @Post('channel/join')
+    async joinChannel(
+        @User() user,
+        @Body() body: JoinChannelDto,
         @Query('expiry') expiry: number | undefined
     ) {
-        return this.agoraService.generateRTCToken(body.channelName, body.role, body.tokenType, body.uid, expiry);
+        return await this.gameService.startGame(user.id, body.alarmId, expiry);
     }
-
-        @ApiOperation({
-            summary: '채널 종료',
-            description: 'developing - 미디어 스트림 채널 종료, 모바일과 의논'
-        })
-        @ApiBody({
-            type: GameChannelDto
-        })
-        @ApiResponse({
-            status: 200,
-            type: OnlyStatusResponse
-        })
-    @Delete('channel')
-    endChannel() {
-
-    }
-
-        @ApiOperation({
-            summary: '채널 참가',
-            description: 'developing - 미디어 스트림 채널 참가, 모바일과 의논'
-        })
-        @ApiBody({
-            type: GameChannelDto
-        })
-        @ApiResponse({
-            status: 200,
-            type: OnlyStatusResponse
-        })
-    @Post('channel/in')
-    joinChannel() {
-
-    }
-
-        @ApiOperation({
-            summary: '채널 나가기',
-            description: 'developing - 미디어 스트림 채널 나가기'
-        })
-        @ApiBody({
-            type: GameChannelDto
-        })
-        @ApiResponse({
-            status: 200,
-            type: OnlyStatusResponse
-        })
-    @Post('channel/out')
-    leaveChannel() {
-        
-    }
-
         @ApiOperation({
             summary: '게임 결과 저장'
         })

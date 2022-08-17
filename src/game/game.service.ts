@@ -3,15 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
+import { Alarms } from 'src/entities/alarms.entity';
 import { Assets } from 'src/entities/assets.entity';
 import { CoinUseRecords } from 'src/entities/coin.use.records.entity';
 import { GamePlayImages } from 'src/entities/game-play.images.entity';
 import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
+import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { Games } from 'src/entities/games.entity';
 import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
+import { AgoraService } from 'src/external/agora/agora.service';
+import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
@@ -44,6 +48,10 @@ export class GameService {
         private readonly gamesRatingsRepository: Repository<GamesRatings>,
         @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
+        @InjectRepository(Alarms)
+        private readonly alarmsRepository: Repository<Alarms>,
+        private readonly agoraService: AgoraService,
+        private readonly pushNotiService: PushNotificationService,
         private dataSource: DataSource,
 
     ) {}
@@ -216,14 +224,14 @@ export class GameService {
     }
 
     async rateGame(myId: number, gameId: number, score: number) {
-        let updatedRating; 
+        let updatedRating: number | undefined; 
         const game = await this.getGameById(gameId);
         await this.checkToOwnGame(myId, game.id);
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
-            const newRating = await queryRunner.manager.getRepository(GamesRatings).save({
+            await queryRunner.manager.getRepository(GamesRatings).save({
                 Game_id: game.id,
                 score,
             });
@@ -276,20 +284,39 @@ export class GameService {
         return 'OK';
     }
 
-    async startGame(myId: number, alarmId: number) {
+    async startGame(myId: number, alarmId: number, expiry?: number) {
+        const user = await this.usersRepository.findOneOrFail({ where: { id: myId }})
+                            .catch(_ => { throw new ForbiddenException() });
+        const alarm = await this.alarmsRepository.findOne({ where: { id: alarmId }});
+        
+        await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
         const alarmMembers = await this.alarmMembersRepository.find({
             where: {
-                Alarm_id: alarmId
+                Alarm_id: alarm.id
             },
             relations: {
                 User: true
             }
         });
-        console.log(alarmMembers)
-        return 'hi'
-        // send push to member
-        // generate image per user
+        if (!alarmMembers || !alarm) {
+            return null;
+        }
+        const rtcToken = this.agoraService.generateRTCToken(String(alarm.id), 'publisher', 'uid', user.id);
+        await this.dataSource.createQueryBuilder()
+            .update(GameChannel)
+            .set({ player_count: () => 'player_count + 1'})
+            .where('Alarm_id = :id', { id: alarm.id })
+            .andWhere('name = :name', { name: String(alarm.id) })
+            .execute();
 
+        const images = await this.getImagesForGame(user.id, alarm.Game_id);
+        const answerImage = images[Math.floor(Math.random() * images.length)]
+
+        return {
+            rtcToken,
+            images,
+            answerImage
+        };
     }
     private async checkToOwnGame(myId: number, gameId: number) {
         return await this.gamePurRepository.createQueryBuilder('gpr')

@@ -13,14 +13,13 @@ export class GameChannel {
     name: string;
 
     @IsNumber()
-    @Column({ name: 'player_count', nullable: true })
-    player_count: number | null;
+    @Column({ name: 'player_count', default: 0 })
+    player_count: number;
 
     @IsNotEmpty()
     @IsString()
     @Column({ name: 'Alarm_id' })
     Alarm_id: number;
-
 
     @OneToOne(() => Alarms)
     @JoinColumn({ name: 'Alarm_id', referencedColumnName: 'id' })

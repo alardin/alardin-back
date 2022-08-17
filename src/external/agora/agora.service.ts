@@ -7,7 +7,7 @@ export class AgoraService {
     ) {}
     private readonly AGORA_APP_ID = process.env.AGORA_APP_ID;
     private readonly AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE;
-    generateRTCToken(channelName: string, role: string, tokenType: string, uid: any, expiry?: number) {
+    generateRTCToken(channelName: string, role: 'publisher' | 'audience', tokenType: 'userAccount' | 'uid', uid: any, expiry?: number) {
         let rtcRole: number, expireTime: number, token: string; 
         switch(role) {
             case 'publisher':
