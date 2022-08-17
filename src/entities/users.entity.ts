@@ -97,8 +97,8 @@ export class Users {
         name: 'gender',
         example: 'male'
     })
-    @Column('varchar', { name: 'gender' })
-    gender: string;
+    @Column('varchar', { name: 'gender', nullable: true })
+    gender: string | null;
 
     @Column('boolean', { name: 'is_admin', default: false })
     is_admin: boolean;

@@ -65,20 +65,18 @@ export class KakaoService {
     }
 
     async getKakaoProfileTest(): Promise<KakaoAccount> {
-        const { data: {
-            id,
-            kakao_account
-        } } = await axios.get(this.kakaoMeUrl, {
+        const { data } = await axios.get(this.kakaoMeUrl, {
             headers: {
                 'Authorization': `KakaoAK ${this.kakaoAdminKey}`,
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
             },
             params: {
                 'target_id_type': 'user_id',
-                'target_id': '2358777083'
+                'target_id': '2348974855'
             }
         });
-        return kakao_account;
+        console.log(data);
+        return data;
     }
 
 }
