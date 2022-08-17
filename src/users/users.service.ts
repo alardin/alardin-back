@@ -67,11 +67,15 @@ export class UsersService {
                         refresh_token: null
                     });
 
-                    await queryRunner.manager.getRepository(Assets).save({
+                    const newAsset = await queryRunner.manager.getRepository(Assets).save({
                         User_id: newUser.id,
                         coin: is_admin ? 9999999 : 0
                     });
-
+                    await queryRunner.manager.getRepository(Users).createQueryBuilder()
+                            .update()
+                            .set({ Asset_id: newAsset.id })
+                            .where('id = :id', { id: newUser.id })
+                            .execute();
                     await queryRunner.commitTransaction();
 
                 } catch (e) {
