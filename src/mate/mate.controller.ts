@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AlarmsDto } from 'src/alarm/dto/alarms.dto';
 import { User } from 'src/common/decorators/user.decorator';
+import { AnyDataDto } from 'src/common/types/common.body.type';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { MateListDto } from './dto/mate-list.dto';
@@ -36,13 +37,16 @@ export class MateController {
             name: 'targetUserId',
             example: 2
         })
+        @ApiBody({
+            type: AnyDataDto
+        })
         @ApiResponse({
             status: 200,
             description: '성공 시 메세지 ID 리턴',
         })
     @Post()
-    async sendMateRequest(@User() user, @Query('targetUserId') targetUserId: number) {
-        return await this.mateService.sendMateRequest(user, targetUserId);
+    async sendMateRequest(@User() user, @Query('targetUserId') targetUserId, @Body() data) {
+        return await this.mateService.sendMateRequest(user, targetUserId, data);
     }
 
         @ApiOperation({

@@ -151,7 +151,8 @@ export class UsersService {
     
     async getUsersHostedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
-        .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :myId', { myId })
+        .innerJoin('alarms.Host', 'h', 'h.id = :myId', { myId })
+        .innerJoin('alarms.Members', 'members')
         .select([
             'alarms.id',
             'alarms.time',
@@ -160,16 +161,19 @@ export class UsersService {
             'alarms.music_volume',
             'alarms.max_members',
             'alarms.created_at', 
-            'h.id', 
-            'h.nickname',
-            'h.thumbnail_image_url'
+            'game.id', 
+            'game.name',
+            'game.thumbnail_url',
+            'members.id', 
+            'members.nickname',
+            'members.thumbnail_image_url'
         ])
         .getMany();
     }
     async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
-        .innerJoinAndSelect('alarms.Game', 'game')
-        .innerJoinAndSelect('alarms.Members', 'members', 'members.id = :myId', { myId })
+        .innerJoin('alarms.Game', 'game')
+        .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId })
         .select([
             'alarms.id',
             'alarms.time',

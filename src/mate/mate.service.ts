@@ -54,13 +54,13 @@ export class MateService {
         return [ ...userOfMateIreceived, ...userOfMateIsended];
     }
 
-    async sendMateRequest(me: Users, receiverId: number) {
+    async sendMateRequest(me: Users, receiverKakaoId: number, data) {
 
-        const receiver = await this.usersRepository.findOneOrFail({ where: { id: receiverId }})
+        const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
         const title = 'Mate request';
         const body = `${me.nickname} Send mate request to ${receiver.nickname}`;
-        const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body);
+        const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
 
         await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
         return messagId;
@@ -108,6 +108,22 @@ export class MateService {
             await this.validateMate(myId, m.id);
             const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
                         .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
+                        .innerJoin('alarms.Members', 'members')
+                        .select([
+                            'alarms.id',
+                            'alarms.time',
+                            'alarms.is_repeated',
+                            'alarms.is_private',
+                            'alarms.music_volume',
+                            'alarms.max_members',
+                            'alarms.created_at', 
+                            'game.id', 
+                            'game.name',
+                            'game.thumbnail_url',
+                            'members.id', 
+                            'members.nickname',
+                            'members.thumbnail_image_url'
+                        ])
                         .getMany();
             alarms = [...alarms, ...alarm]
         }

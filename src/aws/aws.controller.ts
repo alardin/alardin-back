@@ -10,7 +10,7 @@ export class AwsController {
     @Public()
     @Get()
     async test() {
-        await this.awsService.getObject('alardin-static', 'images/test2');
+        //await this.awsService.getObject('alardin-static', 'images/test2');
         return 'hi';
     }
 }
