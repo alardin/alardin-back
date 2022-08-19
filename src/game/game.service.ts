@@ -15,7 +15,6 @@ import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
-import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
@@ -45,13 +44,10 @@ export class GameService {
         @InjectRepository(GamePlayImages)
         private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
         @InjectRepository(GamesRatings)
-        private readonly gamesRatingsRepository: Repository<GamesRatings>,
-        @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         private readonly agoraService: AgoraService,
-        private readonly pushNotiService: PushNotificationService,
         private dataSource: DataSource,
 
     ) {}
@@ -301,6 +297,7 @@ export class GameService {
             return null;
         }
         const rtcToken = this.agoraService.generateRTCToken(String(alarm.id), 'publisher', 'uid', user.id);
+        const rtmToken = this.agoraService.generateRtmToken(user.id);
         await this.dataSource.createQueryBuilder()
             .update(GameChannel)
             .set({ player_count: () => 'player_count + 1'})
@@ -313,6 +310,7 @@ export class GameService {
 
         return {
             rtcToken,
+            rtmToken,
             images,
             answerImage
         };

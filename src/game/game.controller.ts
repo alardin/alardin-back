@@ -1,7 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { userInfo } from 'os';
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
@@ -10,7 +9,6 @@ import { AgoraInterceptor } from 'src/common/interceptors/agora.interceptor';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
 import { Users } from 'src/entities/users.entity';
-import { AgoraService } from 'src/external/agora/agora.service';
 import { GenerateTokenDto } from 'src/external/dto/generate-token.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { JoinChannelDto } from './dto/join-channel.dto';
@@ -24,7 +22,6 @@ import { GameKeywordImages } from './types/game-keyword-images.type';
 export class GameController {
     constructor(
         private readonly gameService: GameService,
-        private readonly agoraService: AgoraService
     ) {}
 
         @ApiOperation({
