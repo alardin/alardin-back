@@ -202,24 +202,23 @@ export class GameService {
                             .catch(_ => { throw new NotFoundException('Game Not Found') });
     }
 
-    async getImagesForGame(myId: number, gameId: number): Promise<GamePlayImages[]> {
+    async getImagesForGame(myId: number, gameId: number) {
         const game = await this.getGameById(gameId);
         const keywordCount = game.keyword_count;
-
-        const [ { gpk_id: randomKeywordId }] = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
+        const { id: randomKeywordId } = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
                                 .select('gpk.id')
                                 .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId: game.id })
                                 .skip(Math.floor(Math.random() * keywordCount))
-                                .limit(1)
-                                .execute();
+                                .take(1)
+                                .getOne();
         const imageCount = (await this.gamePlayKeywordsRepository
-                                .findOne({ where: { id: randomKeywordId }})).image_count;
+            .findOne({ where: { id: randomKeywordId }})).image_count;
         const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
-                                .select('gpi.*')
-                                .innerJoin('gpi.Keyword', 'k', 'k.id = :kId', { kId: randomKeywordId })
-                                .skip(Math.floor(Math.random() * (imageCount - 6)))
-                                .limit(6)
-                                .getMany();
+            .select()
+            .innerJoin('gpi.Keyword', 'k', 'k.id = :kId', { kId: randomKeywordId })
+            .skip(Math.floor(Math.random() * (imageCount - 6)))
+            .take(6)
+            .getMany();
         return selectedGPIs;
     }
 
@@ -289,7 +288,7 @@ export class GameService {
                             .catch(_ => { throw new ForbiddenException() });
         const alarm = await this.alarmsRepository.findOne({ where: { id: alarmId }});
         
-        await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
+        //await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
         const alarmMembers = await this.alarmMembersRepository.find({
             where: {
                 Alarm_id: alarm.id
@@ -323,5 +322,25 @@ export class GameService {
         .innerJoin('gpr.Game', 'g', 'g.id = :gameId', { gameId })
         .innerJoin('gpr.User', 'u', 'u.id = :myId', { myId })
         .getOne();
+    }
+
+    async test(myId: number, gameId: number) {
+        const game = await this.getGameById(gameId);
+        const keywordCount = game.keyword_count;
+        const { id: randomKeywordId } = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
+                                .select('gpk.id')
+                                .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId: game.id })
+                                .skip(Math.floor(Math.random() * keywordCount))
+                                .take(1)
+                                .getOne();
+        const imageCount = (await this.gamePlayKeywordsRepository
+            .findOne({ where: { id: randomKeywordId }})).image_count;
+        const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
+            .select()
+            .innerJoin('gpi.Keyword', 'k', 'k.id = :kId', { kId: randomKeywordId })
+            .skip(Math.floor(Math.random() * (imageCount - 6)))
+            .take(6)
+            .getMany();
+        return selectedGPIs;
     }
 }
