@@ -26,6 +26,6 @@ export class AgoraController {
 
     @Get('rtc-test')
     rtcTokenTest(@Body() { channelName, role, tokenType, uid }: GenerateRtcTokenDto, @Query('expiry') expiry) {
-        return this.agoraService.generateRTCToken(channelName, role, tokenType, uid, expiry)
+        return this.agoraService.generateRtcToken(channelName, role, tokenType, uid, expiry)
     }
 }

@@ -137,25 +137,33 @@ export class GameController {
     async rateGame(@User() user, @Body() { gameId, score }: RateGameDto) {
         return await this.gameService.rateGame(user.id, gameId, score );
     }
-
-        @ApiOperation({
-            summary: '특정 게임 조회',
-            description: 'gameId에 해당하는 게임 조회'
-        })
-        @ApiParam({
-            name: 'gameId',
-            example: 1
-        })
-        @ApiResponse({
-            status: 200,
-            type: Games
-        })
     
+    @ApiOperation({
+        summary: '게임 시작',
+        description: '게임 시작, Agora를 이용하기 위해 필요한 토큰 발행'
+    })
+    @ApiQuery({
+        name: 'alarmId',
+        example: 1
+    })
     @Post('start')
-    async startGame(@User() user, @Body() { alarmId }) {
+    async startGame(@User() user, @Query('alarmId') alarmId) {
         return await this.gameService.startGame(user.id, alarmId);
     }
 
+
+    @ApiOperation({
+        summary: '특정 게임 조회',
+        description: 'gameId에 해당하는 게임 조회'
+    })
+    @ApiParam({
+        name: 'gameId',
+        example: 1
+    })
+    @ApiResponse({
+        status: 200,
+        type: Games
+    })
     @Public()
     @Get(':gameId')
     async getGameDetailById(@User() user, gameId: number) {

@@ -7,7 +7,7 @@ export class AgoraService {
     ) {}
     private readonly AGORA_APP_ID = process.env.AGORA_APP_ID;
     private readonly AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE;
-    generateRTCToken(channelName: string, role: 'publisher' | 'audience', tokenType: 'userAccount' | 'uid', uid: any, expiry?: number) {
+    generateRtcToken(channelName: string, role: 'publisher' | 'audience', tokenType: 'userAccount' | 'uid', uid: any, expiry?: number) {
         let rtcRole: number, token: string; 
         switch(role) {
             case 'publisher':
@@ -39,9 +39,7 @@ export class AgoraService {
             default:
                 throw new BadRequestException();
         }
-        return {
-            rtcToken: token
-        };
+        return token;
     }
 
     

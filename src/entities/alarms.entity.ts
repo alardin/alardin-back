@@ -57,8 +57,8 @@ export class Alarms {
     is_private: boolean;
 
     @ApiProperty({
-        name: 'music_volume',
-        example: 70
+        name: 'music_name',
+        example: 'Cooped Up'
     })
     @IsString()
     @IsNotEmpty()

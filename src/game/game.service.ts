@@ -15,6 +15,7 @@ import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
+import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
@@ -43,11 +44,12 @@ export class GameService {
         private readonly gamePlayKeywordsRepository: Repository<GamePlayKeywords>,
         @InjectRepository(GamePlayImages)
         private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
-        @InjectRepository(GamesRatings)
+        @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         private readonly agoraService: AgoraService,
+        private readonly pushNotiService: PushNotificationService,
         private dataSource: DataSource,
 
     ) {}
@@ -210,7 +212,11 @@ export class GameService {
         const imageCount = (await this.gamePlayKeywordsRepository
             .findOne({ where: { id: randomKeywordId }})).image_count;
         const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
-            .select()
+            .select([
+                'gpi.id',
+                'k.keyword',
+                'gpi.url'
+            ])
             .innerJoin('gpi.Keyword', 'k', 'k.id = :kId', { kId: randomKeywordId })
             .skip(Math.floor(Math.random() * (imageCount - 6)))
             .take(6)
@@ -282,22 +288,12 @@ export class GameService {
     async startGame(myId: number, alarmId: number, expiry?: number) {
         const user = await this.usersRepository.findOneOrFail({ where: { id: myId }})
                             .catch(_ => { throw new ForbiddenException() });
-        const alarm = await this.alarmsRepository.findOne({ where: { id: alarmId }});
-        
-        //await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
-        const alarmMembers = await this.alarmMembersRepository.find({
-            where: {
-                Alarm_id: alarm.id
-            },
-            relations: {
-                User: true
-            }
-        });
-        if (!alarmMembers || !alarm) {
-            return null;
-        }
-        const rtcToken = this.agoraService.generateRTCToken(String(alarm.id), 'publisher', 'uid', user.id);
-        const rtmToken = this.agoraService.generateRtmToken(user.id);
+        const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
+                            .catch(_ => { throw new ForbiddenException() });
+        // await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
+        console.log('hi')
+        const rtcToken = this.agoraService.generateRtcToken(String(alarm.id), 'publisher', 'uid', user.id, expiry);
+        const rtmToken = this.agoraService.generateRtmToken(String(user.id), expiry);
         await this.dataSource.createQueryBuilder()
             .update(GameChannel)
             .set({ player_count: () => 'player_count + 1'})
