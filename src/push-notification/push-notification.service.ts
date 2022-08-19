@@ -19,13 +19,10 @@ export class PushNotificationService {
         credential: admin.credential.applicationDefault()
     });
 
-    async sendPush(userId: number, deviceToken: string, title: string, body: string) {
+    async sendPush(userId: number, deviceToken: string, title: string, body: string, data?) {
         try {
             const messageId = await this.connection.messaging().send({
-                    data: {
-                        title,
-                        body
-                    },
+                    data: data ? data : {},
                     notification: {
                         title,
                         body
