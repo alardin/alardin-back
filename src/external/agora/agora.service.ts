@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { RtcTokenBuilder, RtcRole } from 'agora-access-token';
+import { RtcTokenBuilder, RtcRole, RtmTokenBuilder, RtmRole } from 'agora-access-token';
 @Injectable()
 export class AgoraService {
     constructor(
@@ -45,4 +45,22 @@ export class AgoraService {
             rtcToken: token
         };
     }
+
+    
+    // generateRtmToken(rtm_uid: string){
+
+    //     expireTimeInSeconds = uint32(3600)
+    //     currentTimestamp := uint32(time.Now().UTC().Unix())
+    //     expireTimestamp := currentTimestamp + expireTimeInSeconds
+    
+    //     result, err := rtmtokenbuilder.BuildToken(appID, appCertificate, rtm_uid, rtmtokenbuilder.RoleRtmUser, expireTimestamp)
+    //     if err != nil {
+    //         fmt.Println(err)
+    //     } else {
+    //         fmt.Printf("Rtm Token: %s\n", result)
+    
+    //     rtm_token = result
+    
+    //     }
+    // }
 }

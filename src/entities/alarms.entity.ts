@@ -19,6 +19,15 @@ export class Alarms {
     id: number;
 
     @ApiProperty({
+        name: 'name',
+        example: 'alarm 1'
+    })
+    @IsString()
+    @IsNotEmpty()
+    @MaxLength(30)
+    @Column({ name: 'name', default: '' })
+    name: string;
+    @ApiProperty({
         name: 'time',
         example: '15:30'
     })
@@ -46,6 +55,15 @@ export class Alarms {
     @IsNotEmpty()
     @Column()
     is_private: boolean;
+
+    @ApiProperty({
+        name: 'music_volume',
+        example: 70
+    })
+    @IsString()
+    @IsNotEmpty()
+    @Column({ name: 'musice_name', default: '' })
+    music_name: string;
 
     @ApiProperty({
         name: 'music_volume',
