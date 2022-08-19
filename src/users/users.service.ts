@@ -148,6 +148,7 @@ export class UsersService {
     async getUsersHostedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
         .innerJoin('alarms.Host', 'h', 'h.id = :myId', { myId })
+        .innerJoin('alarms.Game', 'game')
         .innerJoin('alarms.Members', 'members')
         .select([
             'alarms.id',
