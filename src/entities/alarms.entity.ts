@@ -62,7 +62,7 @@ export class Alarms {
     })
     @IsString()
     @IsNotEmpty()
-    @Column({ name: 'musice_name', default: '' })
+    @Column({ name: 'music_name', default: '' })
     music_name: string;
 
     @ApiProperty({
