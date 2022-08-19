@@ -25,7 +25,7 @@ export class MateController {
         })
     @Get()
     async getMateList(@User() user) {
-        return await this.mateService.getMateList(user.id, user.kakao_access_token);
+        return await this.mateService.getMateList(user.id);
     }
     
         @ApiOperation({
@@ -81,18 +81,13 @@ export class MateController {
             summary: '메이트들의 알람 조회',
             description: '메이트 관계를 맺고 있는 사람들의 알람 목록 조회'
         })
-        @ApiQuery({
-            name: 'mateId',
-            description: '메이트를 맺고 있는 사람의 id',
-            example: '2'
-        })
         @ApiResponse({
             status: 200,
             type: [AlarmsDto]
         })
     @Get('alarms')
-    async getMateAlarms(@User() user, @Query('mateId') mateId: number) {
-        return await this.mateService.getAlarmsofMate(user.id, mateId);
+    async getMateAlarms(@User() user) {
+        return await this.mateService.getAlarmsofMate(user.id);
     }
 
 

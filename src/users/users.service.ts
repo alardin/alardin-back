@@ -44,7 +44,9 @@ export class UsersService {
                 const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);
                 await this.updateUser(userAlreadyExist.id, {
                     device_token: tokens.deviceToken,
-                    refresh_token: hashedRT
+                    refresh_token: hashedRT,
+                    kakao_access_token: tokens.accessToken,
+                    kakao_refresh_token: tokens.refreshToken
                 });
                 return appTokens;
             } else {

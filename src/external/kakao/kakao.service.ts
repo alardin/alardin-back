@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
@@ -51,6 +51,7 @@ export class KakaoService {
     }
 
     async getKakaoFriends(accessToken: string): Promise<KakaoFriend[]> {
+        console.log('hi');
         const {
             data: {
                 elements
@@ -59,8 +60,8 @@ export class KakaoService {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
-        });
-        
+        }).catch(e => { throw new ForbiddenException(e) });
+        console.log(elements)
         return elements;
     }
 

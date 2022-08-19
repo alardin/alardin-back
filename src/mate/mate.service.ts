@@ -23,24 +23,35 @@ export class MateService {
         private readonly alarmsRepository: Repository<Alarms>,
     ) {}
 
-    async getMateList(myId: number, kakaoAccessToken: string) {
+    async getMateList(myId: number) {
 
-        const mates = await this.matesRepository.find({
-            where: [
-                { Sender_id: myId },
-                { Receiver_id: myId }
-            ],
-            select: ['id', 'Sender', 'Receiver'],
-            relations: {
-                Sender: true,
-                Receiver: true
-            }
-        });
-        const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
-        return {
-            mates,
-            friends
-        };
+        const receivedMates = await this.matesRepository.createQueryBuilder('m')
+                                    .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
+                                    .innerJoin('m.Sender', 's')
+                                    .select([
+                                        'm.id',
+                                        's.id',
+                                        's.nickname',
+                                        's.thumbnail_image_url',
+                                        's.kakao_id'
+                                    ])
+                                    .getMany();
+        const sendedMates = await this.matesRepository.createQueryBuilder('m')
+                                    .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
+                                    .innerJoin('m.Receiver', 'r')
+                                    .select([
+                                        'm.id',
+                                        'r.id',
+                                        'r.nickname',
+                                        'r.thumbnail_image_url',
+                                        'r.kakao_id'
+                                    ])
+                                    .getMany();
+        const userOfMateIreceived = receivedMates.map(m => m.Sender);
+        const userOfMateIsended = sendedMates.map(m => m.Receiver);
+        // const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
+    
+        return [ ...userOfMateIreceived, ...userOfMateIsended];
     }
 
     async sendMateRequest(me: Users, receiverId: number) {
@@ -90,11 +101,17 @@ export class MateService {
         }
     }
 
-    async getAlarmsofMate(myId: number, mateId: number) {
-        await this.validateMate(myId, mateId);
-        return await this.alarmsRepository.createQueryBuilder('alarms')
-            .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId })
-            .getMany();
+    async getAlarmsofMate(myId: number) {
+        const mates = await this.getMateList(myId);
+        let alarms = [];
+        for await (let m of mates) {
+            await this.validateMate(myId, m.id);
+            const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
+                        .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
+                        .getMany();
+            alarms = [...alarms, ...alarm]
+        }
+        return alarms;  
     }
 
     private async getMateById(id: number) {
