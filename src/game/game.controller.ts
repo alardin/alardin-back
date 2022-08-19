@@ -9,7 +9,6 @@ import { AgoraInterceptor } from 'src/common/interceptors/agora.interceptor';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
 import { Users } from 'src/entities/users.entity';
-import { GenerateTokenDto } from 'src/external/dto/generate-token.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { JoinChannelDto } from './dto/join-channel.dto';
 import { RateGameDto, RateResponse } from './dto/rate-game.dto';
@@ -87,7 +86,7 @@ export class GameController {
             description: '커뮤니케이션을 위한 rtc 토큰 생성 및 저장된 채널에 참가'
         })
         @ApiBody({
-            type: GenerateTokenDto
+            type: JoinChannelDto
         })
         @ApiQuery({
             name: 'expiry',
