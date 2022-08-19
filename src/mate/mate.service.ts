@@ -109,6 +109,7 @@ export class MateService {
             const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
                         .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
                         .innerJoin('alarms.Members', 'members')
+                        .innerJoin('alarms.Game', 'game')
                         .select([
                             'alarms.id',
                             'alarms.time',
