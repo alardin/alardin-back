@@ -4,10 +4,10 @@ import { KakaoService } from './external/kakao/kakao.service';
 @Injectable()
 export class AppService {
     constructor(
-        private readonly kakaoServce: KakaoService,
+        private readonly kakaoService: KakaoService,
     ) {}
 
     async test() {
-        await this.kakaoServce.getKakaoProfileTest();
+        await this.kakaoService.getKakaoProfileTest();
     }
 }

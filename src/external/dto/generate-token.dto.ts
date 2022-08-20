@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsString, Matches } from "class-validator";
 
-export class GenerateTokenDto {
+export class GenerateRtcTokenDto {
     
     @ApiProperty({
         name: 'channelName',

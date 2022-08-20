@@ -55,7 +55,9 @@ export class MateService {
     }
 
     async sendMateRequest(me: Users, receiverKakaoId: number, data) {
-
+        if (receiverKakaoId) {
+            return null;
+        }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
         const title = 'Mate request';

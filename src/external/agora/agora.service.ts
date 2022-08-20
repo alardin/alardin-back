@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { RtcTokenBuilder, RtcRole } from 'agora-access-token';
+import { RtcTokenBuilder, RtcRole, RtmTokenBuilder, RtmRole } from 'agora-access-token';
 @Injectable()
 export class AgoraService {
     constructor(
@@ -7,8 +7,8 @@ export class AgoraService {
     ) {}
     private readonly AGORA_APP_ID = process.env.AGORA_APP_ID;
     private readonly AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE;
-    generateRTCToken(channelName: string, role: 'publisher' | 'audience', tokenType: 'userAccount' | 'uid', uid: any, expiry?: number) {
-        let rtcRole: number, expireTime: number, token: string; 
+    generateRtcToken(channelName: string, role: 'publisher' | 'audience', tokenType: 'userAccount' | 'uid', uid: any, expiry?: number) {
+        let rtcRole: number, token: string; 
         switch(role) {
             case 'publisher':
                 rtcRole = RtcRole.PUBLISHER;
@@ -22,9 +22,7 @@ export class AgoraService {
                 throw new BadRequestException();
         }
 
-        if (!expiry) {
-            expireTime = 3600;
-        }
+        const expireTime: number = expiry ? expiry : 3600;
 
         const now = Math.floor(Date.now() / 1000);
         const previlegeExpireTime = now + expireTime;
@@ -42,5 +40,18 @@ export class AgoraService {
                 throw new BadRequestException();
         }
         return token;
+    }
+
+    generateRtmToken(account: string | number, expiry?: number){
+        if (!account) {
+            return null;
+        }
+        const expireTime: number = expiry ? expiry : 3600;
+        const now = Math.floor(Date.now() / 1000);
+        const previlegeExpireTime = now + expireTime;
+        const rtmToken = RtmTokenBuilder.buildToken(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, account, RtmRole.Rtm_User, previlegeExpireTime);
+        
+        return rtmToken;
+
     }
 }

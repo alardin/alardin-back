@@ -16,15 +16,12 @@ import { CreateAlarmDto } from './dto/create-alarm.dto';
 export class AlarmService {
     constructor(
         private readonly mateService: MateService,
-        private readonly gameService: GameService,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @InjectRepository(GamePurchaseRecords)
         private readonly gamePurRepository: Repository<GamePurchaseRecords>,
-        @InjectRepository(GameUsedImages)
-        private readonly gameUsedImagesRepository: Repository<GameUsedImages>,
         private dataSource: DataSource
     ) {}
 
@@ -59,18 +56,10 @@ export class AlarmService {
                 player_count: 0
             });
 
-            const newGamePlay = await queryRunner.manager.getRepository(GamePlay).save({
+            await queryRunner.manager.getRepository(GamePlay).save({
                 Alarm_id: newAlarm.id
             });
             
-            const selectedGPIs = await this.gameService.getImagesForGame(myId, isOwned.Game_id);
-
-            for await (let gpi of selectedGPIs) {
-                await queryRunner.manager.getRepository(GameUsedImages).save({
-                    Game_play_id: newGamePlay.id,
-                    Game_play_image_id: gpi.id
-                });
-            }
             await queryRunner.commitTransaction();
             
             // push alarm

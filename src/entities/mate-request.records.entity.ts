@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Users } from "./users.entity";
 
 @Entity({ schema: 'alardin' })
@@ -17,7 +17,7 @@ export class MateRequestRecords {
     Receiver_id: number | null;
 
     @ManyToOne(() => Users, users => users.Send_requests)
-    @JoinColumn({ name: 'Requester_id', referencedColumnName: 'id'})
+    @JoinColumn({ name: 'Sender_id', referencedColumnName: 'id'})
     Sender: Users;
     
     @ManyToOne(() => Users, users => users.Receiveds)

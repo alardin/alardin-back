@@ -35,7 +35,8 @@ export class MateController {
         })
         @ApiQuery({
             name: 'targetUserId',
-            example: 2
+            example: 212312312,
+            description: '타겟 유저의 카카오 id'
         })
         @ApiBody({
             type: AnyDataDto
@@ -60,7 +61,7 @@ export class MateController {
             status: 200,
             type: OnlyStatusResponse
         })
-    @Post()
+    @Post('response')
     async responseToMateRequest(@User() user, @Body() { senderId, response }) {
         return await this.mateService.responseToMateRequest(user, senderId, response);
     }

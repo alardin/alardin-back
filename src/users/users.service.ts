@@ -69,11 +69,15 @@ export class UsersService {
                         refresh_token: null
                     });
 
-                    await queryRunner.manager.getRepository(Assets).save({
+                    const newAsset = await queryRunner.manager.getRepository(Assets).save({
                         User_id: newUser.id,
                         coin: is_admin ? 9999999 : 0
                     });
-
+                    await queryRunner.manager.getRepository(Users).createQueryBuilder()
+                            .update()
+                            .set({ Asset_id: newAsset.id })
+                            .where('id = :id', { id: newUser.id })
+                            .execute();
                     await queryRunner.commitTransaction();
 
                 } catch (e) {
@@ -104,6 +108,9 @@ export class UsersService {
     */
    
     async refreshTokens(userId: number, refreshToken: string) {
+        if (!refreshToken) {
+            return null;
+        }
         const { id, email, refresh_token } = await this.getUser(userId);
         const tokenMatched = await bcrypt.compare(refreshToken, refresh_token);
         if (!tokenMatched) {
@@ -138,6 +145,10 @@ export class UsersService {
     }
     
     async getUserAlarmRecords(myId: number, skip: number, take: number): Promise<AlarmPlayRecords[]> {
+        if (!skip || !take) {
+            skip = 0;
+            take = 100;
+        }
         return await this.alarmPlayRecordsRepository.createQueryBuilder('apr')
         .innerJoinAndSelect('apr.User', 'u', 'u.id = :myId', { myId })
         .skip(skip)
