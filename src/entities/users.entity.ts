@@ -15,6 +15,7 @@ import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Notifications } from "./notifications.entity";
 import { MateRequestRecords } from "./mate-request.records.entity";
 import { PremiumRefunds } from "./premium.refunds.entity";
+import { GameChannel } from "./game.channel.entity";
 
 @Entity({ schema: 'alardin', name: 'users' })
 export class Users {

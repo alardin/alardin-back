@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AlarmsDto } from 'src/alarm/dto/alarms.dto';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
@@ -10,6 +11,7 @@ import { GamePlayImages } from 'src/entities/game-play.images.entity';
 import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
+import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { Games } from 'src/entities/games.entity';
 import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
@@ -42,6 +44,8 @@ export class GameService {
         private readonly assetsRepositry: Repository<Assets>,
         @InjectRepository(GamePlayKeywords)
         private readonly gamePlayKeywordsRepository: Repository<GamePlayKeywords>,
+        @InjectRepository(GameUsedImages)
+        private readonly gameUsedImagesRespotiroy: Repository<GameUsedImages>,
         @InjectRepository(GamePlayImages)
         private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
         @InjectRepository(AlarmMembers)
@@ -204,15 +208,27 @@ export class GameService {
                             .catch(_ => { throw new NotFoundException('Game Not Found') });
     }
 
-    async getImagesForGame(myId: number, gameId: number) {
-        const game = await this.getGameById(gameId);
-        const keywordCount = game.keyword_count;
-        const { id: randomKeywordId } = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
-                                .select('gpk.id')
-                                .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId: game.id })
+    private async getRandomKeyword(gameId: number, keywordCount: number) {
+        const { id: randomKeywordId, keyword } = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
+                                .select([
+                                    'gpk.id',
+                                    'gpk.keyword'
+                                ])
+                                .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId })
                                 .skip(Math.floor(Math.random() * keywordCount))
                                 .take(1)
                                 .getOne();
+        return { randomKeywordId, keyword };    
+    }
+    async getImagesForGame(myId: number, gameId: number, except?: number) {
+        const game = await this.getGameById(gameId);
+        const keywordCount = game.keyword_count;
+        let { randomKeywordId, keyword } = await this.getRandomKeyword(game.id, keywordCount);
+        while(except && randomKeywordId === except) {
+            const newKeyword = await this.getRandomKeyword(game.id, keywordCount);
+            keyword = newKeyword.keyword;
+            randomKeywordId = newKeyword.randomKeywordId; 
+        }
         const imageCount = (await this.gamePlayKeywordsRepository
             .findOne({ where: { id: randomKeywordId }})).image_count;
         const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
@@ -225,7 +241,11 @@ export class GameService {
             .skip(Math.floor(Math.random() * (imageCount - 6)))
             .take(6)
             .getMany();
-        return selectedGPIs;
+        return {
+            randomKeywordId,
+            keyword,
+            selectedGPIs
+        }
     }
 
     async rateGame(myId: number, gameId: number, score: number) {
@@ -307,14 +327,35 @@ export class GameService {
             .andWhere('name = :name', { name: String(alarm.id) })
             .execute();
 
-        const images = await this.getImagesForGame(user.id, alarm.Game_id);
-        const answerIndex = Math.floor(Math.random() * images.length)
+        const images = await this.gameUsedImagesRespotiroy.createQueryBuilder('gui')
+                .select([
+                    'gui.keyword',
+                    'gpi.url'
+
+                ])
+                .innerJoin('gui.Game_play_image', 'gpi')
+                .innerJoin('gpi.Keyword', 'k')
+                .where('gui.Game_channel_id = :id', { id: alarm.id })
+                .getMany();
+        const images1 = images.slice(0,6);
+        const player1Keyword = images1[0].keyword;
+        const player1Images = images1.map(i => i.Game_play_image.url);
+        const player1AnswerIndex = Math.floor(Math.random() * player1Images.length);
+
+        const images2 = images.slice(6);
+        const player2Keyword = images2[0].keyword;
+        const player2Images = images2.map(i => i.Game_play_image.url);
+        const player2AnswerIndex = Math.floor(Math.random() * images2.length);
 
         return {
             rtcToken,
             rtmToken,
-            images,
-            answerIndex,
+            player1Keyword,
+            player1Images,
+            player1AnswerIndex,
+            player2Keyword,
+            player2Images,
+            player2AnswerIndex,
             channelName: String(alarm.id)
         };
     }

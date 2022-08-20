@@ -2,7 +2,6 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
-import { GamePlay } from 'src/entities/game-play.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
@@ -16,6 +15,7 @@ import { CreateAlarmDto } from './dto/create-alarm.dto';
 export class AlarmService {
     constructor(
         private readonly mateService: MateService,
+        private readonly gameService: GameService,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectRepository(AlarmMembers)
@@ -50,16 +50,28 @@ export class AlarmService {
                 User_id: myId
             });
 
-            await queryRunner.manager.getRepository(GameChannel).save({
+            const newChannel = await queryRunner.manager.getRepository(GameChannel).save({
                 name: String(newAlarm.id),
                 Alarm_id: newAlarm.id,
                 player_count: 0
             });
+            const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
+            const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
 
-            await queryRunner.manager.getRepository(GamePlay).save({
-                Alarm_id: newAlarm.id
-            });
-            
+            for await (let img of images1) {
+                await queryRunner.manager.getRepository(GameUsedImages).save({
+                    Game_channel_id: newChannel.id,
+                    keyword: keyword1,
+                    Game_play_image_id: img.id
+                });
+            }
+            for await (let img of images2) {
+                await queryRunner.manager.getRepository(GameUsedImages).save({
+                    Game_channel_id: newChannel.id,
+                    keyword: keyword2,
+                    Game_play_image_id: img.id
+                });
+            }
             await queryRunner.commitTransaction();
             
             // push alarm
