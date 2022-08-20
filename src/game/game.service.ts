@@ -286,6 +286,7 @@ export class GameService {
     async startGame(myId: number, alarmId: number, expiry?: number) {
         const user = await this.usersRepository.findOneOrFail({ where: { id: myId }})
                             .catch(_ => { throw new ForbiddenException() });
+<<<<<<< Updated upstream
         const alarm = await this.alarmsRepository.findOne({ where: { id: alarmId }});
         
         //await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
@@ -301,6 +302,13 @@ export class GameService {
             return null;
         }
         const rtcToken = this.agoraService.generateRTCToken(String(alarm.id), 'publisher', 'uid', user.id);
+=======
+        const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
+                            .catch(_ => { throw new ForbiddenException() });
+        // await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
+        const rtcToken = this.agoraService.generateRtcToken(String(alarm.id), 'publisher', 'uid', user.id, expiry);
+        const rtmToken = this.agoraService.generateRtmToken(String(user.id), expiry);
+>>>>>>> Stashed changes
         await this.dataSource.createQueryBuilder()
             .update(GameChannel)
             .set({ player_count: () => 'player_count + 1'})

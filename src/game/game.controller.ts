@@ -152,8 +152,8 @@ export class GameController {
         type: StartGameDto
     })
     @Post('start')
-    async startGame(@User() user, @Query('alarmId') alarmId) {
-        return await this.gameService.startGame(user.id, alarmId);
+    async startGame(@User() user, @Query('alarmId') alarmId, @Query('expiry') expiry) {
+        return await this.gameService.startGame(user.id, alarmId, expiry);
     }
 
 
