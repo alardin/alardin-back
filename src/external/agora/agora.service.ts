@@ -40,10 +40,8 @@ export class AgoraService {
                 throw new BadRequestException();
         }
         return token;
-<<<<<<< HEAD
     }
 
-    
     generateRtmToken(account: string | number, expiry?: number){
         
         const expireTime: number = expiry ? expiry : 3600;
@@ -52,7 +50,6 @@ export class AgoraService {
         const rtmToken = RtmTokenBuilder.buildToken(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, account, RtmRole.Rtm_User, previlegeExpireTime);
         
         return rtmToken;
-=======
->>>>>>> develop
+
     }
 }

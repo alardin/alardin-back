@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { GenerateRtcTokenDto } from '../dto/generate-token.dto';
 import { AgoraService } from './agora.service';
 
 @ApiTags('agora')
