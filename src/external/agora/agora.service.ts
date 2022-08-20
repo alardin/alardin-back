@@ -40,6 +40,7 @@ export class AgoraService {
                 throw new BadRequestException();
         }
         return token;
+<<<<<<< HEAD
     }
 
     
@@ -51,5 +52,7 @@ export class AgoraService {
         const rtmToken = RtmTokenBuilder.buildToken(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, account, RtmRole.Rtm_User, previlegeExpireTime);
         
         return rtmToken;
+=======
+>>>>>>> develop
     }
 }

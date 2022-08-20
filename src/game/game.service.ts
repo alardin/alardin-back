@@ -302,13 +302,14 @@ export class GameService {
             .execute();
 
         const images = await this.getImagesForGame(user.id, alarm.Game_id);
-        const answerImage = images[Math.floor(Math.random() * images.length)]
+        const answerIndex = Math.floor(Math.random() * images.length)
 
         return {
             rtcToken,
             rtmToken,
             images,
-            answerImage
+            answerIndex,
+            channelName: String(alarm.id)
         };
     }
     private async checkToOwnGame(myId: number, gameId: number) {

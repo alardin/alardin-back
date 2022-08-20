@@ -13,6 +13,7 @@ import { CreateGameDto } from './dto/create-game.dto';
 import { JoinChannelDto } from './dto/join-channel.dto';
 import { RateGameDto, RateResponse } from './dto/rate-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
+import { StartGameDto } from './dto/start-game.response.dto';
 import { GameService } from './game.service';
 import { GameKeywordImages } from './types/game-keyword-images.type';
 
@@ -146,11 +147,13 @@ export class GameController {
         name: 'alarmId',
         example: 1
     })
+    @ApiResponse({
+        type: StartGameDto
+    })
     @Post('start')
     async startGame(@User() user, @Query('alarmId') alarmId) {
         return await this.gameService.startGame(user.id, alarmId);
     }
-
 
     @ApiOperation({
         summary: '특정 게임 조회',
