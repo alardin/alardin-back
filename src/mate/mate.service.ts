@@ -100,6 +100,7 @@ export class MateService {
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
+        return "OK";
     }
 
     async getAlarmsofMate(myId: number) {
