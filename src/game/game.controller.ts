@@ -83,31 +83,6 @@ export class GameController {
     }
 
         @ApiOperation({
-            summary: 'agora 토큰 생성 및 채널 참가',
-            description: '커뮤니케이션을 위한 rtc 토큰 생성 및 저장된 채널에 참가'
-        })
-        @ApiBody({
-            type: JoinChannelDto
-        })
-        @ApiQuery({
-            name: 'expiry',
-            description: '채널 만료 시간, 제공하지 않으면 3600이 기본값 (1일)',
-            example: 3600
-        })
-        @ApiResponse({
-            status: 201,
-            type: OnlyStatusResponse
-        })
-    @UseInterceptors(AgoraInterceptor)
-    @Post('channel/join')
-    async joinChannel(
-        @User() user,
-        @Body() body: JoinChannelDto,
-        @Query('expiry') expiry: number | undefined
-    ) {
-        return await this.gameService.startGame(user.id, body.alarmId, expiry);
-    }
-        @ApiOperation({
             summary: '게임 결과 저장'
         })
         @ApiBody({
@@ -121,7 +96,6 @@ export class GameController {
     async saveGame(@User() user, @Body() body: SaveGameDto) {
         return await this.gameService.saveGame(user.id, body);
     }
-
 
         @ApiOperation({
             summary: '게임 평가',
@@ -150,10 +124,12 @@ export class GameController {
     @ApiResponse({
         type: StartGameDto
     })
+    @UseInterceptors(AgoraInterceptor)
     @Post('start')
     async startGame(@User() user, @Query('alarmId') alarmId) {
         return await this.gameService.startGame(user.id, alarmId);
     }
+
 
     @ApiOperation({
         summary: '특정 게임 조회',
