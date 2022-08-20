@@ -41,8 +41,6 @@ export class AgoraService {
             default:
                 throw new BadRequestException();
         }
-        return {
-            rtcToken: token
-        };
+        return token;
     }
 }

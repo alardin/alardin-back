@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { userInfo } from 'os';
+
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
@@ -10,12 +10,11 @@ import { AgoraInterceptor } from 'src/common/interceptors/agora.interceptor';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
 import { Users } from 'src/entities/users.entity';
-import { AgoraService } from 'src/external/agora/agora.service';
-import { GenerateTokenDto } from 'src/external/dto/generate-token.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { JoinChannelDto } from './dto/join-channel.dto';
 import { RateGameDto, RateResponse } from './dto/rate-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
+import { StartGameDto } from './dto/start-game.response.dto';
 import { GameService } from './game.service';
 import { GameKeywordImages } from './types/game-keyword-images.type';
 
@@ -24,7 +23,6 @@ import { GameKeywordImages } from './types/game-keyword-images.type';
 export class GameController {
     constructor(
         private readonly gameService: GameService,
-        private readonly agoraService: AgoraService
     ) {}
 
         @ApiOperation({
@@ -90,7 +88,7 @@ export class GameController {
             description: '커뮤니케이션을 위한 rtc 토큰 생성 및 저장된 채널에 참가'
         })
         @ApiBody({
-            type: GenerateTokenDto
+            type: JoinChannelDto
         })
         @ApiQuery({
             name: 'expiry',
@@ -141,25 +139,36 @@ export class GameController {
     async rateGame(@User() user, @Body() { gameId, score }: RateGameDto) {
         return await this.gameService.rateGame(user.id, gameId, score );
     }
-
-        @ApiOperation({
-            summary: '특정 게임 조회',
-            description: 'gameId에 해당하는 게임 조회'
-        })
-        @ApiParam({
-            name: 'gameId',
-            example: 1
-        })
-        @ApiResponse({
-            status: 200,
-            type: Games
-        })
     
+    @ApiOperation({
+        summary: '게임 시작',
+        description: '게임 시작, Agora를 이용하기 위해 필요한 토큰 발행'
+    })
+    @ApiQuery({
+        name: 'alarmId',
+        example: 1
+    })
+    @ApiResponse({
+        type: StartGameDto
+    })
     @Post('start')
-    async startGame(@User() user, @Body() { alarmId }) {
+    async startGame(@User() user, @Query('alarmId') alarmId) {
         return await this.gameService.startGame(user.id, alarmId);
     }
 
+
+    @ApiOperation({
+        summary: '특정 게임 조회',
+        description: 'gameId에 해당하는 게임 조회'
+    })
+    @ApiParam({
+        name: 'gameId',
+        example: 1
+    })
+    @ApiResponse({
+        status: 200,
+        type: Games
+    })
     @Public()
     @Get(':gameId')
     async getGameDetailById(@User() user, gameId: number) {
