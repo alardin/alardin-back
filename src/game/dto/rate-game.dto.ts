@@ -3,14 +3,6 @@ import { IsNotEmpty, IsNumber, IsPositive, Max, Min } from "class-validator";
 import { IsPositiveInt } from "src/common/decorators/positive.integer.validator";
 
 export class RateGameDto {
-    
-    @ApiProperty({
-        name: 'gameId',
-        example: 1
-    })
-    @IsPositiveInt()
-    @IsNotEmpty()
-    gameId: number;
 
     @ApiProperty({
         name: 'score',

@@ -238,23 +238,23 @@ export class GameService {
         try {
             await queryRunner.manager.getRepository(GamesRatings).save({
                 Game_id: game.id,
+                User_id: myId,
                 score,
             });
-            const [gameAVGScore] = await queryRunner.manager.getRepository(GamesRatings)
-                                    .createQueryBuilder('gr')
-                                    .select("AVG(gr.score)", 'gameAVGScore')
-                                    .where('gr.Game_id = :id', {id: game.id})
-                                    .getRawOne();
-            updatedRating = gameAVGScore;
+            console.log('hi');
+            const [ { gameAVGScore } ] = await queryRunner.manager.query(
+                `SELECT AVG(score) as gameAVGScore from games_ratings where Game_id = ${game.id}`
+            );
+            updatedRating = Number(Number(gameAVGScore).toFixed(2));
             await queryRunner.manager.getRepository(Games).createQueryBuilder('game')
                     .update()
-                    .set({ rating: gameAVGScore })
+                    .set({ rating: updatedRating })
                     .where("id = :id", { id: game.id })
                     .execute();
             await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();
-            throw new ForbiddenException();
+            throw new ForbiddenException(e);
         } finally {
             await queryRunner.release();
         }
@@ -325,23 +325,4 @@ export class GameService {
         .getOne();
     }
 
-    async test(myId: number, gameId: number) {
-        const game = await this.getGameById(gameId);
-        const keywordCount = game.keyword_count;
-        const { id: randomKeywordId } = await this.gamePlayKeywordsRepository.createQueryBuilder('gpk')
-                                .select('gpk.id')
-                                .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId: game.id })
-                                .skip(Math.floor(Math.random() * keywordCount))
-                                .take(1)
-                                .getOne();
-        const imageCount = (await this.gamePlayKeywordsRepository
-            .findOne({ where: { id: randomKeywordId }})).image_count;
-        const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
-            .select()
-            .innerJoin('gpi.Keyword', 'k', 'k.id = :kId', { kId: randomKeywordId })
-            .skip(Math.floor(Math.random() * (imageCount - 6)))
-            .take(6)
-            .getMany();
-        return selectedGPIs;
-    }
 }

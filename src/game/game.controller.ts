@@ -109,7 +109,7 @@ export class GameController {
             type: RateResponse
         })
     @Post(':gameId/rate')
-    async rateGame(@User() user, @Body() { gameId, score }: RateGameDto) {
+    async rateGame(@User() user, @Body() { score }: RateGameDto, @Param('gameId') gameId) {
         return await this.gameService.rateGame(user.id, gameId, score );
     }
     
