@@ -75,7 +75,6 @@ export class Alarms {
     @IsNotEmpty()
     @Column({ default: 100 })
     music_volume: number;
-
     
     @IsPositiveInt()
     @Column('int', { name: 'member_count', default: 0 })
