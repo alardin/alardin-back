@@ -96,7 +96,6 @@ export class MateService {
                 .softDelete()
                 .from(Mates)
                 .where('id = :id', { id: mate.id })
-                .andWhere('Sender_id = :id', { myId })
                 .execute();
         } catch(e) {
             throw new ForbiddenException('Invalid request');
