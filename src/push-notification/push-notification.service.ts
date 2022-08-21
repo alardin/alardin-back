@@ -37,6 +37,7 @@ export class PushNotificationService {
                     },
                     token: deviceToken
             });
+                
             await this.saveNotification(userId, title, body);
             return messageId;
         } catch (e) {

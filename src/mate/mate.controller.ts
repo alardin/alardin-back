@@ -26,7 +26,7 @@ export class MateController {
         })
     @Get()
     async getMateList(@User() user) {
-        return await this.mateService.getMateList(user);
+        return await this.mateService.getMateList(user.id, user.kakao_access_token);
     }
     
         @ApiOperation({

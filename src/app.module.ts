@@ -20,6 +20,8 @@ import { AwsService } from './aws/aws.service';
 import { AwsModule } from './aws/aws.module';
 import { MySqlConfigModule } from './config/database/config.module';
 import { MySqlConfigService } from './config/database/config.service';
+import { TaskModule } from './task/task.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -28,12 +30,13 @@ import { MySqlConfigService } from './config/database/config.service';
       useClass: MySqlConfigService,
       inject: [MySqlConfigService]
     }),
+    ScheduleModule.forRoot(),
     MateModule, 
     GameModule, 
     AlarmModule,
     AgoraModule, 
     AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule],
+    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule, TaskModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,
