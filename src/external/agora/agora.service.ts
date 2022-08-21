@@ -35,14 +35,14 @@ export class AgoraService {
         return token;
     }
 
-    generateRtmToken(account: string | number, expiry?: number){
+    generateRtmToken(account: string, expiry?: number){
         if (!account) {
             return null;
         }
         const expireTime: number = expiry ? expiry : 3600;
         const now = Math.floor(Date.now() / 1000);
         const previlegeExpireTime = now + expireTime;
-        const rtmToken = RtmTokenBuilder.buildToken(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, account, RtmRole.Rtm_User, previlegeExpireTime);
+        const rtmToken = RtmTokenBuilder.buildToken(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, String(account), RtmRole.Rtm_User, previlegeExpireTime);
         
         return rtmToken;
 

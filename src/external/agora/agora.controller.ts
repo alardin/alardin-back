@@ -24,7 +24,7 @@ export class AgoraController {
     @Public()
     @UseInterceptors(AgoraInterceptor)
     @Get('rtm-test')
-    rtmTokenTest(@Query('account') account: string | number, @Query('expiry') expiry: number) {
+    rtmTokenTest(@Query('account') account: string, @Query('expiry') expiry: number) {
         return this.agoraService.generateRtmToken(account, expiry);
     }
 
