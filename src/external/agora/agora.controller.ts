@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Public } from 'src/common/decorators/public.decorator';
+import { AgoraInterceptor } from 'src/common/interceptors/agora.interceptor';
 import { GenerateRtcTokenDto } from '../dto/generate-token.dto';
 import { AgoraService } from './agora.service';
 
@@ -19,12 +21,16 @@ export class AgoraController {
         name: 'expiry',
         example: '3600 or undefined'
     })
+    @Public()
+    @UseInterceptors(AgoraInterceptor)
     @Get('rtm-test')
     rtmTokenTest(@Query('account') account: string | number, @Query('expiry') expiry: number) {
         return this.agoraService.generateRtmToken(account, expiry);
     }
 
-    @Get('rtc-test')
+    @Public()
+    @UseInterceptors(AgoraInterceptor)
+    @Post('rtc-test')
     rtcTokenTest(@Body() { channelName, role, tokenType, uid }: GenerateRtcTokenDto, @Query('expiry') expiry) {
         return this.agoraService.generateRtcToken(channelName, role, tokenType, uid, expiry)
     }

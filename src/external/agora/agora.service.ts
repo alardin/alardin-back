@@ -8,6 +8,8 @@ export class AgoraService {
     private readonly AGORA_APP_ID = process.env.AGORA_APP_ID;
     private readonly AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE;
     generateRtcToken(channelName: string, role: 'publisher' | 'audience', tokenType: 'userAccount' | 'uid', uid: any, expiry?: number) {
+        console.log('[*] APP_ID', this.AGORA_APP_ID)
+        console.log('[*] AGORA_APP_CERTIFICATE', this.AGORA_APP_CERTIFICATE)
         let rtcRole: number, token: string; 
         switch(role) {
             case 'publisher':
@@ -26,19 +28,12 @@ export class AgoraService {
 
         const now = Math.floor(Date.now() / 1000);
         const previlegeExpireTime = now + expireTime;
-
-        switch(tokenType) {
-            case 'userAccount':
-                token = RtcTokenBuilder.buildTokenWithAccount(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, channelName, uid, rtcRole, previlegeExpireTime);
-                break;
-            
-            case 'uid':
-                token = RtcTokenBuilder.buildTokenWithUid(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, channelName, uid, rtcRole, previlegeExpireTime);
-                break;
-
-            default:
-                throw new BadRequestException();
+        if (tokenType === 'userAccount' && typeof uid === 'string') {
+            token = RtcTokenBuilder.buildTokenWithAccount(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, channelName, uid, rtcRole, previlegeExpireTime);
+        } else if (tokenType === 'uid' && typeof uid === 'number') {
+            token = RtcTokenBuilder.buildTokenWithUid(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, channelName, uid, rtcRole, previlegeExpireTime);
         }
+        
         return token;
     }
 

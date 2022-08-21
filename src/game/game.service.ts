@@ -319,7 +319,7 @@ export class GameService {
                             .catch(_ => { throw new ForbiddenException() });
         // await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
         const rtcToken = this.agoraService.generateRtcToken(String(alarm.id), 'publisher', 'uid', user.id, expiry);
-        const rtmToken = this.agoraService.generateRtmToken(String(user.id), expiry);
+        const rtmToken = this.agoraService.generateRtmToken(user.id, expiry);
         await this.dataSource.createQueryBuilder()
             .update(GameChannel)
             .set({ player_count: () => 'player_count + 1'})

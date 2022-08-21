@@ -26,7 +26,7 @@ export class MateController {
         })
     @Get()
     async getMateList(@User() user) {
-        return await this.mateService.getMateList(user.id);
+        return await this.mateService.getMateList(user);
     }
     
         @ApiOperation({
@@ -62,7 +62,7 @@ export class MateController {
             type: OnlyStatusResponse
         })
     @Post('response')
-    async responseToMateRequest(@User() user, @Body() { senderId, response }) {
+    async responseToMateRequest(@User() user, @Body() { senderId, response }: MateRequestReponseDto) {
         return await this.mateService.responseToMateRequest(user, senderId, response);
     }
 
@@ -82,18 +82,18 @@ export class MateController {
         return await this.mateService.removeMate(user.id, mateId);
     }
 
-        @ApiOperation({
-            summary: '메이트들의 알람 조회',
-            description: '메이트 관계를 맺고 있는 사람들의 알람 목록 조회'
-        })
-        @ApiResponse({
-            status: 200,
-            type: [AlarmsDto]
-        })
-    @Get('alarms')
-    async getMateAlarms(@User() user) {
-        return await this.mateService.getAlarmsofMate(user.id);
-    }
+    //     @ApiOperation({
+    //         summary: '메이트들의 알람 조회',
+    //         description: '메이트 관계를 맺고 있는 사람들의 알람 목록 조회'
+    //     })
+    //     @ApiResponse({
+    //         status: 200,
+    //         type: [AlarmsDto]
+    //     })
+    // @Get('alarms')
+    // async getMateAlarms(@User() user) {
+    //     return await this.mateService.getAlarmsofMate(user.id);
+    // }
 
 
 }
