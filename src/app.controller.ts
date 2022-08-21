@@ -12,7 +12,6 @@ export class AppController {
 
   @Get()
   async index() {
-    await this.appService.test();
     return 'Alardin-backend';
   }
 }
