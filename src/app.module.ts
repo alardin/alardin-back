@@ -20,7 +20,6 @@ import { AwsService } from './aws/aws.service';
 import { AwsModule } from './aws/aws.module';
 import { MySqlConfigModule } from './config/database/config.module';
 import { MySqlConfigService } from './config/database/config.service';
-import { WsModule } from './ws/ws.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -34,7 +33,7 @@ import { WsModule } from './ws/ws.module';
     AlarmModule,
     AgoraModule, 
     AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule, WsModule],
+    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,
