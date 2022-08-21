@@ -60,6 +60,10 @@ export class MateService {
         }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
+
+        if (me.id === receiver.id) {
+            return null;
+        }
         const title = 'Mate request';
         const body = `${me.nickname} Send mate request to ${receiver.nickname}`;
         const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
