@@ -39,6 +39,7 @@
     "@nestjs/typeorm": "^9.0.0",
     "@nestjs/websockets": "^9.0.11",
     "@types/bcryptjs": "^2.4.2",
+    "@types/socket.io": "^3.0.2",
     "agora-access-token": "^2.0.4",
     "aws-sdk": "^2.1190.0",
     "axios": "^0.27.2",
