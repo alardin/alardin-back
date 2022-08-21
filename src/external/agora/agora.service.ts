@@ -28,9 +28,7 @@ export class AgoraService {
 
         const now = Math.floor(Date.now() / 1000);
         const previlegeExpireTime = now + expireTime;
-        if (tokenType === 'userAccount' && typeof uid === 'string') {
-            token = RtcTokenBuilder.buildTokenWithAccount(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, channelName, uid, rtcRole, previlegeExpireTime);
-        } else if (tokenType === 'uid' && typeof uid === 'number') {
+        if (tokenType === 'uid' && typeof uid === 'number') {
             token = RtcTokenBuilder.buildTokenWithUid(this.AGORA_APP_ID, this.AGORA_APP_CERTIFICATE, channelName, uid, rtcRole, previlegeExpireTime);
         }
         

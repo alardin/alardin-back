@@ -356,7 +356,8 @@ export class GameService {
             player2Keyword,
             player2Images,
             player2AnswerIndex,
-            channelName: String(alarm.id)
+            channelName: String(alarm.id),
+            uid: user.id
         };
     }
     private async checkToOwnGame(myId: number, gameId: number) {

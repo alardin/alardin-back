@@ -23,12 +23,12 @@ export class GenerateRtcTokenDto {
     
     @ApiProperty({
         name: 'tokenType',
-        description: 'userAccount | uid',
+        description: 'uid',
         example: 'userAccount'
     })
     @IsNotEmpty()
-    @Matches(/^(userAccount)|(uid)$/)
-    tokenType: 'userAccount' | 'uid';
+    @Matches(/^(uid)$/)
+    tokenType: 'uid';
 
     @ApiProperty({
         name:' uid',
