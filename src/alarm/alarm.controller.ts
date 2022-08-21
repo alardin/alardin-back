@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Post, Put } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { get } from 'http';
 import { userInfo } from 'os';
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
+import { JoinedAlarmsDto } from 'src/users/dto/joined-alarms.dto';
 import { AlarmService } from './alarm.service';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
 import { JoinAlarmDto } from './dto/join-alarm.dto';
@@ -63,6 +65,21 @@ export class AlarmController {
     @Delete()
     deleteAlarm() {
 
+    }
+
+        @ApiOperation({
+            summary: '특정 id의 알람 조회'
+        })
+        @ApiParam({
+            name: 'alarmId',
+            example: 1
+        })
+        @ApiResponse({
+            type: JoinedAlarmsDto
+        })
+    @Get(':alarmId')
+    async getAlarm(@User() user, @Param('alarmId') alarmId) {
+        return await this.alarmService.getAlarm(user.id, alarmId);
     }
 
 }

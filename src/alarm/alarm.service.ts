@@ -144,6 +144,42 @@ export class AlarmService {
         
     }
 
+    // alarm 조회할 권한
+    async getAlarm(myId: number, alarmId: number) {
+        const alarm = await this.getAlarmById(alarmId);
+        if (alarm.is_private) {
+            const validMate = await this.mateService.validateMate(myId, alarm.Host_id);
+            if (!validMate) {
+                throw new ForbiddenException();
+            }
+        }
+
+        const returnedAlarm = await this.alarmsRepository.createQueryBuilder('alarms')
+                        .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :hostId', { hostId: alarm.Host_id })
+                        .innerJoin('alarms.Members', 'members')
+                        .innerJoin('alarms.Game', 'game')
+                        .select([
+                            'alarms.id',
+                            'alarms.name',
+                            'alarms.time',
+                            'alarms.is_repeated',
+                            'alarms.is_private',
+                            'alarms.music_name',
+                            'alarms.max_members',
+                            'alarms.created_at', 
+                            'game.id', 
+                            'game.name',
+                            'game.thumbnail_url',
+                            'members.id', 
+                            'members.nickname',
+                            'members.thumbnail_image_url'
+                        ])
+                        .getOne();
+        console.log(returnedAlarm);
+        return returnedAlarm;
+        
+    }
+
     private async getAlarmById(alarmId: number) {
         return await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
                             .catch(_ => { throw new ForbiddenException() });

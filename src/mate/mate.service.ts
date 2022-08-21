@@ -114,10 +114,11 @@ export class MateService {
                         .innerJoin('alarms.Game', 'game')
                         .select([
                             'alarms.id',
+                            'alarms.name',
                             'alarms.time',
                             'alarms.is_repeated',
                             'alarms.is_private',
-                            'alarms.music_volume',
+                            'alarms.music_name',
                             'alarms.max_members',
                             'alarms.created_at', 
                             'game.id', 
