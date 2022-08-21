@@ -23,10 +23,10 @@ export class MateService {
         private readonly alarmsRepository: Repository<Alarms>,
     ) {}
 
-    async getMateList(myId: number) {
+    async getMateList(me: Users) {
 
         const receivedMates = await this.matesRepository.createQueryBuilder('m')
-                                    .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
+                                    .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId: me.id })
                                     .innerJoin('m.Sender', 's')
                                     .select([
                                         'm.id',
@@ -37,21 +37,50 @@ export class MateService {
                                     ])
                                     .getMany();
         const sendedMates = await this.matesRepository.createQueryBuilder('m')
-                                    .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
+                                    .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId: me.id })
                                     .innerJoin('m.Receiver', 'r')
                                     .select([
                                         'm.id',
+                                        's.id',
                                         'r.id',
                                         'r.nickname',
                                         'r.thumbnail_image_url',
                                         'r.kakao_id'
                                     ])
                                     .getMany();
-        const userOfMateIreceived = receivedMates.map(m => m.Sender);
-        const userOfMateIsended = sendedMates.map(m => m.Receiver);
-        // const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
-    
-        return [ ...userOfMateIreceived, ...userOfMateIsended];
+        console.log(sendedMates);
+        const usersOfMateIReceived = receivedMates.map(m => m.Sender);
+        const usersOfMateISended = sendedMates.map(m => m.Receiver);
+
+        const reqPendingUsers = await this.mateReqRepository.createQueryBuilder('mr')
+                                    .select([
+                                        'mr.sended_at',
+                                        'mr.Sender_id',
+                                        'r.id',
+                                        'r.nickname',
+                                        'r.thumbnail_image_url',
+                                        'r.kakao_id'
+                                    ])
+                                    .where('Sender_id = :myId', { myId: me.id })
+                                    .innerJoin('mr.Receiver', 'r')
+                                    .getMany();
+        const returningPendingUsers = reqPendingUsers.map(({ sended_at, Receiver }, idx)=> {
+            const { id, nickname, thumbnail_image_url, kakao_id } = Receiver;
+            return {
+                id,
+                nickname,
+                thumbnail_image_url,
+                kakao_id
+            }
+        });
+        console.log(returningPendingUsers);
+        const friends = await this.kakaoService.getKakaoFriends(me.kakao_access_token)
+        const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
+        return {
+            mateFinished,
+            pendingUsers: returningPendingUsers,
+            friends
+        }
     }
 
     async sendMateRequest(me: Users, receiverKakaoId: number, data) {
@@ -66,14 +95,17 @@ export class MateService {
         }
         const title = 'Mate request';
         const body = `${me.nickname} Send mate request to ${receiver.nickname}`;
-        const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
+        // const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
 
         await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
-        return messagId;
+        return 'OK';
     }
 
     async responseToMateRequest(me: Users, senderId: number, response: string) {
         // if ok -> mate db save, 요청자에게 push
+        if (!senderId) {
+            return null;
+        }
         const mateReq = await this.mateReqRepository.findOneOrFail({ where: { Sender_id: senderId }})
             .catch(_ => { throw new ForbiddenException() });
 
@@ -107,36 +139,36 @@ export class MateService {
         return "OK";
     }
 
-    async getAlarmsofMate(myId: number) {
-        const mates = await this.getMateList(myId);
-        let alarms = [];
-        for await (let m of mates) {
-            await this.validateMate(myId, m.id);
-            const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
-                        .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
-                        .innerJoin('alarms.Members', 'members')
-                        .innerJoin('alarms.Game', 'game')
-                        .select([
-                            'alarms.id',
-                            'alarms.name',
-                            'alarms.time',
-                            'alarms.is_repeated',
-                            'alarms.is_private',
-                            'alarms.music_name',
-                            'alarms.max_members',
-                            'alarms.created_at', 
-                            'game.id', 
-                            'game.name',
-                            'game.thumbnail_url',
-                            'members.id', 
-                            'members.nickname',
-                            'members.thumbnail_image_url'
-                        ])
-                        .getMany();
-            alarms = [...alarms, ...alarm]
-        }
-        return alarms;  
-    }
+    // async getAlarmsofMate(myId: number) {
+    //     const mates = await this.getMateList(myId);
+    //     let alarms = [];
+    //     for await (let m of mates) {
+    //         await this.validateMate(myId, m.id);
+    //         const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
+    //                     .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
+    //                     .innerJoin('alarms.Members', 'members')
+    //                     .innerJoin('alarms.Game', 'game')
+    //                     .select([
+    //                         'alarms.id',
+    //                         'alarms.name',
+    //                         'alarms.time',
+    //                         'alarms.is_repeated',
+    //                         'alarms.is_private',
+    //                         'alarms.music_name',
+    //                         'alarms.max_members',
+    //                         'alarms.created_at', 
+    //                         'game.id', 
+    //                         'game.name',
+    //                         'game.thumbnail_url',
+    //                         'members.id', 
+    //                         'members.nickname',
+    //                         'members.thumbnail_image_url'
+    //                     ])
+    //                     .getMany();
+    //         alarms = [...alarms, ...alarm]
+    //     }
+    //     return alarms;  
+    // }
 
     private async getMateById(id: number) {
         return await this.matesRepository.findOneOrFail({ where: { id }})
