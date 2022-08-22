@@ -36,5 +36,5 @@ export class GenerateRtcTokenDto {
         example: 1
     })
     @IsNotEmpty()
-    uid: string;
+    uid: number;
 }

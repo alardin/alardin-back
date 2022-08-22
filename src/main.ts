@@ -12,7 +12,6 @@ async function bootstrap() {
   app.use(passport.initialize())
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
-    disableErrorMessages: true
   }));
   app.useGlobalInterceptors(new UndefinedToNullInterceptor());
   const config = new DocumentBuilder()

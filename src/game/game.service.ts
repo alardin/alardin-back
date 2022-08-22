@@ -1,6 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AlarmsDto } from 'src/alarm/dto/alarms.dto';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
@@ -261,7 +260,6 @@ export class GameService {
                 User_id: myId,
                 score,
             });
-            console.log('hi');
             const [ { gameAVGScore } ] = await queryRunner.manager.query(
                 `SELECT AVG(score) as gameAVGScore from games_ratings where Game_id = ${game.id}`
             );
@@ -350,14 +348,20 @@ export class GameService {
         return {
             rtcToken,
             rtmToken,
-            player1Keyword,
-            player1Images,
-            player1AnswerIndex,
-            player2Keyword,
-            player2Images,
-            player2AnswerIndex,
+            userA: {
+                subject: player2Images[player2AnswerIndex],
+                images: player1Images,
+                answer: player1Images[player1AnswerIndex],
+                keyword: player1Keyword
+            },
+            userB: {
+                subject: player1Images[player1AnswerIndex],
+                images: player2Images,
+                answer: player2Images[player2AnswerIndex],
+                keyword: player2Keyword
+            },
             channelName: String(alarm.id),
-            uid: user.id
+            uid: String(user.id)
         };
     }
     private async checkToOwnGame(myId: number, gameId: number) {

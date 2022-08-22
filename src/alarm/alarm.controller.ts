@@ -54,7 +54,7 @@ export class AlarmController {
         })
     @Post('join')
     async joinAlarm(@User() user, @Body() { alarmId }: JoinAlarmDto) {
-        return await this.alarmService.joinAlarm(user.id, alarmId);
+        return await this.alarmService.joinAlarm(user, alarmId);
     }
 
 

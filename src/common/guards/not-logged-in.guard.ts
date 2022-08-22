@@ -6,7 +6,6 @@ import { Observable } from "rxjs";
 @Injectable()
 export class NotLoggedInGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-        console.log('not loggedin')
         const request: Request = context.switchToHttp().getRequest();
         return !request.isAuthenticated();
     }

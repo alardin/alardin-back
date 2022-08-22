@@ -5,7 +5,7 @@ export class AwsService {
     #s3 = new S3();
     async getBucketList() {
         const bucks = await this.#s3.listBuckets().promise();
-        console.log(bucks);
+        
     }
 
     async getObjectsOfBucket(bucketName: string, key: string) {
@@ -13,7 +13,7 @@ export class AwsService {
             Bucket: bucketName
         } 
         const { Contents } = await this.#s3.listObjects(bucketParams).promise();
-        console.log(Contents.filter(o => o.Key.match(key)));
+        
     }
 
     async getObject(bucketName: string, key: string) {
@@ -22,7 +22,7 @@ export class AwsService {
             Key: key
         }
         const res = await this.#s3.getObject(objectParams).promise();
-        console.log(res);
+        
     }
     async uploadFileToBucket(bucketName: string) {
         const uploadParams: S3.PutObjectRequest = {
@@ -31,6 +31,6 @@ export class AwsService {
             Body: 'test'
         }
         const res = await this.#s3.upload(uploadParams).promise();
-        console.log(res);
+        
     }
 }

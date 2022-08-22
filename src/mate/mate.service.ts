@@ -51,7 +51,7 @@ export class MateService {
         const usersOfMateIReceived = receivedMates.map(m => m.Sender);
         const usersOfMateISended = sendedMates.map(m => m.Receiver);
 
-        const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken)
+        // const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken)
         const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
         return mateFinished;
     }
@@ -206,7 +206,6 @@ export class MateService {
                                         'r.kakao_id'
                                     ])
                                     .getMany();
-        console.log(sendedMates);
         const usersOfMateIReceived = receivedMates.map(m => m.Sender);
         const usersOfMateISended = sendedMates.map(m => m.Receiver);
 
@@ -231,13 +230,11 @@ export class MateService {
                 kakao_id
             }
         });
-        console.log(returningPendingUsers);
-        const friends = await this.kakaoService.getKakaoFriends(me.kakao_access_token)
+        // const friends = await this.kakaoService.getKakaoFriends(me.kakao_access_token)
         const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
         return {
             mateFinished,
             pendingUsers: returningPendingUsers,
-            friends
         }
     }
 

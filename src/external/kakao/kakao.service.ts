@@ -51,7 +51,6 @@ export class KakaoService {
     }
 
     async getKakaoFriends(accessToken: string): Promise<KakaoFriend[]> {
-        console.log('hi');
         const {
             data: {
                 elements
@@ -61,7 +60,6 @@ export class KakaoService {
                 'Authorization': `Bearer ${accessToken}`
             }
         }).catch(e => { throw new ForbiddenException(e) });
-        console.log(elements)
         return elements;
     }
 
@@ -76,7 +74,6 @@ export class KakaoService {
                 'target_id': '2348974855'
             }
         });
-        console.log(data);
         return data;
     }
 

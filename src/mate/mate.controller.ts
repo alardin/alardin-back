@@ -82,18 +82,18 @@ export class MateController {
         return await this.mateService.removeMate(user.id, mateId);
     }
 
-    //     @ApiOperation({
-    //         summary: '메이트들의 알람 조회',
-    //         description: '메이트 관계를 맺고 있는 사람들의 알람 목록 조회'
-    //     })
-    //     @ApiResponse({
-    //         status: 200,
-    //         type: [AlarmsDto]
-    //     })
-    // @Get('alarms')
-    // async getMateAlarms(@User() user) {
-    //     return await this.mateService.getAlarmsofMate(user.id);
-    // }
+        @ApiOperation({
+            summary: '메이트들의 알람 조회',
+            description: '메이트 관계를 맺고 있는 사람들의 알람 목록 조회'
+        })
+        @ApiResponse({
+            status: 200,
+            type: [AlarmsDto]
+        })
+    @Get('alarms')
+    async getMateAlarms(@User() user) {
+        return await this.mateService.getAlarmsofMate(user.id, user.kakao_access_token);
+    }
 
 
 }
