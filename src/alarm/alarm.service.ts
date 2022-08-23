@@ -186,7 +186,8 @@ export class AlarmService {
             const date = new Date().getDate();
             const month = new Date().getMonth();
             const year = new Date().getFullYear();
-            const job = new CronJob(new Date(year, month, date, hour - 9, minute, 0), async () => {
+            //new Date(year, month, date, hour - 9, minute, 0),
+            const job = new CronJob(new Date(Date.now() - (9 * 60 * 60 * 1000) + 5 * 1000), async () => {
                 await this.pushNotiService.sendPush(
                     antoherMemberDataForMe.id,
                     anotherMemberProfile.User.device_token,
