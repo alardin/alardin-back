@@ -349,6 +349,7 @@ export class GameService {
             subjectIndex: player1AnswerIndex,
             images: player2Images,
             answer: player2Images[player2AnswerIndex],
+            answerIndex: player2AnswerIndex,
             keyword: player1Keyword
         };
         const userB = {
@@ -356,6 +357,7 @@ export class GameService {
             subjectIndex: player2AnswerIndex,
             images: player1Images,
             answer: player1Images[player1AnswerIndex],
+            answerIndex: player1AnswerIndex,
             keyword: player2Keyword
         }
         console.log('[*]User A')
