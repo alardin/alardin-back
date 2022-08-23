@@ -285,6 +285,7 @@ export class GameService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
+            // alarm_id 받기
             const alarmResult = await queryRunner.manager.getRepository(AlarmResults).save({
                 start_time: body.start_time,
                 end_time: body.end_time,
@@ -292,7 +293,7 @@ export class GameService {
                 Game_id: body.Game_id,
                 is_bot_used: body.is_bot_used,
                 is_cleared: body.is_cleared,
-                play_time: body.play_time
+                play_time: body.play_time,
             });
             await queryRunner.manager.getRepository(AlarmPlayRecords).save({
                 User_id: myId,

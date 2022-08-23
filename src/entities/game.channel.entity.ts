@@ -33,10 +33,7 @@ export class GameChannel {
     created_at: Date;
 
 
-    @ManyToMany(() => GamePlayImages, gamePlayImages => gamePlayImages.Game_channel, {
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
-    })
+    @ManyToMany(() => GamePlayImages, gamePlayImages => gamePlayImages.Game_channel)
     @JoinTable({
         name: 'game_used_images',
         joinColumn: {
