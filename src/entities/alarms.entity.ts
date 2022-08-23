@@ -114,10 +114,7 @@ export class Alarms {
     @Column('int', { name: 'Game_channel_id', nullable: true })
     Game_channel_id: number | null;
 
-    @OneToOne(() => GameChannel, {
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
-    })
+    @OneToOne(() => GameChannel)
     @JoinColumn({ name: 'Game_channel_id', referencedColumnName: 'id' })
     Game_channel: GameChannel;
 

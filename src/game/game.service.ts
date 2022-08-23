@@ -334,6 +334,7 @@ export class GameService {
                 .innerJoin('gpi.Keyword', 'k')
                 .where('gui.Game_channel_id = :id', { id: alarm.id })
                 .getMany();
+        console.log(images)
         const images1 = images.slice(0,6);
         const player1Keyword = images1[0].keyword;
         const player1Images = images1.map(i => i.Game_play_image.url);
@@ -343,6 +344,7 @@ export class GameService {
         const player2Keyword = images2[0].keyword;
         const player2Images = images2.map(i => i.Game_play_image.url);
         const player2AnswerIndex = 2;
+        
         const userA = {
             subject: player1Images[player1AnswerIndex],
             subjectIndex: player1AnswerIndex,
@@ -359,10 +361,6 @@ export class GameService {
             answerIndex: player1AnswerIndex,
             keyword: player2Keyword
         }
-        console.log('[*]User A')
-        console.log(userA)
-        console.log('[*]User B')
-        console.log(userB)
         return {
             rtcToken,
             rtmToken,

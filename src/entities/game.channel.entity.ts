@@ -46,4 +46,5 @@ export class GameChannel {
         }
     })
     Images: GamePlayImages[];
+    
 }
