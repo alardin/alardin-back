@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDataURI, IsDate, IsDateString, IsNotEmpty } from "class-validator";
-import { IsPositiveInt } from "src/common/decorators/positive.integer.validator";
+import { IsBoolean, IsDataURI, IsDate, IsDateString, IsInt, IsNotEmpty, IsPositive } from "class-validator";
 import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Alarms } from "./alarms.entity";
@@ -40,7 +39,8 @@ export class AlarmResults {
         description: 'end_time - start_time',
         example: '180'
     })
-    @IsPositiveInt()
+    @IsInt()
+    @IsPositive()
     @IsNotEmpty()
     @Column('int', { name: 'play_time' })
     play_time: number;
@@ -58,7 +58,8 @@ export class AlarmResults {
         name: 'trial',
         example: 3
     })
-    @IsPositiveInt()
+    @IsInt()
+    @IsPositive()
     @IsNotEmpty()
     @Column('int', { name: 'trial', default: 0 })
     trial: number;

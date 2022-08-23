@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsBoolean, IsDate, IsIn, IsInt, IsNotEmpty, IsNumber, IsNumberString, IsPositive, IsString, Matches, Max, MaxLength, Min, MIN, ValidateIf } from "class-validator";
-import { IsPositiveInt } from "src/common/decorators/positive.integer.validator";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { AlarmMembers } from "./alarm.members.entity";
 import { AlarmResults } from "./alarm.results.entity";
@@ -76,7 +75,8 @@ export class Alarms {
     @Column({ default: 100 })
     music_volume: number;
     
-    @IsPositiveInt()
+    @IsInt()
+    @IsPositive()
     @Column('int', { name: 'member_count', default: 0 })
     member_count: number;
 
@@ -84,7 +84,8 @@ export class Alarms {
         name: 'max_members',
         example: 2
     })
-    @IsPositiveInt()
+    @IsInt()
+    @IsPositive()
     @IsNotEmpty()
     @Column({ name: 'max_member', default: 2 })
     max_members: number;
