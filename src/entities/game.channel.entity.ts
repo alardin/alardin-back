@@ -22,8 +22,11 @@ export class GameChannel {
     @Column({ name: 'Alarm_id' })
     Alarm_id: number;
 
-    @OneToOne(() => Alarms)
-    @JoinColumn({ name: 'Alarm_id', referencedColumnName: 'id' })
+    @OneToOne(() => Alarms, {
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
+    })
+    @JoinColumn({ name: 'Alarm_id', referencedColumnName: 'id'})
     Alarm: Alarms;
 
     @CreateDateColumn()

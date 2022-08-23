@@ -20,7 +20,6 @@ export class AlarmResults {
         name: 'start_time',
         example: '2022-07-22:09:00:00'
     })
-    @IsDateString()
     @IsNotEmpty()
     @Column('date', { name: 'start_time' })
     start_time: Date;
@@ -29,7 +28,6 @@ export class AlarmResults {
         name: 'end_time',
         example: '2022-07-22:09:03:00'
     })
-    @IsDateString()
     @IsNotEmpty()
     @Column('date', { name: 'end_time' })
     end_time: Date;

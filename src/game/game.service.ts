@@ -291,7 +291,8 @@ export class GameService {
                 trial: body.trial,
                 Game_id: body.Game_id,
                 is_bot_used: body.is_bot_used,
-                is_cleared: body.is_cleared
+                is_cleared: body.is_cleared,
+                play_time: body.play_time
             });
             await queryRunner.manager.getRepository(AlarmPlayRecords).save({
                 User_id: myId,
