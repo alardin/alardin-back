@@ -62,7 +62,7 @@ export class AlarmService {
             const newChannel = await queryRunner.manager.getRepository(GameChannel).save({
                 name: String(newAlarm.id),
                 Alarm_id: newAlarm.id,
-                player_count: 0
+                player_count: 0,
             });
             const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
             const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);

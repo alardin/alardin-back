@@ -329,7 +329,6 @@ export class GameService {
                 .select([
                     'gui.keyword',
                     'gpi.url'
-
                 ])
                 .innerJoin('gui.Game_play_image', 'gpi')
                 .innerJoin('gpi.Keyword', 'k')
@@ -338,12 +337,12 @@ export class GameService {
         const images1 = images.slice(0,6);
         const player1Keyword = images1[0].keyword;
         const player1Images = images1.map(i => i.Game_play_image.url);
-        const player1AnswerIndex = Math.floor(Math.random() * player1Images.length);
+        const player1AnswerIndex = 3;
 
         const images2 = images.slice(6);
         const player2Keyword = images2[0].keyword;
         const player2Images = images2.map(i => i.Game_play_image.url);
-        const player2AnswerIndex = Math.floor(Math.random() * player2Images.length);
+        const player2AnswerIndex = 2;
         const userA = {
             subject: player1Images[player1AnswerIndex],
             subjectIndex: player1AnswerIndex,
