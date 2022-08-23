@@ -17,11 +17,17 @@ export class GameUsedImages {
     @Column({ name: 'keyword' })
     keyword: string;
 
-    @ManyToOne(() => GameChannel, gameChannel => gameChannel.Images)
+    @ManyToOne(() => GameChannel, gameChannel => gameChannel.Images, {
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
+    })
     @JoinColumn({ name: 'Game_channel_id', referencedColumnName: 'id' })
     Game_channel: GameChannel;
 
-    @ManyToOne(() => GamePlayImages, GamePlayImages => GamePlayImages.Game_used_images)
+    @ManyToOne(() => GamePlayImages, GamePlayImages => GamePlayImages.Game_used_images, {
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
+    })
     @JoinColumn({ name: 'Game_play_image_id', referencedColumnName: 'id' })
     Game_play_image: GamePlayImages;
 }

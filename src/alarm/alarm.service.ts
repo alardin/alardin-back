@@ -127,8 +127,6 @@ export class AlarmService {
     // 알람 멤버 수 업데이트
     async joinAlarm(me: Users, alarmId: number) {
 
-        console.log(me);
-
         const alarm = await this.getAlarmById(alarmId);
 
         const queryRunner = this.dataSource.createQueryRunner();
@@ -216,7 +214,7 @@ export class AlarmService {
             await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();
-            throw new ForbiddenException('Invalid request');
+            throw new ForbiddenException(e);
         } finally {
             await queryRunner.release();
         }
