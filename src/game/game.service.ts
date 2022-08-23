@@ -343,23 +343,22 @@ export class GameService {
         const images2 = images.slice(6);
         const player2Keyword = images2[0].keyword;
         const player2Images = images2.map(i => i.Game_play_image.url);
-        const player2AnswerIndex = Math.floor(Math.random() * images2.length);
-
+        const player2AnswerIndex = Math.floor(Math.random() * player2Images.length);
         return {
             rtcToken,
             rtmToken,
             userA: {
-                subject: player2Images[player2AnswerIndex],
-                subjectIndex: player2AnswerIndex,
-                images: player1Images,
-                answer: player1Images[player1AnswerIndex],
-                keyword: player1Keyword
-            },
-            userB: {
                 subject: player1Images[player1AnswerIndex],
                 subjectIndex: player1AnswerIndex,
                 images: player2Images,
                 answer: player2Images[player2AnswerIndex],
+                keyword: player1Keyword
+            },
+            userB: {
+                subject: player2Images[player2AnswerIndex],
+                subjectIndex: player2AnswerIndex,
+                images: player1Images,
+                answer: player1Images[player1AnswerIndex],
                 keyword: player2Keyword
             },
             channelName: String(alarm.id),
