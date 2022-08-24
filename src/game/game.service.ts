@@ -222,6 +222,7 @@ export class GameService {
     async getImagesForGame(myId: number, gameId: number, except?: number) {
         const game = await this.getGameById(gameId);
         const keywordCount = game.keyword_count;
+        console.log(keywordCount);
         let { randomKeywordId, keyword } = await this.getRandomKeyword(game.id, keywordCount);
         while(except && randomKeywordId === except) {
             const newKeyword = await this.getRandomKeyword(game.id, keywordCount);
@@ -230,6 +231,7 @@ export class GameService {
         }
         const imageCount = (await this.gamePlayKeywordsRepository
             .findOne({ where: { id: randomKeywordId }})).image_count;
+        console.log('keyword', imageCount);
         const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
             .select([
                 'gpi.id',
@@ -336,7 +338,6 @@ export class GameService {
                 .innerJoin('gpi.Keyword', 'k')
                 .where('gui.Game_channel_id = :id', { id: alarm.id })
                 .getMany();
-        console.log(images)
         const images1 = images.slice(0,6);
         const player1Keyword = images1[0].keyword;
         const player1Images = images1.map(i => i.Game_play_image.url);
