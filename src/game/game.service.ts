@@ -222,7 +222,7 @@ export class GameService {
     async getImagesForGame(myId: number, gameId: number, except?: number) {
         const game = await this.getGameById(gameId);
         const keywordCount = game.keyword_count;
-        console.log(keywordCount);
+        console.log('[*] Keyword Count', keywordCount);
         let { randomKeywordId, keyword } = await this.getRandomKeyword(game.id, keywordCount);
         while(except && randomKeywordId === except) {
             const newKeyword = await this.getRandomKeyword(game.id, keywordCount);
@@ -231,7 +231,7 @@ export class GameService {
         }
         const imageCount = (await this.gamePlayKeywordsRepository
             .findOne({ where: { id: randomKeywordId }})).image_count;
-        console.log('keyword', imageCount);
+        console.log("[*] Keyword: ", keyword, imageCount);
         const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
             .select([
                 'gpi.id',
