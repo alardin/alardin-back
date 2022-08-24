@@ -66,7 +66,7 @@ export class AlarmService {
             });
             const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
             const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
-
+            
             for await (let img of images1) {
                 await queryRunner.manager.getRepository(GameUsedImages).save({
                     Game_channel_id: newChannel.id,
@@ -186,7 +186,11 @@ export class AlarmService {
             const date = new Date().getDate();
             const month = new Date().getMonth();
             const year = new Date().getFullYear();
-            const job = new CronJob(new Date(year, month, date, hour - 9, minute, 0), async () => {
+            
+            const reservedTime = new Date(year, month, date, hour - 9, minute, 0);
+            console.log("============== Test Date ==============")
+            console.log("date: ", date, "month: ", month, "hour:", hour, "minute:", minute);
+            const job = new CronJob(reservedTime, async () => {
                 await this.pushNotiService.sendPush(
                     antoherMemberDataForMe.id,
                     anotherMemberProfile.User.device_token,
