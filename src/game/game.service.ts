@@ -265,6 +265,7 @@ export class GameService {
             const [ { gameAVGScore } ] = await queryRunner.manager.query(
                 `SELECT AVG(score) as gameAVGScore from games_ratings where Game_id = ${game.id}`
             );
+            console.log('[*] gameAvgSAcore: ', gameAVGScore);
             updatedRating = Number(Number(gameAVGScore).toFixed(2));
             await queryRunner.manager.getRepository(Games).createQueryBuilder('game')
                     .update()
