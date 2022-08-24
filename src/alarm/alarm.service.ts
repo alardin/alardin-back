@@ -187,9 +187,7 @@ export class AlarmService {
             const month = new Date().getMonth();
             const year = new Date().getFullYear();
             
-            const reservedTime = new Date(year, month, date, hour - 9, minute, 0);
-            console.log("============== Test Date ==============")
-            console.log("date: ", date, "month: ", month, "hour:", hour, "minute:", minute);
+            const reservedTime = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, 0);
             const job = new CronJob(reservedTime, async () => {
                 await this.pushNotiService.sendPush(
                     antoherMemberDataForMe.id,
