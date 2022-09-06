@@ -14,21 +14,31 @@ import { AgoraModule } from './external/agora/agora.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AwsService } from './aws/aws.service';
 import { AwsModule } from './aws/aws.module';
-import { MySqlConfigModule } from './config/database/config.module';
-import { MySqlConfigService } from './config/database/config.service';
 import { WsModule } from './ws/ws.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 @Module({
   imports: [
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      port: +process.env.DB_PORT,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      entities: [__dirname + '/dist/**/**/*.entity{.ts,.js}'],
+      migrations: [__dirname + '/src/migrations/*.ts'],
+      logging: true,
+      synchronize: false
+  }),
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [MySqlConfigModule],
-      useClass: MySqlConfigService,
-      inject: [MySqlConfigService]
-    }),
     MateModule, 
     GameModule, 
     AlarmModule,
@@ -45,6 +55,7 @@ import { WsModule } from './ws/ws.module';
   }, AwsService],
 })
 export class AppModule implements NestModule {
+  constructor(private dataSource: DataSource) {}
   configure(consumer: MiddlewareConsumer) {
       consumer.apply(LoggerMiddleWare).forRoutes('*');
   }

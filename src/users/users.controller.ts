@@ -114,6 +114,12 @@ export class UsersController {
         return await this.usersService.getUserAlarmRecords(user.id, skip, take);
     }
     
+    @Public()
+    @Get('history')
+    async getUserHistory(@Query('id') id: number) {
+        await this.usersService.getUserHistory(id);
+        return 'hi';
+    }
         @ApiOperation({
             summary: '프로필 수정',
             description: '로그인한 사용자 자신의 프로필 수정'
@@ -147,4 +153,5 @@ export class UsersController {
     async getUserProfile(@Param('targetId') targetId, @User() user) {
         return await this.usersService.getUserProfile(user.id, targetId);
     }
+
 }

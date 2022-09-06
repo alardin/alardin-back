@@ -22,9 +22,9 @@
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "schema:drop": "npm run typeorm schema:drop",
     "schema:sync": "npm run typeorm schema:sync",
-    "migration:create": "npm run typeorm migration:create",
-    "migration:run": "npm run typeorm migration:run",
-    "migration:revert": "npm run typeorm migration:revert"
+    "migrate:create": "ts-node ./node_modules/typeorm/cli.js migration:create ./",
+    "migrate:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/config/dataSource.ts",
+    "migrate:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -39,6 +39,7 @@
     "@nestjs/typeorm": "^9.0.0",
     "@nestjs/websockets": "^9.0.11",
     "@types/bcryptjs": "^2.4.2",
+    "@types/dotenv": "^8.2.0",
     "agora-access-token": "^2.0.4",
     "aws-sdk": "^2.1190.0",
     "axios": "^0.27.2",
@@ -48,6 +49,7 @@
     "cache-manager-redis-store": "^2.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "dotenv": "^16.0.2",
     "firebase-admin": "^11.0.1",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",

@@ -178,6 +178,7 @@ export class UsersService {
         ])
         .getMany();
     }
+
     async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
         .innerJoin('alarms.Game', 'game')
@@ -201,6 +202,29 @@ export class UsersService {
         .getMany();
     }
     
+    async getUserHistory(myId: number) {
+        const playRecords = await this.alarmPlayRecordsRepository.createQueryBuilder('apr')
+                .select()
+                .innerJoin('apr.User', 'u', 'u.id = :myId', { myId })
+                .innerJoinAndSelect('apr.Alarm_result', 'ar')
+                .innerJoin('ar.Game', 'g')
+                .getMany();
+                // .innerJoin('apr.Alarm_result', 'ar')
+                // .innerJoin('ar.Players', 'p')
+                // .select([
+                //     'ar.start_time',
+                //     'ar.end_time',
+                //     'ar.play_time',
+                //     'ar.trial',
+                //     'u.nickname',
+                //     'u.thumbnail_image_url',
+                //     'p.nickname',
+                //     'p.thumbnail_image_url',
+                //     'g.name',
+                //     'g.thumbnail_url',
+                // ])
+        console.log(playRecords);
+    }
     
     private async getUser(userId: number) {
         return await this.usersRepository.findOneOrFail({ where: { id: userId }})

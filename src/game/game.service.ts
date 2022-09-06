@@ -292,8 +292,10 @@ export class GameService {
                 end_time: body.end_time,
                 trial: body.trial,
                 Game_id: body.Game_id,
+                Game_channel_id: body.Game_channel_id,
                 is_bot_used: body.is_bot_used,
-                is_cleared: body.is_cleared
+                is_cleared: body.is_cleared,
+                Alarm_id: body.Alarm_id
             });
             await queryRunner.manager.getRepository(AlarmPlayRecords).save({
                 User_id: myId,
@@ -331,7 +333,6 @@ export class GameService {
                 .select([
                     'gui.keyword',
                     'gpi.url'
-
                 ])
                 .innerJoin('gui.Game_play_image', 'gpi')
                 .innerJoin('gpi.Keyword', 'k')
@@ -356,7 +357,8 @@ export class GameService {
             player2Keyword,
             player2Images,
             player2AnswerIndex,
-            channelName: String(alarm.id)
+            channelName: String(alarm.id),
+            Game_id: alarm.Game_id
         };
     }
     private async checkToOwnGame(myId: number, gameId: number) {

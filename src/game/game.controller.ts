@@ -85,9 +85,6 @@ export class GameController {
         @ApiOperation({
             summary: '게임 결과 저장'
         })
-        @ApiBody({
-            type: SaveGameDto
-        })
         @ApiResponse({
             status: 201,
             type: OnlyStatusResponse
