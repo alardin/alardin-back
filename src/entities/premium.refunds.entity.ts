@@ -8,14 +8,26 @@ export class PremiumRefunds {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ name: 'price' })
     price: number;
 
     @CreateDateColumn()
     created_at: Date;
 
-    @Column()
+    @Column({ name: 'successed_at' })
     successed_at: Date;
+
+    @Column({ name: 'result_status' })
+    result_status: string;
+
+    @Column({ name: 'result_message' })
+    result_message: string;
+
+    @Column({ name: 'User_id' })
+    User_id: number;
+
+    @Column({ name: 'Premium_order_id' })
+    Premium_order_id: number;
 
     @ManyToOne(() => Users, users => users.Premium_refunds)
     @JoinColumn({ name: 'User_id', referencedColumnName: 'id' })

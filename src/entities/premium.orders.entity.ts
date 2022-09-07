@@ -17,14 +17,20 @@ export class PremiumOrders {
     @CreateDateColumn()
     created_at: Date;
 
-    @Column()
+    @Column({ name: 'successed_at' })
     successed_at: Date;
 
-    @Column()
+    @Column({ name: 'expired_at' })
     expired_at: Date;
     
-    @Column()
+    @Column({ name: 'next_order_at' })
     next_order_at: Date;
+
+    @Column({ name: 'result_status' })
+    result_status: string;
+
+    @Column({ name: 'result_message' })
+    result_message: string;
 
     @Column({ name: 'User_id', nullable: true })
     User_id: number | null;
