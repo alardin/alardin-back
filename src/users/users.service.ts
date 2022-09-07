@@ -15,6 +15,7 @@ import { OthersProfileDto } from './dto/others.profile.dto';
 import * as bcrypt from 'bcryptjs';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
+import { AlarmResults } from 'src/entities/alarm.results.entity';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +28,9 @@ export class UsersService {
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectRepository(AlarmPlayRecords)
-        private readonly alarmPlayRecordsRepository: Repository<AlarmPlayRecords>
+        private readonly alarmPlayRecordsRepository: Repository<AlarmPlayRecords>,
+        @InjectRepository(AlarmResults)
+        private readonly alarmResultsRepository: Repository<AlarmResults>
     ) {}
         private readonly adminCandidate = process.env.ADMIN_EMAILS.split(' ');
     async auth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
@@ -178,6 +181,7 @@ export class UsersService {
         ])
         .getMany();
     }
+
     async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
         return await this.alarmsRepository.createQueryBuilder('alarms')
         .innerJoin('alarms.Game', 'game')
@@ -201,6 +205,39 @@ export class UsersService {
         .getMany();
     }
     
+    async getUserHistoryByAlarm(myId: number) {
+        return await this.alarmPlayRecordsRepository.find({
+            where: {
+                User_id: myId
+            },
+            select: {
+                Alarm_result: {
+                    start_time: true,
+                    end_time: true,
+                    trial: true,
+                    Game: {
+                        name: true,
+                        thumbnail_url: true
+                    },
+                    Alarm: {
+                        id: true,
+                        Members: {
+                            nickname: true,
+                            thumbnail_image_url: true
+                        }
+                    }
+                }
+            },
+            relations: {
+                Alarm_result: {
+                    Game: true,
+                    Alarm: {
+                        Members: true
+                    }
+                }
+            }
+        });
+    }
     
     private async getUser(userId: number) {
         return await this.usersRepository.findOneOrFail({ where: { id: userId }})

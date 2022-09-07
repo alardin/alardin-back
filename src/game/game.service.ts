@@ -294,9 +294,10 @@ export class GameService {
                 end_time: body.end_time,
                 trial: body.trial,
                 Game_id: body.Game_id,
+                Game_channel_id: body.Game_channel_id,
                 is_bot_used: body.is_bot_used,
                 is_cleared: body.is_cleared,
-                play_time: body.play_time,
+                Alarm_id: body.Alarm_id
             });
             await queryRunner.manager.getRepository(AlarmPlayRecords).save({
                 User_id: myId,
@@ -368,10 +369,14 @@ export class GameService {
         return {
             rtcToken,
             rtmToken,
-            userA,
-            userB,
+            player1Keyword,
+            player1Images,
+            player1AnswerIndex,
+            player2Keyword,
+            player2Images,
+            player2AnswerIndex,
             channelName: String(alarm.id),
-            uid: String(user.id)
+            Game_id: alarm.Game_id
         };
     }
     private async checkToOwnGame(myId: number, gameId: number) {

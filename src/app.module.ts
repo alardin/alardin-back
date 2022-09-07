@@ -14,29 +14,36 @@ import { AgoraModule } from './external/agora/agora.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AwsService } from './aws/aws.service';
 import { AwsModule } from './aws/aws.module';
-import { MySqlConfigModule } from './config/database/config.module';
-import { MySqlConfigService } from './config/database/config.service';
-import { TaskModule } from './task/task.module';
-import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [MySqlConfigModule],
-      useClass: MySqlConfigService,
-      inject: [MySqlConfigService]
+    TypeOrmModule.forRoot({
+        type: 'mysql',
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        port: +process.env.DB_PORT,
+        host: process.env.DB_HOST,
+        database: process.env.DB_DATABASE,
+        entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
+        migrations: ['../src/migrations/*.ts'],
+        logging: true,
+        synchronize: false
     }),
-    ScheduleModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     MateModule, 
     GameModule, 
     AlarmModule,
     AgoraModule, 
     AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule, TaskModule],
+    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,

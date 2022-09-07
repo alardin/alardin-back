@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDataURI, IsDate, IsDateString, IsInt, IsNotEmpty, IsPositive } from "class-validator";
+import { IsBoolean, IsDataURI, IsDate, IsDateString, IsInt, IsNotEmpty, IsPositive, IsNumber } from "class-validator";
 import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Alarms } from "./alarms.entity";
@@ -7,7 +7,7 @@ import { GameChannel } from "./game.channel.entity";
 import { Games } from "./games.entity";
 import { Users } from "./users.entity";
 
-@Entity({ schema: 'alardin', name: 'game_results'})
+@Entity({ schema: 'alardin', name: 'alarm_results'})
 export class AlarmResults {
     @ApiProperty({
         name: 'id',
@@ -68,18 +68,31 @@ export class AlarmResults {
     is_cleared: boolean;
 
     @ApiProperty({
-        name: 'gameChannelId',
+        name: 'Game_channel_id',
         example: 1
     })
-    @Column({ name: 'Game_channel_id', nullable: true })
-    Game_channel_id: number | null;
+    @IsNumber()
+    @IsNotEmpty()
+    @Column({ name: 'Game_channel_id' })
+    Game_channel_id: number;
 
     @ApiProperty({
-        name: 'gameId',
+        name: 'Game_id',
         example: 1
     })
-    @Column({ name: 'Game_id', nullable: true })
+    @IsNumber()
+    @IsNotEmpty()
+    @Column({ name: 'Game_id' })
     Game_id: number;
+
+    @ApiProperty({
+        name: 'Alarm_id',
+        example: 1
+    })
+    @IsNotEmpty()
+    @IsNumber()
+    @Column({ name: 'Alarm_id' })
+    Alarm_id: number;
 
     @OneToOne(() => GameChannel)
     @JoinColumn({ name: 'Game_channel_id', referencedColumnName: 'id' })
@@ -94,9 +107,7 @@ export class AlarmResults {
         onUpdate: 'CASCADE'
     })
     @JoinColumn([
-        { name: 'Alarm_id', referencedColumnName: 'id' },
-        { name: 'Host_id', referencedColumnName: 'Host_id' },
-        { name: 'Game_id', referencedColumnName: 'Game_id' }
+        { name: 'Alarm_id', referencedColumnName: 'id' }
     ])
     Alarm: Alarms;
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsInt, IsNotEmpty, IsNumber, IsNumberString, IsString, IsUrl, MaxLength } from "class-validator";
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmResults } from "./alarm.results.entity";
 import { Alarms } from "./alarms.entity";
 import { GamePlayKeywords } from './game-play.keywords.entity';

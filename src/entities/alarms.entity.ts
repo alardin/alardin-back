@@ -64,10 +64,10 @@ export class Alarms {
     @Column({ name: 'music_name', default: '' })
     music_name: string;
 
-    @ApiProperty({
-        name: 'music_volume',
-        example: 70
-    })
+        @ApiProperty({
+            name: 'music_volume',
+            example: 70
+        })
     @IsNumber()
     @Min(0)
     @Max(100)
@@ -104,10 +104,10 @@ export class Alarms {
     @Column('int', { name: 'Host_id', primary: true })
     Host_id: number;
 
-    @ApiProperty({
-        name: 'Game_id',
-        example: 1
-    })
+        @ApiProperty({
+            name: 'Game_id',
+            example: 1
+        })
     @Column('int', { name: 'Game_id', primary: true })
     Game_id: number;
 
