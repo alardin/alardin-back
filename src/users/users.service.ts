@@ -15,6 +15,7 @@ import { OthersProfileDto } from './dto/others.profile.dto';
 import * as bcrypt from 'bcryptjs';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
+import { AlarmResults } from 'src/entities/alarm.results.entity';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +28,9 @@ export class UsersService {
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectRepository(AlarmPlayRecords)
-        private readonly alarmPlayRecordsRepository: Repository<AlarmPlayRecords>
+        private readonly alarmPlayRecordsRepository: Repository<AlarmPlayRecords>,
+        @InjectRepository(AlarmResults)
+        private readonly alarmResultsRepository: Repository<AlarmResults>
     ) {}
         private readonly adminCandidate = process.env.ADMIN_EMAILS.split(' ');
     async auth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
@@ -202,28 +205,38 @@ export class UsersService {
         .getMany();
     }
     
-    async getUserHistory(myId: number) {
-        const playRecords = await this.alarmPlayRecordsRepository.createQueryBuilder('apr')
-                .select()
-                .innerJoin('apr.User', 'u', 'u.id = :myId', { myId })
-                .innerJoinAndSelect('apr.Alarm_result', 'ar')
-                .innerJoin('ar.Game', 'g')
-                .getMany();
-                // .innerJoin('apr.Alarm_result', 'ar')
-                // .innerJoin('ar.Players', 'p')
-                // .select([
-                //     'ar.start_time',
-                //     'ar.end_time',
-                //     'ar.play_time',
-                //     'ar.trial',
-                //     'u.nickname',
-                //     'u.thumbnail_image_url',
-                //     'p.nickname',
-                //     'p.thumbnail_image_url',
-                //     'g.name',
-                //     'g.thumbnail_url',
-                // ])
-        console.log(playRecords);
+    async getUserHistoryByAlarm(myId: number) {
+        return await this.alarmPlayRecordsRepository.find({
+            where: {
+                User_id: myId
+            },
+            select: {
+                Alarm_result: {
+                    start_time: true,
+                    end_time: true,
+                    trial: true,
+                    Game: {
+                        name: true,
+                        thumbnail_url: true
+                    },
+                    Alarm: {
+                        id: true,
+                        Members: {
+                            nickname: true,
+                            thumbnail_image_url: true
+                        }
+                    }
+                }
+            },
+            relations: {
+                Alarm_result: {
+                    Game: true,
+                    Alarm: {
+                        Members: true
+                    }
+                }
+            }
+        });
     }
     
     private async getUser(userId: number) {

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as admin from 'firebase-admin';
 import { Mates } from 'src/entities/mates.entity';
 import { Notifications } from 'src/entities/notifications.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class PushNotificationService {
@@ -12,7 +12,7 @@ export class PushNotificationService {
         @InjectRepository(Notifications)
         private readonly notificationsRepository: Repository<Notifications>,
         @InjectRepository(Mates)
-        private readonly matesRepository: Repository<Mates>
+        private readonly matesRepository: Repository<Mates>,
     ) {
     }
     private connection = admin.initializeApp({

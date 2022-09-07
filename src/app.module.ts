@@ -27,17 +27,17 @@ dotenv.config();
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      port: +process.env.DB_PORT,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      entities: [__dirname + '/dist/**/**/*.entity{.ts,.js}'],
-      migrations: [__dirname + '/src/migrations/*.ts'],
-      logging: true,
-      synchronize: false
-  }),
+        type: 'mysql',
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        port: +process.env.DB_PORT,
+        host: process.env.DB_HOST,
+        database: process.env.DB_DATABASE,
+        entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
+        migrations: ['../src/migrations/*.ts'],
+        logging: true,
+        synchronize: false
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     MateModule, 
     GameModule, 
@@ -55,7 +55,6 @@ dotenv.config();
   }, AwsService],
 })
 export class AppModule implements NestModule {
-  constructor(private dataSource: DataSource) {}
   configure(consumer: MiddlewareConsumer) {
       consumer.apply(LoggerMiddleWare).forRoutes('*');
   }
