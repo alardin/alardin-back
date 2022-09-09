@@ -8,7 +8,7 @@ import { Assets } from 'src/entities/assets.entity';
 import { Users } from 'src/entities/users.entity';
 import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
 import { KakaoService } from 'src/external/kakao/kakao.service';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { AuthDto } from './dto/auth.dto';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { OthersProfileDto } from './dto/others.profile.dto';
@@ -16,6 +16,18 @@ import * as bcrypt from 'bcryptjs';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
+import { Mates } from 'src/entities/mates.entity';
+import { copyFileSync } from 'fs';
+
+type MatePlayHistory = {
+    id: number;
+    nickname: string;
+    thumbnail_image_url: string;
+    playCount: number;
+    successCount: number;
+    failCount: number;
+    mateDue: number;
+}
 
 @Injectable()
 export class UsersService {
@@ -30,7 +42,9 @@ export class UsersService {
         @InjectRepository(AlarmPlayRecords)
         private readonly alarmPlayRecordsRepository: Repository<AlarmPlayRecords>,
         @InjectRepository(AlarmResults)
-        private readonly alarmResultsRepository: Repository<AlarmResults>
+        private readonly alarmResultsRepository: Repository<AlarmResults>,
+        @InjectRepository(Mates)
+        private readonly matesRepository: Repository<Mates>
     ) {}
         private readonly adminCandidate = process.env.ADMIN_EMAILS.split(' ');
     async auth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
@@ -239,6 +253,70 @@ export class UsersService {
         });
     }
     
+    async getUserHistoryByCount(myId: number) {
+        const SendedMates = await this.matesRepository.createQueryBuilder('m')
+                    .select([
+                        'Receiver_id as id',
+                        'r.nickname as nickname',
+                        'r.thumbnail_image_url as thumbnail_image_url',
+                        'm.updated_at as updated_at'
+                    ])
+                    .innerJoin('m.Receiver', 'r')
+                    .where('Sender_id = :myId', { myId })
+                    .andWhere('Receiver_id != :myId', { myId })
+                    .getRawMany();
+        const ReceivedMates = await this.matesRepository.createQueryBuilder('m')
+                        .select([
+                            'Sender_id as id',
+                            's.nickname as nickname',
+                            's.thumbnail_image_url as thumbnail_image_url',
+                            'm.updated_at as updated_at'
+                        ])
+                        .innerJoin('m.Sender', 's')
+                        .where('Receiver_id = :myId', { myId })
+                        .andWhere('Sender_id != :myId', { myId })
+                        .getRawMany();
+        
+        const mates = [ ...SendedMates, ...ReceivedMates ];
+        let playRecordsWithMates: MatePlayHistory[] = [];
+        for await (let mate of mates) {
+            let playCount = 0, successCount = 0, failCount = 0, mateDue = 0;
+            mateDue = Math.floor((new Date().getTime() - mate.updated_at.getTime()) / (1000*60*60*24));
+
+            const membersOfAlarmPlayedByMate = await this.alarmPlayRecordsRepository.query(
+                `select alarm_members.Alarm_id, GROUP_CONCAT(alarm_members.User_id) as User_ids from alarm_play_records INNER JOIN alarm_results on Alarm_result_id = alarm_results.id INNER JOIN alarm_members ON alarm_results.Alarm_id = alarm_members.Alarm_id where alarm_play_records.User_id = ${mate.id} group by alarm_members.Alarm_id`
+            );
+
+            for await (let am of membersOfAlarmPlayedByMate) {
+                am.User_ids = am.User_ids.split(',').map((uid: string) => Number(uid))
+                if (am.User_ids.includes(mate.id) & am.User_ids.includes(myId)) {
+                    playCount += 1;
+                }
+                // select * from alarm_results where Alarm_id = 42;
+                const alamrResult = await this.alarmResultsRepository.findOneOrFail({
+                    select: {
+                        is_cleared: true
+                    },
+                    where: { Alarm_id: am.Alarm_id }
+                });
+                if (alamrResult.is_cleared) {
+                    successCount += 1;
+                } else {
+                    failCount += 1;
+                }
+            }
+            playRecordsWithMates.push({ 
+                id: mate.id, 
+                nickname: mate.nickname, 
+                thumbnail_image_url: mate.thumbnail_image_url, 
+                playCount, successCount, failCount, mateDue 
+            });
+        }
+        
+        return playRecordsWithMates;
+
+    }
+
     private async getUser(userId: number) {
         return await this.usersRepository.findOneOrFail({ where: { id: userId }})
                     .catch((e) => { throw new ForbiddenException('Access denied') });
