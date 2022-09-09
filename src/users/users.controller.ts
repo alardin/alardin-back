@@ -126,8 +126,8 @@ export class UsersController {
         summary: '메이트별  플레이 기록 조회'
     })
     @Get('history-count')
-    async getUserHistoyByCount(@Query('id') id:number) {
-        return this.usersService.getUserHistoryByCount(id);
+    async getUserHistoyByCount(@User() user) {
+        return this.usersService.getUserHistoryByCount(user.id);
     }
         @ApiOperation({
             summary: '프로필 수정',
