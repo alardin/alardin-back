@@ -25,7 +25,6 @@ import { GameKeywordImages } from './types/game-keyword-images.type';
 type GameDetail = {
     game: Games;
     gameScreenshots: GamesScreenshots[];
-    isOwned: boolean;
 }
 
 @Injectable()
@@ -68,18 +67,16 @@ export class GameService {
         });
     }
 
-    async getGameDetailsById(myId: number, gameId: number): Promise<GameDetail> {
+    async getGameDetailsById(gameId: number): Promise<GameDetail> {
         const game = await this.getGameById(gameId);
         const gameScreenshots = await this.gamesScreenRepository.find({
             where: {
                 Game_id: game.id
             }
         });
-        const isOwned = Boolean(await this.checkToOwnGame(myId, game.id));
         return {
             game,
-            gameScreenshots,
-            isOwned
+            gameScreenshots
         };
     }
 
