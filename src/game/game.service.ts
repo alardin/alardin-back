@@ -24,7 +24,7 @@ import { GameKeywordImages } from './types/game-keyword-images.type';
 
 type GameDetail = {
     game: Games;
-    gameScreenshots: GamesScreenshots[];
+    gameScreenshots: string[];
 }
 
 @Injectable()
@@ -72,11 +72,15 @@ export class GameService {
         const gameScreenshots = await this.gamesScreenRepository.find({
             where: {
                 Game_id: game.id
+            },
+            select: {
+                screenshot_url: true,
             }
         });
+        const sshotsReturning = gameScreenshots.map(s => s.screenshot_url);
         return {
             game,
-            gameScreenshots
+            gameScreenshots: sshotsReturning
         };
     }
 
