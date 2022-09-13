@@ -142,8 +142,8 @@ export class GameController {
     })
     @Public()
     @Get(':gameId')
-    async getGameDetailById(@User() user, gameId: number) {
-        return await this.gameService.getGameDetailsById(user.id, gameId);
+    async getGameDetailById(gameId: number) {
+        return await this.gameService.getGameDetailsById(gameId);
     }
 
         @ApiOperation({
