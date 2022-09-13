@@ -117,6 +117,19 @@ export class UsersService {
     async logout(userId: number) {
         await this.updateUser(userId, { refresh_token: null });
     }
+
+    async deleteUser(userId: number) {
+        try {
+            await this.usersRepository.createQueryBuilder()
+                .softDelete()
+                .from(Users)
+                .where('id = :id', { id: userId })
+                .execute();
+        } catch(e) {
+            throw new ForbiddenException('Invalid request');
+        }
+        return 'OK';
+    }
     
     /**
          * validate refresh token

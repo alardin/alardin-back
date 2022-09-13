@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Users } from 'src/entities/users.entity';
@@ -33,6 +33,14 @@ export class UsersController {
     @Get()
     getUser(@User() user) {
         return user;
+    }
+
+        @ApiOperation({
+            summary: '회원 탈퇴'
+        })
+    @Delete()
+    deleteUser(@User() user) {
+        return this.usersService.deleteUser(user.id);
     }
 
         @ApiOperation({
