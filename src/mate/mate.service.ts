@@ -36,6 +36,7 @@ export class MateService {
                                         's.kakao_id'
                                     ])
                                     .getMany();
+
         const sendedMates = await this.matesRepository.createQueryBuilder('m')
                                     .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
                                     .innerJoin('m.Receiver', 'r')
@@ -48,6 +49,7 @@ export class MateService {
                                         'r.kakao_id'
                                     ])
                                     .getMany();
+                                    
         const usersOfMateIReceived = receivedMates.map(m => m.Sender);
         const usersOfMateISended = sendedMates.map(m => m.Receiver);
 
@@ -65,8 +67,6 @@ export class MateService {
         }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
-        const title = 'Mate request';
-        const body = `${me.nickname} Send mate request to ${receiver.nickname}`;
         // const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
 
         await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
@@ -127,7 +127,7 @@ export class MateService {
                             'alarms.is_repeated',
                             'alarms.is_private',
                             'alarms.music_name',
-                            'alarms.max_members',
+                            'alarms.max_member',
                             'alarms.created_at', 
                             'game.id', 
                             'game.name',

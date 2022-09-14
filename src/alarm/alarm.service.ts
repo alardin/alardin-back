@@ -255,7 +255,7 @@ export class AlarmService {
                             'alarms.is_repeated',
                             'alarms.is_private',
                             'alarms.music_name',
-                            'alarms.max_members',
+                            'alarms.max_member',
                             'alarms.created_at', 
                             'game.id', 
                             'game.name',
