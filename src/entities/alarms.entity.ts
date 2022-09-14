@@ -81,14 +81,24 @@ export class Alarms {
     member_count: number;
 
     @ApiProperty({
-        name: 'max_members',
+        name: 'min_member',
+        example: 1
+    })
+    @IsInt()
+    @IsPositive()
+    @IsNotEmpty()
+    @Column({ name: 'min_member', default: 1 })
+    min_member: number;
+
+    @ApiProperty({
+        name: 'max_member',
         example: 2
     })
     @IsInt()
     @IsPositive()
     @IsNotEmpty()
     @Column({ name: 'max_member', default: 2 })
-    max_members: number;
+    max_member: number;
 
     @IsDate()
     @CreateDateColumn()

@@ -39,8 +39,9 @@ export class UsersController {
             summary: '회원 탈퇴'
         })
     @Delete()
-    deleteUser(@User() user) {
-        return this.usersService.deleteUser(user.id);
+    async deleteUser(@Req() req, @User() user) {
+        req.logout();
+        return await this.usersService.deleteUser(user.id);
     }
 
         @ApiOperation({
@@ -63,7 +64,8 @@ export class UsersController {
     @UseGuards(LoggedInGuard)
     @Post('logout')
     async logout(@Req() req, @User() user: Users) {
-        this.usersService.logout(user.id);
+        req.logout();
+        this.usersService.destroyToken(user.id);
         // appAccessToken 파기, kakaoAT, kakaoRT 파기
     }
         @ApiOperation({

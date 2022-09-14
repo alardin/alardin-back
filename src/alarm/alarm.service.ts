@@ -7,12 +7,12 @@ import { Alarms } from 'src/entities/alarms.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
+import { Games } from 'src/entities/games.entity';
 import { Users } from 'src/entities/users.entity';
 import { GameService } from 'src/game/game.service';
 import { MateService } from 'src/mate/mate.service';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
-import { TaskService } from 'src/task/task.service';
-import { DataSource, Not, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
 
@@ -29,6 +29,8 @@ export class AlarmService {
         private readonly gamePurRepository: Repository<GamePurchaseRecords>,
         @InjectRepository(Users)
         private readonly usersRepository: Repository<Users>,
+        @InjectRepository(Games)
+        private readonly gamesRepository: Repository<Games>,
         private dataSource: DataSource,
         private readonly pushNotiService: PushNotificationService,
         private readonly schedulerRegistry: SchedulerRegistry
@@ -47,10 +49,18 @@ export class AlarmService {
             if(!isOwned) {
                 throw new ForbiddenException('Users can not play this game');
             }
-            
+            const game = await this.gamesRepository.findOneOrFail({
+                where: {
+                    id: body.Game_id
+                }
+            }).catch(e => { throw new ForbiddenException(); });
+            if (body.max_member > game.max_player) {
+                throw new ForbiddenException('Invalid member count');
+            }
             newAlarm = await queryRunner.manager.getRepository(Alarms).save({
                 Host_id: myId,
                 member_count: 1,
+                min_player: game.min_player,
                 ...body
             });
 
@@ -139,7 +149,7 @@ export class AlarmService {
                     throw new ForbiddenException();
                 }
             }
-            if (alarm.member_count >= alarm.max_members) {
+            if (alarm.member_count >= alarm.max_member) {
                 throw new ForbiddenException();
             }
             const alarmMembers = new AlarmMembers();

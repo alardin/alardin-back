@@ -17,7 +17,6 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Mates } from 'src/entities/mates.entity';
-import { copyFileSync } from 'fs';
 
 type MatePlayHistory = {
     id: number;
@@ -114,8 +113,13 @@ export class UsersService {
         }
     }
     
-    async logout(userId: number) {
-        await this.updateUser(userId, { refresh_token: null });
+    async destroyToken(userId: number) {
+        await this.updateUser(userId, { 
+            refresh_token: null,
+            device_token: null,
+            kakao_access_token: null,
+            kakao_refresh_token: null
+        });
     }
 
     async deleteUser(userId: number) {
@@ -147,7 +151,7 @@ export class UsersService {
             throw new ForbiddenException('Access denied');
         }
         const tokens = this.authService.login({ id, email });
-        await this.updateUsersRefershToken(id, tokens.appRefreshToken);
+        await this.updateUsersRefreshToken(id, tokens.appRefreshToken);
         return tokens;
     }
 
@@ -358,7 +362,7 @@ export class UsersService {
         }
     }
     
-    private async updateUsersRefershToken(userId: number, refreshToken: string) {
+    private async updateUsersRefreshToken(userId: number, refreshToken: string) {
         // this.redisService.setValue('appRT', userId, refreshToken);
         const hashedRT = await bcrypt.hash(refreshToken, 12);
         return await this.updateUser(userId, { refresh_token: hashedRT }, ['refresh_token']);

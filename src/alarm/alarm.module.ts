@@ -4,6 +4,7 @@ import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
+import { Games } from 'src/entities/games.entity';
 import { Users } from 'src/entities/users.entity';
 import { GameModule } from 'src/game/game.module';
 import { MateModule } from 'src/mate/mate.module';
@@ -12,7 +13,7 @@ import { AlarmController } from './alarm.controller';
 import { AlarmService } from './alarm.service';
 
 @Module({
-  imports: [MateModule, GameModule, PushNotificationModule,TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, GameUsedImages, Users])],
+  imports: [MateModule, GameModule, PushNotificationModule,TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, GameUsedImages, Users, Games])],
   controllers: [AlarmController],
   providers: [AlarmService]
 })
