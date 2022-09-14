@@ -51,9 +51,12 @@ export class MateService {
         const usersOfMateIReceived = receivedMates.map(m => m.Sender);
         const usersOfMateISended = sendedMates.map(m => m.Receiver);
 
-        // const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken)
+        const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
         const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
-        return mateFinished;
+        return {
+            mates: mateFinished,
+            kakaoFriends: friends  
+        };
     }
 
     async sendMateRequest(me: Users, receiverKakaoId: number, data) {
@@ -111,7 +114,7 @@ export class MateService {
     async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
         const mates = await this.getMateList(myId, kakaoAccessToken);
         let alarms = [];
-        for await (let m of mates) {
+        for await (let m of mates.mates) {
             await this.validateMate(myId, m.id);
             const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
                         .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
@@ -179,63 +182,6 @@ export class MateService {
                 { Sender_id: mateId, Receiver_id: myId }
             ]
         }).catch(_ => { throw new ForbiddenException() });
-    }
-
-    async getMateListTest(me: Users) {
-
-        const receivedMates = await this.matesRepository.createQueryBuilder('m')
-                                    .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId: me.id })
-                                    .innerJoin('m.Sender', 's')
-                                    .select([
-                                        'm.id',
-                                        's.id',
-                                        's.nickname',
-                                        's.thumbnail_image_url',
-                                        's.kakao_id'
-                                    ])
-                                    .getMany();
-        const sendedMates = await this.matesRepository.createQueryBuilder('m')
-                                    .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId: me.id })
-                                    .innerJoin('m.Receiver', 'r')
-                                    .select([
-                                        'm.id',
-                                        's.id',
-                                        'r.id',
-                                        'r.nickname',
-                                        'r.thumbnail_image_url',
-                                        'r.kakao_id'
-                                    ])
-                                    .getMany();
-        const usersOfMateIReceived = receivedMates.map(m => m.Sender);
-        const usersOfMateISended = sendedMates.map(m => m.Receiver);
-
-        const reqPendingUsers = await this.mateReqRepository.createQueryBuilder('mr')
-                                    .select([
-                                        'mr.sended_at',
-                                        'mr.Sender_id',
-                                        'r.id',
-                                        'r.nickname',
-                                        'r.thumbnail_image_url',
-                                        'r.kakao_id'
-                                    ])
-                                    .where('Sender_id = :myId', { myId: me.id })
-                                    .innerJoin('mr.Receiver', 'r')
-                                    .getMany();
-        const returningPendingUsers = reqPendingUsers.map(({ sended_at, Receiver }, idx)=> {
-            const { id, nickname, thumbnail_image_url, kakao_id } = Receiver;
-            return {
-                id,
-                nickname,
-                thumbnail_image_url,
-                kakao_id
-            }
-        });
-        // const friends = await this.kakaoService.getKakaoFriends(me.kakao_access_token)
-        const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
-        return {
-            mateFinished,
-            pendingUsers: returningPendingUsers,
-        }
     }
 
 }

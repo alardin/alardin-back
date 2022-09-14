@@ -7,7 +7,4 @@ export class AppService {
         private readonly kakaoService: KakaoService,
     ) {}
 
-    async test() {
-        await this.kakaoService.getKakaoProfileTest();
-    }
 }

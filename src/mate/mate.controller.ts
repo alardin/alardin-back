@@ -95,5 +95,4 @@ export class MateController {
         return await this.mateService.getAlarmsofMate(user.id, user.kakao_access_token);
     }
 
-
 }
