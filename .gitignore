@@ -38,5 +38,3 @@ kakao_refresh.py
 .env
 /firebase
 api_test.py
-
-src/migrations/
