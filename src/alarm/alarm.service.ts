@@ -135,10 +135,9 @@ export class AlarmService {
     // 내가 들어갈 수 있는 인원인지 확인
     // 알람 멤버에 나 추가
     // 알람 멤버 수 업데이트
+    
     async joinAlarm(me: Users, alarmId: number) {
-
         const alarm = await this.getAlarmById(alarmId);
-
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();

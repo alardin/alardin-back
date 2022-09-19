@@ -214,26 +214,43 @@ export class UsersService {
     }
 
     async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
-        return await this.alarmsRepository.createQueryBuilder('alarms')
-        .innerJoin('alarms.Game', 'game')
-        .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId })
-        .select([
-            'alarms.id',
-            'alarms.name',
-            'alarms.time',
-            'alarms.is_repeated',
-            'alarms.is_private',
-            'alarms.music_name',
-            'alarms.max_member',
-            'alarms.created_at', 
-            'game.id', 
-            'game.name',
-            'game.thumbnail_url',
-            'members.id', 
-            'members.nickname',
-            'members.thumbnail_image_url'
-        ])
-        .getMany();
+
+        const joinedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
+                .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId })
+                .select([
+                    'alarms.id',
+                ])
+                .getMany();
+        const joinedAlarmsIds = joinedAlarms.map(m => m.id);
+        return await this.alarmsRepository.find({
+            select: {
+                id: true,
+                name: true,
+                time: true,
+                is_repeated: true,
+                is_private: true,
+                music_name: true,
+                max_member: true,
+                created_at: true,
+                Game: {
+                    id: true,
+                    name: true,
+                    thumbnail_url: true
+                },
+                Members: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true,
+                }
+            },
+            where: {
+                id: In(joinedAlarmsIds)
+            },
+            relations: {
+                Game: true,
+                Members: true
+            }
+        });
     }
     
     async getUserHistoryByAlarm(myId: number) {

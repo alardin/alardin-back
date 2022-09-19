@@ -95,7 +95,7 @@ export class UsersController {
             status: 200,
             type: UserAlarmsDto
         })
-
+        
     @Get('joined-alarms')
     async getAlarms(@User() user) {
         const hostedAlarms = await this.usersService.getUsersHostedAlarm(user.id);
