@@ -254,7 +254,7 @@ export class UsersService {
     }
     
     async getUserHistoryByAlarm(myId: number) {
-        return await this.alarmPlayRecordsRepository.find({
+        const res = await this.alarmPlayRecordsRepository.find({
             where: {
                 User_id: myId
             },
@@ -285,6 +285,8 @@ export class UsersService {
                 }
             }
         });
+        console.log(res);
+        return res;
     }
     
     async getUserHistoryByCount(myId: number) {

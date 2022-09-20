@@ -132,6 +132,12 @@ export class UsersController {
         return await this.usersService.getUserHistoryByAlarm(user.id);
     }
 
+    @Public()
+    @Get('history-test')
+    async getUserHistorytest() {
+        return await this.usersService.getUserHistoryByAlarm(2);
+    }
+
     @ApiOperation({
         summary: '메이트별  플레이 기록 조회'
     })

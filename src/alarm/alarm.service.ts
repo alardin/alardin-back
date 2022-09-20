@@ -268,9 +268,31 @@ export class AlarmService {
         
     }
 
+    async deleteAlarm(myId: number, alarmId: number) {
+        await this.validateAlarmHost(myId, alarmId);
+        try {
+            await this.alarmsRepository.createQueryBuilder()
+                .softDelete()
+                .from(Alarms)
+                .where('id = :id', { id: alarmId })
+                .execute();
+        } catch(e) {
+            throw new ForbiddenException('Invalid request');
+        }
+        return "OK";
+    }
+
     private async getAlarmById(alarmId: number) {
         return await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
                             .catch(_ => { throw new ForbiddenException() });
     }
 
+    private async validateAlarmHost(myId: number, alarmId: number) {
+        await this.alarmsRepository.findOneOrFail({
+            where: {
+                Host_id: myId,
+                id: alarmId
+            }
+        }).catch(_ => { throw new ForbiddenException(); });
+    }
 }

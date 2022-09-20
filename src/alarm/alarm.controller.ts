@@ -60,11 +60,14 @@ export class AlarmController {
 
         @ApiOperation({
             summary: '알람 삭제',
-            description: 'developing'
         })
-    @Delete()
-    deleteAlarm() {
-
+        @ApiResponse({
+            status: 200,
+            type: OnlyStatusResponse
+        })
+    @Delete(':alarmId')
+    async deleteAlarm(@User() user, @Param('alarmId') alarmId: number) {
+        return await this.alarmService.deleteAlarm(user.id, alarmId); 
     }
 
         @ApiOperation({
