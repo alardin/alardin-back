@@ -8,7 +8,7 @@ import { Assets } from 'src/entities/assets.entity';
 import { Users } from 'src/entities/users.entity';
 import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
 import { KakaoService } from 'src/external/kakao/kakao.service';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Not, Repository } from 'typeorm';
 import { AuthDto } from './dto/auth.dto';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { OthersProfileDto } from './dto/others.profile.dto';
@@ -254,11 +254,19 @@ export class UsersService {
     }
     
     async getUserHistoryByAlarm(myId: number) {
-        const res = await this.alarmPlayRecordsRepository.find({
+        return await this.alarmPlayRecordsRepository.find({
             where: {
-                User_id: myId
+                User_id: myId,
+                Alarm_result: {
+                    Alarm: {
+                        Members: {
+                            id: Not(myId)
+                        }
+                    }
+                }
             },
             select: {
+                created_at: true,
                 Alarm_result: {
                     start_time: true,
                     end_time: true,
@@ -283,10 +291,11 @@ export class UsersService {
                         Members: true
                     }
                 }
+            },
+            order: {
+                created_at: "DESC"
             }
         });
-        console.log(res);
-        return res;
     }
     
     async getUserHistoryByCount(myId: number) {
@@ -320,7 +329,9 @@ export class UsersService {
             mateDue = Math.floor((new Date().getTime() - mate.updated_at.getTime()) / (1000*60*60*24));
 
             const membersOfAlarmPlayedByMate = await this.alarmPlayRecordsRepository.query(
-                `select alarm_members.Alarm_id, GROUP_CONCAT(alarm_members.User_id) as User_ids from alarm_play_records INNER JOIN alarm_results on Alarm_result_id = alarm_results.id INNER JOIN alarm_members ON alarm_results.Alarm_id = alarm_members.Alarm_id where alarm_play_records.User_id = ${mate.id} group by alarm_members.Alarm_id`
+                `SELECT alarm_members.Alarm_id, GROUP_CONCAT(alarm_members.User_id) as User_ids 
+                    FROM alarm_play_records INNER JOIN alarm_results on Alarm_result_id = alarm_results.id INNER JOIN alarm_members ON alarm_results.Alarm_id = alarm_members.Alarm_id 
+                    WHERE alarm_play_records.User_id = ${mate.id} group by alarm_members.Alarm_id`
             );
 
             for await (let am of membersOfAlarmPlayedByMate) {
