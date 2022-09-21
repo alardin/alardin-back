@@ -27,8 +27,6 @@ export class AlarmService {
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @InjectRepository(GamePurchaseRecords)
         private readonly gamePurRepository: Repository<GamePurchaseRecords>,
-        @InjectRepository(Users)
-        private readonly usersRepository: Repository<Users>,
         @InjectRepository(Games)
         private readonly gamesRepository: Repository<Games>,
         private dataSource: DataSource,
