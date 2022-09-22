@@ -4,6 +4,8 @@ services:
       dockerfile: Dockerfile
       context: .
       target: production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     volumes:
       - .:/usr/src/app
