@@ -10,7 +10,7 @@ export class LoggerMiddleWare implements NestMiddleware {
         const { statusCode } = response;
         const realIp = request.headers['x-real-ip']
         response.on('finish', () => {
-            this.logger.log(`${method} ${originalUrl} From ${realIp} - ${statusCode}`);
+            this.logger.log(`${method} ${originalUrl} From ${realIp ? realIp : ''} - ${statusCode}`);
         });
         
         next();

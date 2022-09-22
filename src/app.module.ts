@@ -18,7 +18,6 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AwsService } from './aws/aws.service';
 import { AwsModule } from './aws/aws.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { ScheduleModule } from '@nestjs/schedule';
 
