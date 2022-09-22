@@ -1,11 +1,8 @@
 services:
   api:
-    stdin_open: true
-    tty: true
     build: 
       dockerfile: Dockerfile
       context: .
-
       target: production
 
     volumes:
@@ -14,7 +11,5 @@ services:
       - .env
     environment:
       - DB_HOST=host.docker.internal
-
-    command: npm run start:dev
     ports:
       - 3000:3000
