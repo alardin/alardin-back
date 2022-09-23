@@ -10,8 +10,7 @@ services:
       - .:/usr/src/app
     env_file:
       - .env
-    environment:
-      - DB_HOST=10.1.143.164
+    network_mode: host
     ports:
       - 3000:3000
 
