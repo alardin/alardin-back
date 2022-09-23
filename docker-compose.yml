@@ -1,17 +1,17 @@
+version: '3.9'
+
 services:
   api:
     build: 
       dockerfile: Dockerfile
       context: .
-      target: production
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
+      target: development
     volumes:
       - .:/usr/src/app
     env_file:
       - .env
-    environment:
-      - DB_HOST=host.docker.internal
     ports:
       - 3000:3000
+    network_mode: host
+
+    
