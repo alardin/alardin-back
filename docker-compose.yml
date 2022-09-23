@@ -5,13 +5,14 @@ services:
     build: 
       dockerfile: Dockerfile
       context: .
-      target: development
+      target: production
     volumes:
       - .:/usr/src/app
     env_file:
       - .env
+    environment:
+      - DB_HOST=10.1.143.164
     ports:
       - 3000:3000
-    network_mode: host
 
     
