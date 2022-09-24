@@ -4,10 +4,24 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as passport from 'passport';
 import { UndefinedToNullInterceptor } from './common/interceptors/undefined-to-null.interceptor';
+import { utilities, WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 async function bootstrap() {
   const port = +process.env.PORT || 3030;
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger({
+      transports: [
+        new winston.transports.Console({
+                    level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.prettyPrint(),
+          ),
+        }),
+      ],
+    }),
+  });
 
   app.use(passport.initialize())
   app.useGlobalPipes(new ValidationPipe({

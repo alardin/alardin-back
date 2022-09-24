@@ -1,19 +1,53 @@
+version: '3.9'
+
 services:
-  api:
-    stdin_open: true
-    tty: true
+  api-dev:
+    depends_on:
+      - redis
     build: 
       dockerfile: Dockerfile
       context: .
+      target: development
+    command: npm run start:dev
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=host.docker.internal
+    ports:
+      - 3000:3000
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: "alardin-back-log"
+        awslogs-region: "ap-northeast-2"
+        awslogs-stream: "backend-nestjs"
 
+  api-prod:
+    build: 
+      dockerfile: Dockerfile
+      context: .
       target: production
-
     volumes:
       - .:/usr/src/app
     env_file:
       - .env
     network_mode: host
-
-    command: npm run start:dev
     ports:
       - 3000:3000
+  redis:
+    container_name: cache
+    image: redis
+    ports:
+    - 6379:6379
+    volumes:
+    - /home/ec2-user/redis:/data
+
+volumes:
+  redis:
+    driver: local
+
+
+
+    
