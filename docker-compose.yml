@@ -1,7 +1,9 @@
 version: '3.9'
 
 services:
-  dev:
+  api-dev:
+    depends_on:
+      - redis
     build: 
       dockerfile: Dockerfile
       context: .
@@ -11,11 +13,12 @@ services:
       - .:/usr/src/app
     env_file:
       - .env
-    network_mode: host
+    environment:
+      - DB_HOST=host.docker.internal
     ports:
       - 3000:3000
 
-  prod:
+  api-prod:
     build: 
       dockerfile: Dockerfile
       context: .
@@ -27,6 +30,18 @@ services:
     network_mode: host
     ports:
       - 3000:3000
+  redis:
+    container_name: cache
+    image: redis
+    ports:
+    - 6379:6379
+    volumes:
+    - /Users/jobyeong-geun/redis:/data
+
+volumes:
+  redis:
+    driver: local
+
 
 
     

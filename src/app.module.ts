@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { CacheModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MateModule } from './mate/mate.module';
@@ -20,7 +20,7 @@ import { AwsModule } from './aws/aws.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { ScheduleModule } from '@nestjs/schedule';
-
+import * as redisStore from 'cache-manager-redis-store';
 dotenv.config();
 
 @Module({
@@ -39,6 +39,12 @@ dotenv.config();
         synchronize: false
     }),
     ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: process.env.REDIS_HOST,
+      port: +process.env.REDIS_PORT
+    }),
     MateModule, 
     GameModule, 
     AlarmModule,

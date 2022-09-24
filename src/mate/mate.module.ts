@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { MateService } from './mate.service';
 import { MateController } from './mate.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,7 +11,7 @@ import { KakaoModule } from 'src/external/kakao/kakao.module';
 
 @Module({
   imports: [PushNotificationModule, KakaoModule, TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms])],
-  providers: [MateService],
+  providers: [MateService, Logger],
   controllers: [MateController],
   exports: [MateService]
 })

@@ -1,12 +1,21 @@
-import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cache } from 'cache-manager';
 import { Alarms } from 'src/entities/alarms.entity';
 import { MateRequestRecords } from 'src/entities/mate-request.records.entity';
 import { Mates } from 'src/entities/mates.entity';
 import { Users } from 'src/entities/users.entity';
 import { KakaoService } from 'src/external/kakao/kakao.service';
+import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { Repository } from 'typeorm';
+
+
+type TMateList = {
+    mates: Users[];
+    kakaoFriends: KakaoFriend[];
+}
+
 
 @Injectable()
 export class MateService {
@@ -21,9 +30,19 @@ export class MateService {
         private readonly mateReqRepository: Repository<MateRequestRecords>,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
-    ) {}
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+        private readonly logger: Logger,
+    ) {
+        this.logger = new Logger(MateService.name);
+    }
 
-    async getMateList(myId: number, kakaoAccessToken: string) {
+    async getMateList(myId: number, kakaoAccessToken: string):Promise<TMateList> {
+
+        const cached = await this.cacheManager.get<TMateList>(`${myId}_mates`);
+        if (cached) {
+            this.logger.log(`Hit Cache!`)
+            return cached;
+        }
 
         const receivedMates = await this.matesRepository.createQueryBuilder('m')
                                     .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
@@ -55,6 +74,10 @@ export class MateService {
 
         const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
         const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
+        await this.cacheManager.set(`${myId}_mates`, {
+            mates: mateFinished,
+            kakaoFriends: friends  
+        });
         return {
             mates: mateFinished,
             kakaoFriends: friends  
@@ -112,6 +135,12 @@ export class MateService {
     }
 
     async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
+        const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
+        if (cached) {
+            this.logger.log('Hit Cache');
+            return cached;
+        }
+        
         const mates = await this.getMateList(myId, kakaoAccessToken);
         let alarms = [];
         for await (let m of mates.mates) {
@@ -139,6 +168,7 @@ export class MateService {
                         .getMany();
             alarms = [...alarms, ...alarm]
         }
+        await this.cacheManager.set(`${myId}_mates_alarm_list`, alarms);
         return alarms;  
     }
 

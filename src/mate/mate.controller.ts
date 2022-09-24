@@ -1,10 +1,9 @@
-import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
+import { Body, CacheInterceptor, Controller, Delete, Get, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AlarmsDto } from 'src/alarm/dto/alarms.dto';
 import { User } from 'src/common/decorators/user.decorator';
 import { AnyDataDto } from 'src/common/types/common.body.type';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
-import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { MateListDto } from './dto/mate-list.dto';
 import { MateRequestReponseDto } from './dto/mate-request.response.dto';
 import { RemoveMateDto } from './dto/remove.mate.dto';

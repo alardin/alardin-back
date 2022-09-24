@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
@@ -15,6 +15,6 @@ import { AlarmService } from './alarm.service';
 @Module({
   imports: [MateModule, GameModule, PushNotificationModule,TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, GameUsedImages, Users, Games])],
   controllers: [AlarmController],
-  providers: [AlarmService]
+  providers: [AlarmService, Logger]
 })
 export class AlarmModule {}
