@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MateModule } from './mate/mate.module';
@@ -52,7 +52,7 @@ dotenv.config();
   }, {
     provide: APP_GUARD,
     useClass: JwtAuthGuard
-  }, AwsService],
+  }, AwsService, Logger],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
