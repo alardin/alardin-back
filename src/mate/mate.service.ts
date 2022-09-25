@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, LoggerService, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { Alarms } from 'src/entities/alarms.entity';
@@ -31,9 +31,8 @@ export class MateService {
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
-        private readonly logger: Logger,
+        @Inject(Logger) private readonly logger: LoggerService,
     ) {
-        this.logger = new Logger(MateService.name);
     }
 
     async getMateList(myId: number, kakaoAccessToken: string):Promise<TMateList> {

@@ -1,4 +1,4 @@
-import { CacheModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { CacheModule, Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MateModule } from './mate/mate.module';
@@ -41,9 +41,9 @@ dotenv.config();
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
-      store: redisStore,
-      host: process.env.REDIS_HOST,
-      port: +process.env.REDIS_PORT
+      // store: redisStore,
+      // host: process.env.REDIS_HOST,
+      // port: +process.env.REDIS_PORT
     }),
     MateModule, 
     GameModule, 
@@ -58,7 +58,7 @@ dotenv.config();
   }, {
     provide: APP_GUARD,
     useClass: JwtAuthGuard
-  }, AwsService],
+  }, AwsService, Logger],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
