@@ -14,8 +14,6 @@ on:
     branches: ["master"]
     types:
       - completed
-env:
-  $S3_BUCKET_NAME: alardin-back-deploy
 jobs:
   push-to-dockerhub:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -27,14 +25,14 @@ jobs:
     - name: Login to Dockerhub
       uses: docker/login-action@v1
       with:
-        username: ${{secrets.DOCKERHUB_USERNAME}}
-        password: ${{secrets.DOCKERHUB_TOKEN}}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
-        images: ${{secrets.DOCKERHUB_USERNAME}}/alardin-back
+        images: ${{ secrets.DOCKERHUB_USERNAME }}/alardin-back
         tags: |
           type=sha
         
@@ -50,6 +48,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
+    env:
+      S3_BUCKET_NAME: "alardin-back-deploy"
     steps:
       - uses: actions/checkout@v3
       - name: Make .zip file
@@ -64,7 +64,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/$GITHUB_SHA.zip
 
       - name: Code Deploy
         run: aws deploy create-deployment --application-name alardin-back --deployment-config-name CodeDeployDefault.AllAtOne --deployment-group-name alardin-back-deploy --s3-location bucket=$S3_BUCKET_NAME,bundle_type=zip,key=$GITHUB_SHA.zip
