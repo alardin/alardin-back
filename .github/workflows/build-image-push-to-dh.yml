@@ -53,7 +53,7 @@ jobs:
     steps:
 
       - name: Make .zip file
-        run: zip -r ./$GITHUB_SHA.zip ./dist
+        run: zip -r ./$GITHUB_SHA.zip ./
         shell: bash
 
       - name: Configure AWS Credentials
