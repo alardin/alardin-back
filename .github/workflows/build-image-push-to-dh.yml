@@ -44,7 +44,7 @@ jobs:
         context: .
         push: true
         tags: ${{ steps.meta.outputs.tags }}
-        labeols: ${{ steps.meta.outputs.labels }} 
+        labels: ${{ steps.meta.outputs.labels }} 
 
   deploy-on-ec2:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
