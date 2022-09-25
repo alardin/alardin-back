@@ -67,4 +67,4 @@ jobs:
         run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/$GITHUB_SHA.zip
 
       - name: Code Deploy
-        run: aws deploy create-deployment --application-name alardin-back --deployment-config-name CodeDeployDefault.AllAtOne --deployment-group-name alardin-back-deploy --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundle_type=zip,key=$GITHUB_SHA.zip
+        run: aws deploy create-deployment --application-name alardin-back --deployment-config-name CodeDeployDefault.AllAtOne --deployment-group-name alardin-back-deploy --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=$GITHUB_SHA.zip
