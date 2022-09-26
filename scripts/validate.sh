@@ -1,0 +1,1 @@
+echo '[*] Validate Service';
