@@ -16,3 +16,4 @@ hooks:
     - location: scripts/run.sh
       timeout: 300
       runas: ec2-user
+  AfterAllowTestTraffic: "arn:aws:lambda:ap-northeast-2:985013825538:function:alardin-back-deploy-notoion"
