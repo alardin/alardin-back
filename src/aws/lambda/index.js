@@ -4,6 +4,7 @@ const databaseId = process.env.NOTION_DATABASE_ID;
 const userId = process.env.USER_ID;
 
 async function uploadToNotionDB(timestamp, status, spentTime) {
+    console.log('[*] Update to Notion')
     let years = timestamp.getFullYear();
     let months = timestamp.getMonth()+1;
     let date = timestamp.getDate();
