@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDataURI, IsDate, IsDateString, IsInt, IsNotEmpty, IsPositive, IsNumber } from "class-validator";
+import { IsBoolean, IsDataURI, IsDate, IsDateString, IsInt, IsNotEmpty, IsPositive, IsNumber, IsObject } from "class-validator";
 import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Alarms } from "./alarms.entity";
@@ -16,6 +16,12 @@ export class AlarmResults {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @ApiProperty({
+        name: 'data',
+        example: { foo: 'bar' }
+    })
+    @IsNotEmpty()
+    @IsObject()
     @Column('json', { name: 'data', nullable: false, default: {}})
     data: object;
 
