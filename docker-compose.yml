@@ -38,6 +38,7 @@ services:
         awslogs-group: "alardin-back-log"
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
+  
 
   redis:
     container_name: cache
