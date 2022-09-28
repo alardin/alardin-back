@@ -41,9 +41,9 @@ dotenv.config();
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
-      // store: redisStore,
-      // host: process.env.REDIS_HOST,
-      // port: +process.env.REDIS_PORT
+      store: redisStore,
+      host: process.env.REDIS_HOST,
+      port: +process.env.REDIS_PORT
     }),
     MateModule, 
     GameModule, 

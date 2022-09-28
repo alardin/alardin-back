@@ -2,8 +2,6 @@ version: '3.9'
 
 services:
   api-dev:
-    depends_on:
-      - redis
     build: 
       dockerfile: Dockerfile
       context: .
@@ -19,8 +17,6 @@ services:
       - 3000:3000
 
   api-prod:
-    depends_on:
-      - redis
     build: 
       dockerfile: Dockerfile
       context: .
@@ -38,16 +34,4 @@ services:
         awslogs-group: "alardin-back-log"
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
-  
 
-  redis:
-    container_name: cache
-    image: redis
-    ports:
-    - 6379:6379
-    volumes:
-    - ~/redis:/data
-
-volumes:
-  redis:
-    driver: local 
