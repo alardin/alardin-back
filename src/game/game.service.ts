@@ -290,10 +290,8 @@ export class GameService {
             const alarmResult = await queryRunner.manager.getRepository(AlarmResults).save({
                 start_time: body.start_time,
                 end_time: body.end_time,
-                trial: body.trial,
                 Game_id: body.Game_id,
                 Game_channel_id: body.Game_channel_id,
-                is_bot_used: body.is_bot_used,
                 is_cleared: body.is_cleared,
                 Alarm_id: body.Alarm_id
             });

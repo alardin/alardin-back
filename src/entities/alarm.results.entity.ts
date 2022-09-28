@@ -16,6 +16,9 @@ export class AlarmResults {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column('json', { name: 'data', nullable: false, default: {}})
+    data: object;
+
     @ApiProperty({
         name: 'start_time',
         example: '2022-07-22:09:00:00'
@@ -31,36 +34,6 @@ export class AlarmResults {
     @IsNotEmpty()
     @Column('date', { name: 'end_time' })
     end_time: Date;
-
-    @ApiProperty({
-        name: 'play_time',
-        description: 'end_time - start_time',
-        example: '180'
-    })
-    @IsInt()
-    @IsPositive()
-    @IsNotEmpty()
-    @Column('int', { name: 'play_time' })
-    play_time: number;
-
-    @ApiProperty({
-        name: 'is_bot_used',
-        example: false,
-    })
-    @IsBoolean()
-    @IsNotEmpty()
-    @Column('boolean', { name: 'is_bot_used' })
-    is_bot_used: boolean;
-
-    @ApiProperty({
-        name: 'trial',
-        example: 3
-    })
-    @IsInt()
-    @IsPositive()
-    @IsNotEmpty()
-    @Column('int', { name: 'trial', default: 0 })
-    trial: number;
 
     @IsBoolean()
     @IsNotEmpty()

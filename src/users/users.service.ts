@@ -290,7 +290,6 @@ export class UsersService {
                 Alarm_result: {
                     start_time: true,
                     end_time: true,
-                    trial: true,
                     Game: {
                         name: true,
                         thumbnail_url: true
