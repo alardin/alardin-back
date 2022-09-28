@@ -108,7 +108,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(port, '0.0.0.0',  async () => {
-    console.log(`[*] listening on ${port}!`);
+    console.log(`[*] listening on ${port}`);
     await updateNotion("ALIVE", "SUCCESS");
   }).catch(async e => { await updateNotion('DEAD', e.message) });
 }
