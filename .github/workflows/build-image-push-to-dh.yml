@@ -43,7 +43,7 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }} 
-
+#
   deploy-on-ec2:
     if:  ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
