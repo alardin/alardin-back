@@ -12,7 +12,7 @@ async function updateNotion(status: string, message?: string) {
   const notion = new Client({ auth: process.env.NOTION_KEY });
   const databaseId = process.env.NOTION_SERVER_DB_ID;
 
-  const now = new Date();
+  const now = new Date(Date.now() + ( 1000 * 60 * 60 * 9 ));
   let years = now.getFullYear();
   let months: string | number = now.getMonth()+1;
   let date = now.getDate();
