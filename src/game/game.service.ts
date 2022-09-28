@@ -1,6 +1,6 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AlarmMembers } from 'src/entities/alarm.members.entity';
+import { Cache } from 'cache-manager';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Alarms } from 'src/entities/alarms.entity';
@@ -16,7 +16,6 @@ import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
-import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
@@ -46,12 +45,10 @@ export class GameService {
         private readonly gameUsedImagesRespotiroy: Repository<GameUsedImages>,
         @InjectRepository(GamePlayImages)
         private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
-        @InjectRepository(AlarmMembers)
-        private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private readonly agoraService: AgoraService,
-        private readonly pushNotiService: PushNotificationService,
         private dataSource: DataSource,
 
     ) {}
@@ -310,6 +307,8 @@ export class GameService {
             throw new ForbiddenException();
         } finally {
             await queryRunner.release();
+            await this.cacheManager.del(`${myId}_records_by_alarm`);
+            await this.cacheManager.del(`${myId}_records_by_alarm`);
         }
         return 'OK';
     }

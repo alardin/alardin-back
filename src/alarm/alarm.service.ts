@@ -112,6 +112,8 @@ export class AlarmService {
 
         } finally {
             await queryRunner.release();
+            await this.cacheManager.del(`${myId}_hosted_alarms`);
+            
         }
         if (!newAlarm) {
             return null;
@@ -230,6 +232,7 @@ export class AlarmService {
             throw new ForbiddenException(e);
         } finally {
             await queryRunner.release();
+            await this.cacheManager.del(`${me.id}_joined_alarms`);
         }
 
         return 'OK';
@@ -238,11 +241,6 @@ export class AlarmService {
 
     // alarm 조회할 권한
     async getAlarm(myId: number, alarmId: number) {
-        const cached = await this.cacheManager.get<Alarms>(`${myId}_alarm_list`);
-        if (cached) {
-            this.logger.log('Hit Cache!');
-            return cached;
-        }
         const alarm = await this.getAlarmById(alarmId);
         if (alarm.is_private) {
             const validMate = await this.mateService.validateMate(myId, alarm.Host_id);
@@ -272,7 +270,6 @@ export class AlarmService {
                             'members.thumbnail_image_url'
                         ])
                         .getOne();
-        await this.cacheManager.set(`${myId}_alarm_list`, returnedAlarm);
         return returnedAlarm;
         
     }

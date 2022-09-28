@@ -76,7 +76,7 @@ export class MateService {
         await this.cacheManager.set(`${myId}_mates`, {
             mates: mateFinished,
             kakaoFriends: friends  
-        });
+        }, { ttl: 60 * 60 * 24 });
         return {
             mates: mateFinished,
             kakaoFriends: friends  
@@ -167,7 +167,7 @@ export class MateService {
                         .getMany();
             alarms = [...alarms, ...alarm]
         }
-        await this.cacheManager.set(`${myId}_mates_alarm_list`, alarms);
+        await this.cacheManager.set(`${myId}_mates_alarm_list`, alarms, { ttl: 60 * 60 * 24 });
         return alarms;  
     }
 
@@ -186,6 +186,10 @@ export class MateService {
         newMate.Sender_id = senderId, newMate.Receiver_id = receiverId;
         try {
             await this.matesRepository.save(newMate);
+            await this.cacheManager.del(`${senderId}_mates`);
+            await this.cacheManager.del(`${receiverId}_mates`);
+            await this.cacheManager.del(`${senderId}_mates_alarm_list`);
+            await this.cacheManager.del(`${receiverId}_mates_alarm_list`);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }

@@ -1,4 +1,4 @@
-import { Body, CacheInterceptor, Controller, Delete, Get, Post, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AlarmsDto } from 'src/alarm/dto/alarms.dto';
 import { User } from 'src/common/decorators/user.decorator';
