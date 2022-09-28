@@ -8,10 +8,10 @@ import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { Client } from "@notionhq/client";
 
-const notion = new Client({ auth: process.env.NOTION_KEY });
-const databaseId = process.env.NOTION_SERVER_DB_ID;
-
 async function updateNotion(status: string, message?: string) {
+  const notion = new Client({ auth: process.env.NOTION_KEY });
+  const databaseId = process.env.NOTION_SERVER_DB_ID;
+
   const now = new Date();
   let years = now.getFullYear();
   let months: string | number = now.getMonth()+1;
@@ -52,6 +52,26 @@ async function updateNotion(status: string, message?: string) {
             }
         ]
       },
+      Mention: {
+        type: 'rich_text',
+        rich_text: [
+            status === "ALIVE" ? 
+            {
+              text: {
+                content: ''
+              }
+            } : {
+                mention: {
+                    user: {
+                        id: process.env.NOTION_USER_ID,
+                        person: {
+                            email: process.env.EMAIL
+                        }
+                    }
+                }
+            }
+        ]
+      }
     }
   });
 }
