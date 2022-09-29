@@ -2,5 +2,4 @@
 
 echo "[*] RUN Migrate"
 cd ~/alardin-back-migrations
-docker-compose -f docker-compose/docker-compose.migrations.yml up --build && \
-docker-compose -f docker-compose/docker-compose.migrations.yml down -v
+npm install && npm run migrate:run && cd .. && rm -rf alardin-back-migrations
