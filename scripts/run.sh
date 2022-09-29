@@ -4,10 +4,9 @@ echo "[*] RUN SERVER by CodeDeploy!!"
 cd /home/ec2-user/alardin-back-test
 
 images=`docker images -aq`
-compose-file=""
 
 docker system prune -f
-docker-compose -f docker-compose/docker-compose.server.yml down
+docker-compose down -f docker-compose/docker-compose.server.yml
 if [ ! -n $images ]
 then
     docker rmi "$images"

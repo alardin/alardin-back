@@ -10,7 +10,7 @@ services:
     volumes:
       - .:/usr/src/app
     env_file:
-      - .env
+      - ../.env
     environment:
       - DB_HOST=host.docker.internal
     ports:
@@ -24,7 +24,7 @@ services:
     volumes:
       - .:/usr/src/app
     env_file:
-      - .env
+      - ../.env
     network_mode: host
     ports:
       - 3000:3000
