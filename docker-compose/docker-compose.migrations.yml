@@ -3,7 +3,7 @@ version: '3.9'
 services:
   migrations:
     build: 
-      dockerfile: ../docker/Dockerfile.migrations
+      dockerfile: docker/Dockerfile.migrations
       context: ..
       target: migration
     volumes:
