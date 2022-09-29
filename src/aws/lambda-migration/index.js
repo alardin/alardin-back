@@ -83,7 +83,7 @@ exports.handler = async (event, context, callback) => {
     const snsReceived = event.Records[0].Sns;
     const timestamp = snsReceived.Timestamp;
     const subject = snsReceived.Subject;
-
+    console.log('[*]', subject)
     if (subject.indexOf('CodeDeploy notification') == -1) {
         const status = subject.indexOf("SUCCEEDED")  == -1 ? subject : "SUCCESS";
         let spentTime = '';
