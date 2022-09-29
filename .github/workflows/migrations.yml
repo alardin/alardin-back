@@ -9,7 +9,7 @@ on:
 jobs:
   migrations:
     runs-on: ubuntu-latest
-
+    if: github.ref == 'refs/heads/migrations'
     env:
       S3_BUCKET_NAME: "alardin-back-migrations"
     steps:

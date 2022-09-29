@@ -3,7 +3,7 @@ version: '3.9'
 services:
   api-dev:
     build: 
-      dockerfile: Dockerfile
+      dockerfile: ../docker/Dockerfile
       context: .
       target: development
     command: npm run start:dev
@@ -18,7 +18,7 @@ services:
 
   api-prod:
     build: 
-      dockerfile: Dockerfile
+      dockerfile: ../docker/Dockerfile
       context: .
       target: production
     volumes:

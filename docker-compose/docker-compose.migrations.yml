@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  migrations:
+    build: 
+      dockerfile: ../docker/Dockerfile.migrations
+      context: .
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env
+    network_mode: host
+    ports:
+      - 3000:3000
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: "alardin-back-log"
+        awslogs-region: "ap-northeast-2"
+        awslogs-stream: "db-migrations"
+
