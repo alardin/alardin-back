@@ -291,6 +291,7 @@ export class GameService {
                 start_time: body.start_time,
                 end_time: body.end_time,
                 Game_id: body.Game_id,
+                data: body.data,
                 Game_channel_id: body.Game_channel_id,
                 is_cleared: body.is_cleared,
                 Alarm_id: body.Alarm_id
