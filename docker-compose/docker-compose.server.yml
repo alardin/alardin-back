@@ -3,14 +3,14 @@ version: '3.9'
 services:
   api-dev:
     build: 
-      dockerfile: ../docker/Dockerfile
+      dockerfile: docker/Dockerfile
       context: ..
       target: development
     command: npm run start:dev
     volumes:
       - .:/usr/src/app
     env_file:
-      - ../.env
+      - .env
     environment:
       - DB_HOST=host.docker.internal
     ports:
@@ -18,13 +18,13 @@ services:
 
   api-prod:
     build: 
-      dockerfile: ../docker/Dockerfile
+      dockerfile: docker/Dockerfile
       context: ..
       target: production
     volumes:
       - .:/usr/src/app
     env_file:
-      - ../.env
+      - .env
     network_mode: host
     ports:
       - 3000:3000
