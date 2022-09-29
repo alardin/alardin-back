@@ -6,9 +6,9 @@ cd /home/ec2-user/alardin-back-test
 images=`docker images -aq`
 
 docker system prune -f
-docker-compose down -f docker-compose/docker-compose.server.yml
+docker-compose -f docker-compose/docker-compose.server.yml down
 if [ ! -n $images ]
 then
     docker rmi "$images"
 fi
-docker-compose up -f docker-compose/docker-compose.server.yml -d --build api-prod
+docker-compose -f docker-compose/docker-compose.server.yml up -d --build api-prod
