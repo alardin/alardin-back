@@ -3,11 +3,12 @@ version: '3.9'
 services:
   migrations:
     build: 
-      dockerfile: ../docker/Dockerfile.migrations
-      context: .
+      dockerfile: docker/Dockerfile.migrations
+      context: ..
       target: migration
+    tty: true
     volumes:
-      - .:/usr/src/app
+      - ..:/usr/src/app
     env_file:
       - ../.env
     network_mode: host
