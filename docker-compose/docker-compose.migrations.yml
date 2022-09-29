@@ -5,6 +5,7 @@ services:
     build: 
       dockerfile: ../docker/Dockerfile.migrations
       context: .
+      target: migration
     volumes:
       - .:/usr/src/app
     env_file:
