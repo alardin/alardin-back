@@ -34,26 +34,6 @@ async function uploadToNotionDB(timestamp, status, spentTime) {
                     }
                 ]
             },
-            Subject: {
-                type: 'rich_text',
-                rich_text: [
-                    {
-                        text: {
-                            content: status
-                        },
-                    }
-                ]
-            },
-            Spent_time: {
-                type: 'rich_text',
-                rich_text: [
-                    {
-                        text: {
-                            content: spentTime
-                        }
-                    }
-                ]
-            },
             Mention: {
                 type: 'rich_text',
                 rich_text: [
