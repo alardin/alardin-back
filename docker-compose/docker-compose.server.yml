@@ -8,9 +8,9 @@ services:
       target: development
     command: npm run start:dev
     volumes:
-      - ..:/usr/src/app
+      - .:/usr/src/app
     env_file:
-      - ../.env
+      - .env
     environment:
       - DB_HOST=host.docker.internal
     ports:
