@@ -22,7 +22,7 @@ services:
       context: ..
       target: production
     volumes:
-      - ..:/usr/src/app
+      - .:/usr/src/app
     env_file:
       - ../.env
     network_mode: host
