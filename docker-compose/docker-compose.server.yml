@@ -4,7 +4,7 @@ services:
   api-dev:
     build: 
       dockerfile: docker/Dockerfile
-      context: ..
+      context: ../
       target: development
     command: npm run start:dev
     volumes:
