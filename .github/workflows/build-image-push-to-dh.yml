@@ -53,7 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Make .zip file
-        run: zip -r ./$GITHUB_SHA.zip ./
+        run: mv appspec.deploy.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
         shell: bash
 
       - name: Configure AWS Credentials
@@ -64,7 +64,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: mv appspec.deploy.yml appspec.yml && aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/$GITHUB_SHA.zip
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/$GITHUB_SHA.zip
 
       - name: Code Deploy
         run: aws deploy create-deployment --application-name alardin-back --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name alardin-back-deploy --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=$GITHUB_SHA.zip
