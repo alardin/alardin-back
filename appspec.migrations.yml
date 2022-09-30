@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ec2-user/alardin-back-test/
+    destination: /home/ec2-user/alardin-back-migrations/
     overwrite: yes
 
 permissions:
@@ -13,6 +13,6 @@ permissions:
 
 hooks:
   ApplicationStart:
-    - location: scripts/run.sh
+    - location: scripts/migrations.sh
       timeout: 300
       runas: ec2-user
