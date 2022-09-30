@@ -4,11 +4,11 @@ services:
   api-dev:
     build: 
       dockerfile: docker/Dockerfile
-      context: ../
+      context: ..
       target: development
     command: npm run start:dev
     volumes:
-      - .:/usr/src/app
+      - ..:/usr/src/app
     env_file:
       - ../.env
     environment:
@@ -22,7 +22,7 @@ services:
       context: ..
       target: production
     volumes:
-      - .:/usr/src/app
+      - ..:/usr/src/app
     env_file:
       - ../.env
     network_mode: host
