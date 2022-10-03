@@ -15,5 +15,5 @@ then
     docker rmi "$images"
 fi
 docker-compose -f docker-compose/docker-compose.server.yml pull api-prod && \
-    docker-compose -f docker-compose/docker-compose.server.yml start -d api-prod
+    docker-compose -f docker-compose/docker-compose.server.yml start api-prod
 # docker-compose -f docker-compose/docker-compose.server.yml up -d --build api-prod
