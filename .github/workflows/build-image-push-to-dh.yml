@@ -42,7 +42,7 @@ jobs:
         context: .
         file: docker/Dockerfile
         push: true
-        tags: latest
+        tags: alardin-back:latest
         labels: ${{ steps.meta.outputs.labels }} 
 #
   deploy-on-ec2:
