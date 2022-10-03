@@ -17,7 +17,8 @@ services:
       - 3000:3000
 
   api-prod:
-    image: airmancho/alardin-back:latest
+    image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
+    container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     volumes:
       - .:/usr/src/app
     env_file:
