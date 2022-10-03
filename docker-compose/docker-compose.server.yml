@@ -17,10 +17,7 @@ services:
       - 3000:3000
 
   api-prod:
-    build: 
-      dockerfile: docker/Dockerfile
-      context: ..
-      target: production
+    image: airmancho/alardin-back:latest
     volumes:
       - .:/usr/src/app
     env_file:
