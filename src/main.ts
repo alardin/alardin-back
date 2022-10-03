@@ -4,9 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as passport from 'passport';
 import { UndefinedToNullInterceptor } from './common/interceptors/undefined-to-null.interceptor';
-import { utilities, WinstonModule } from 'nest-winston';
+import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
-import { Client } from "@notionhq/client";
 
 async function bootstrap() {
   const port = +process.env.PORT || 3030;
