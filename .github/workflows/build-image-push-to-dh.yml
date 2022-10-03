@@ -42,6 +42,7 @@ jobs:
         context: .
         file: docker/Dockerfile
         push: true
+        tags: latest
         labels: ${{ steps.meta.outputs.labels }} 
 #
   deploy-on-ec2:
