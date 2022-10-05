@@ -53,10 +53,13 @@ export class UsersService {
         const kakaoUser: KakaoAccountUsed = await this.kakaoService.getKakaoUser(tokens.accessToken);
 
         if (kakaoUser) {
+            if (kakaoUser.email == undefined || kakaoUser.profile_image_url == undefined || kakaoUser.thumbnail_image_url == undefined) {
+                throw new ForbiddenException(); 
+            }
             if (this.adminCandidate.find(e => e === kakaoUser.email)) {
                 is_admin = true;
             }
-            const userAlreadyExist = await this.usersRepository.findOne({ where: { email: kakaoUser.email } });
+            const userAlreadyExist = await this.usersRepository.findOne({ where: { kakao_id: kakaoUser.id } });
             if (userAlreadyExist) {
                 const appTokens =  this.authService.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
                 const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);

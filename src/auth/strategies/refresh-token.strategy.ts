@@ -20,6 +20,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refreshTok
 
     async validate(req: Request, { sub, email }) {
         const user = await this.authService.validateRefreshToken(sub, email, req.query['refreshToken']);
+        // TODO: kakao accessToken
         if (!user) {
             throw new InvalidTokenException();
         }

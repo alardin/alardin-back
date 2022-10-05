@@ -1,4 +1,4 @@
-const { Client } = require("./node_modules/@notionhq/client")
+const { Client } = require("@notionhq/client")
 const notion = new Client({ auth: process.env.NOTION_KEY })
 const databaseId = process.env.NOTION_DATABASE_ID;
 const userId = process.env.USER_ID;

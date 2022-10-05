@@ -1,10 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { KakaoService } from './external/kakao/kakao.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Model } from 'mongoose';
+import { Repository } from 'typeorm';
+import { AlarmMembers } from './entities/alarm.members.entity';
+import { Alarms } from './entities/alarms.entity';
+import { GameData, GameDataDocument } from './schemas/gameData.schemas';
 
 @Injectable()
 export class AppService {
     constructor(
-        private readonly kakaoService: KakaoService,
+        @InjectRepository(AlarmMembers)
+        private readonly alarmMembersRepository: Repository<AlarmMembers>,
+        @InjectRepository(Alarms)
+        private readonly alarmsRepository: Repository<Alarms>,
+        @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>
     ) {}
-
+    async test() {
+        const alarmMembers = await this.alarmMembersRepository.find({
+            where: { Alarm_id: 29 },
+            select: {
+                User_id: true
+            }
+        });
+        const res = await this.gameDataModel.aggregate([
+            { $match: { $and: [ { Game_id: 2 }, { data_type: 'text' } ] } },
+            { $sample: { size: 2 } },
+            { $project: { "data": true, "keys": true } }
+        ]);
+        console.log(res[0].data);
+        const memberIds = alarmMembers.map(m => m.User_id);
+        
+    }
 }

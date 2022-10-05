@@ -89,7 +89,7 @@ export class MateService {
         }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
-        // const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
+        // TODO: sconst messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
 
         await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
         return 'OK';

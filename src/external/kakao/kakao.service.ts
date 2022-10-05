@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
@@ -46,7 +46,7 @@ export class KakaoService {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
             },
-        }).catch(_ => { throw new InvalidTokenException()});
+        }).catch(_ => { throw new UnauthorizedException()});
         return { id, ...kakao_account };
     }
 
@@ -59,7 +59,7 @@ export class KakaoService {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
-        }).catch(e => { throw new ForbiddenException(e) });
+        }).catch(e => { throw new UnauthorizedException() });
         return elements;
     }
 

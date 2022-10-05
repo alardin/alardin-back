@@ -21,6 +21,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
+import { MongooseModule } from '@nestjs/mongoose'
+import { AlarmMembers } from './entities/alarm.members.entity';
+import { GameData, GameDataSchema } from './schemas/gameData.schemas';
+import { Alarms } from './entities/alarms.entity';
 dotenv.config();
 
 @Module({
@@ -38,6 +42,8 @@ dotenv.config();
         logging: true,
         synchronize: false
     }),
+    MongooseModule.forFeature([{ name: GameData.name, schema: GameDataSchema }]),
+    TypeOrmModule.forFeature([AlarmMembers, Alarms]),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
@@ -45,6 +51,7 @@ dotenv.config();
       host: process.env.REDIS_HOST,
       port: +process.env.REDIS_PORT
     }),
+    MongooseModule.forRoot(`mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`),
     MateModule, 
     GameModule, 
     AlarmModule,

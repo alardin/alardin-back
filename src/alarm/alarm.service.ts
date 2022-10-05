@@ -1,8 +1,10 @@
 import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { CronJob } from 'cron';
+import { Model } from 'mongoose';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
@@ -13,6 +15,7 @@ import { Users } from 'src/entities/users.entity';
 import { GameService } from 'src/game/game.service';
 import { MateService } from 'src/mate/mate.service';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
+import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
 import { DataSource, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
@@ -35,6 +38,7 @@ export class AlarmService {
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private readonly schedulerRegistry: SchedulerRegistry,
         private readonly logger: Logger,
+        @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>
     ) {
         this.logger = new Logger(AlarmService.name);
     }
@@ -77,6 +81,8 @@ export class AlarmService {
                 Alarm_id: newAlarm.id,
                 player_count: 0,
             });
+            // Not keyword, image
+            // Data1, Data2
             const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
             const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
             
@@ -102,10 +108,30 @@ export class AlarmService {
                         .where('id = :id', { id: newAlarm.id })
                         .execute();
 
-
             await queryRunner.commitTransaction();
-            // push alarm
-            // random image select?
+            const [ hour, minute ] = newAlarm.time.split(':').map(t => Number(t));
+            const date = new Date().getDate();
+            const month = new Date().getMonth();
+            const year = new Date().getFullYear();
+            
+            const reservedTime = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, -30);
+            const job = new CronJob(reservedTime, async () => {
+                // 알람 울리기 30초 전에
+                // readyForGame()
+                // redis에 데이터 넣기 
+                const alarmMemberIds = await this.alarmMembersRepository.find({
+                    where: { Alarm_id: newAlarm.id },
+                    select: {
+                        User_id: true
+                    }
+                });
+                console.log(alarmMemberIds);
+                await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, 123);
+                
+            });
+            this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
+            job.start();
+            // cronjob
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException(e);
@@ -166,66 +192,8 @@ export class AlarmService {
                 .set({ member_count: () => 'member_count + 1' })
                 .where('id = :id', { id: alarm.id })
                 .execute();
-
-            const anotherMemberProfile = await this.alarmMembersRepository.createQueryBuilder('m')
-                .select([
-                    'm.created_at',
-                    'u.id',
-                    'u.device_token',
-                    'u.nickname',
-                    'u.thumbnail_image_url'
-                ])
-                .innerJoin('m.User', 'u')
-                .where('Alarm_id = :alarmId', { alarmId })
-                .andWhere('User_id != :myId', { myId: me.id })
-                .getOne();
-
-            const antoherMemberDataForMe = {
-                alarmId: alarm.id,
-                id: anotherMemberProfile.User.id,
-                nickname: anotherMemberProfile.User.nickname,
-                thumbnail_url: anotherMemberProfile.User.thumbnail_image_url,
-                userType: 'A'
-            }
-
-            const myDataForAntoherMember = {
-                alarmId: alarm.id,
-                id: me.id,
-                nickname: me.nickname,
-                thumbnail_url: me.thumbnail_image_url,
-                userType: 'B'
-            }
-
-            const [ hour, minute ] = alarm.time.split(':').map(t => Number(t));
-            const date = new Date().getDate();
-            const month = new Date().getMonth();
-            const year = new Date().getFullYear();
             
-            const reservedTime = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, 0);
-            const job = new CronJob(reservedTime, async () => {
-                await this.pushNotiService.sendPush(
-                    antoherMemberDataForMe.id,
-                    anotherMemberProfile.User.device_token,
-                    'Alarm',
-                    'Alarm ring ring',
-                    {
-                        type: 'ALARM_START',
-                        message: JSON.stringify(myDataForAntoherMember)
-                    }
-                );
-                await this.pushNotiService.sendPush(
-                    me.id,
-                    me.device_token,
-                    'Alarm',
-                    'Alarm ring ring',
-                    {
-                        type: 'ALARM_START',
-                        message: JSON.stringify(antoherMemberDataForMe)
-                    }
-                );
-            });
-            this.schedulerRegistry.addCronJob(`alarm-${alarm.id}`, job);
-            job.start();
+
             await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();

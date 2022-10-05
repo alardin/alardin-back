@@ -1,6 +1,8 @@
 import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
+import { Model } from 'mongoose';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Alarms } from 'src/entities/alarms.entity';
@@ -16,6 +18,7 @@ import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
+import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
@@ -49,6 +52,7 @@ export class GameService {
         private readonly alarmsRepository: Repository<Alarms>,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private readonly agoraService: AgoraService,
+        @InjectModel(GameData.name) private gamedataModel: Model<GameDataDocument>,
         private dataSource: DataSource,
 
     ) {}
@@ -229,7 +233,6 @@ export class GameService {
         }
         const imageCount = (await this.gamePlayKeywordsRepository
             .findOne({ where: { id: randomKeywordId }})).image_count;
-        console.log("[*] Keyword: ", keyword, imageCount);
         const selectedGPIs = await this.gamePlayImagesRepository.createQueryBuilder('gpi')
             .select([
                 'gpi.id',
@@ -320,7 +323,6 @@ export class GameService {
                             .catch(_ => { throw new ForbiddenException() });
         const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
                             .catch(_ => { throw new ForbiddenException() });
-        // await this.pushNotiService.sendPush(user.id, user.device_token, "Alarm", "Alarm ring ring");
         const rtcToken = this.agoraService.generateRtcToken(String(alarm.id), 'publisher', 'uid', user.id, expiry);
         const rtmToken = this.agoraService.generateRtmToken(String(user.id), expiry);
         await this.dataSource.createQueryBuilder()
@@ -349,22 +351,6 @@ export class GameService {
         const player2Images = images2.map(i => i.Game_play_image.url);
         const player2AnswerIndex = 2;
         
-        const userA = {
-            subject: player1Images[player1AnswerIndex],
-            subjectIndex: player1AnswerIndex,
-            images: player2Images,
-            answer: player2Images[player2AnswerIndex],
-            answerIndex: player2AnswerIndex,
-            keyword: player1Keyword
-        };
-        const userB = {
-            subject: player2Images[player2AnswerIndex],
-            subjectIndex: player2AnswerIndex,
-            images: player1Images,
-            answer: player1Images[player1AnswerIndex],
-            answerIndex: player1AnswerIndex,
-            keyword: player2Keyword
-        }
         return {
             rtcToken,
             rtmToken,
@@ -383,6 +369,37 @@ export class GameService {
         .innerJoin('gpr.Game', 'g', 'g.id = :gameId', { gameId })
         .innerJoin('gpr.User', 'u', 'u.id = :myId', { myId })
         .getOne();
+    }
+
+    async readyForGame(alarmId: number, userIds: number[]) {
+        const { Game_id } = await this.alarmsRepository.findOne({
+            where: { id: alarmId },
+            select: {
+                Game_id: true
+            }
+        });
+        console.log(Game_id);
+
+        switch(Game_id) {
+            case 1:
+                // per user keyword and 6 random images
+                break
+            case 2:
+                // per user next_read
+                // get next_read_paragraph from game_data 
+                break
+            default:
+                break
+        }
+
+    }
+
+    async prepareGame1(gameId: number, userIds: number[]) {
+        const res = await this.gamedataModel.aggregate([
+            { $match: { "Game_id": gameId } },
+            { $sample: { size: userIds.length } },
+            { $project: { "Game_id": 0 } }
+        ]);
     }
 
 }
