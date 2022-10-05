@@ -18,7 +18,7 @@ export class AlarmResults {
 
     @ApiProperty({
         name: 'data',
-        example: { foo: 'bar' }
+        example: { trial: 3, play_time: 30, data: { foo: 'bar' } }
     })
     @IsNotEmpty()
     @IsObject()
