@@ -17,6 +17,7 @@ async function bootstrap() {
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.prettyPrint(),
+            winston.format.errors({stack: true})
           ),
         }),
       ],

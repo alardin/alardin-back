@@ -146,18 +146,21 @@ export class UsersService {
          * https://velog.io/@jkijki12/Jwt-Refresh-Token-%EC%A0%81%EC%9A%A9%EA%B8%B0
     */
    
-    async refreshTokens(userId: number, refreshToken: string) {
-        if (!refreshToken) {
-            return null;
-        }
-        const { id, email, refresh_token } = await this.getUser(userId);
-        const tokenMatched = await bcrypt.compare(refreshToken, refresh_token);
-        if (!tokenMatched) {
-            throw new ForbiddenException('Access denied');
-        }
+    async refreshAppToken(userId: number) {
+
+        const { id, email } = await this.getUser(userId);
         const tokens = this.authService.login({ id, email });
         await this.updateUsersRefreshToken(id, tokens.appRefreshToken);
         return tokens;
+    }
+    async refreshKakaoToken(userId: number) {
+        const { kakao_refresh_token } = await this.getUser(userId);
+        const { accessToken, refreshToken } = await this.kakaoService.refreshKakaoTokens(kakao_refresh_token);
+        await this.updateUser(userId, { 
+            kakao_access_token: accessToken,
+            kakao_refresh_token: refreshToken 
+            }, ['kakao_access_token', 'kakao_refresh_token']
+        );
     }
 
     
@@ -404,7 +407,7 @@ export class UsersService {
         if (keyNeededCheck) {
             keyNeededCheck.forEach(key => {
                 if (!user[key]) {
-                    throw new UnauthorizedException();
+                    throw new ForbiddenException('Invalid request');
                 }
             })
         }

@@ -13,6 +13,7 @@ export class AppController {
   async index() {
     return 'Alardin-backend';
   }
+  @Public()
   @Get('test')
   async test() {
     return await this.appService.test();

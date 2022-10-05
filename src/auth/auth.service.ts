@@ -41,7 +41,7 @@ export class AuthService {
     login({ id, email }): AccessAndRefreshToken {
         return {
             appAccessToken: this.jwtService.sign({ email }, {
-                expiresIn: 60 * 30,
+                expiresIn: '12h',
                 subject: String(id),
                 issuer: 'alardin',
                 secret: process.env.JWT_SECRET
