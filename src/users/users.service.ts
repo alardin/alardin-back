@@ -300,6 +300,9 @@ export class UsersService {
                         name: true,
                         thumbnail_url: true
                     },
+                    data: {
+                        play_time: true
+                    },
                     Alarm: {
                         id: true,
                         Members: {

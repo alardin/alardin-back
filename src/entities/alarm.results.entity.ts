@@ -23,7 +23,7 @@ export class AlarmResults {
     @IsNotEmpty()
     @IsObject()
     @Column('json', { name: 'data', nullable: false, default: {}})
-    data: object;
+    data: { trial: number, play_time: number, data?: object };
 
     @ApiProperty({
         name: 'start_time',

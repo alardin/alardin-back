@@ -207,6 +207,36 @@ export class AlarmService {
         
     }
 
+    async sendMessageToAlarm(myId: number, alarmId: number, title: string, body: string, data?: object) {
+        const { Members: members } = await this.alarmsRepository.findOne({
+            where: {
+                id: 29,
+                Host_id: 2
+            },
+            select: {
+                id: true,
+                Host_id: true,
+                Game_id: true,
+                Members: {
+                    id: true,
+                    device_token: true
+                }
+            },
+            relations: {
+                Members: true
+            }
+        });
+        if (!members) {
+            throw new ForbiddenException();
+        }
+        const membersDeviceTokens = members.map(m => m.device_token);
+        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body);
+        return 'OK';
+        
+        
+        
+    }
+
     // alarm 조회할 권한
     async getAlarm(myId: number, alarmId: number) {
         const alarm = await this.getAlarmById(alarmId);
