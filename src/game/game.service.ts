@@ -20,6 +20,7 @@ import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
 import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
+import { GameMeta } from 'src/schemas/gameMeta.schemas';
 import { UserPlayData, UserPlayDataDocument } from 'src/schemas/userPlayData.schemas';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
@@ -58,6 +59,7 @@ export class GameService {
         private readonly agoraService: AgoraService,
         @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>,
         @InjectModel(UserPlayData.name) private userPlayDataModel: Model<UserPlayDataDocument>,
+        @InjectModel(GameMeta.name) private gameMetaModel: Model<GameMeta>,
         private dataSource: DataSource,
 
     ) {}
@@ -92,13 +94,13 @@ export class GameService {
     }
 
     async createNewGame(myId: number, body: CreateGameDto) {
-        const { screenshot_urls, ...bodyWithoutScreenshots } = body;
+        const { screenshot_urls, data_type, keys, ...bodyWithoutMeta } = body;
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
             const newGame = await queryRunner.manager.getRepository(Games).save({
-                ...bodyWithoutScreenshots
+                ...bodyWithoutMeta
             });
             for await (let url of screenshot_urls) {
                 await queryRunner.manager.getRepository(GamesScreenshots).save({
@@ -106,7 +108,14 @@ export class GameService {
                     screenshot_url: url
                 });
             }
-           await queryRunner.commitTransaction();
+            await queryRunner.commitTransaction();
+            const newGameMeta = new this.gameMetaModel({
+                Game_id: newGame.id,
+                data_type: data_type,
+                keys: keys,
+                screenshot_urls: screenshot_urls
+            });
+            await newGameMeta.save();
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException();
@@ -405,7 +414,7 @@ export class GameService {
             case 2:
                 dataForGame = await this.gameDataModel.find({
                     Game_id,
-                }, { data: true });
+                }, { data: true }).exec();
                 const titles = dataForGame.map(d => d.data['title']);
                 if (!titles.includes(data['title'])) {
                     throw new BadRequestException('Invalid Title');
@@ -427,8 +436,7 @@ export class GameService {
             { $match: { Game_id: gameId }},
             { $sample: { size: userIds.length }},
             { $project: { data: true }}
-            
-        ]);
+        ]).exec();
 
         const dataForGame = gameDatas.map((d, idx) => { 
             const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
@@ -447,11 +455,11 @@ export class GameService {
             $and: [
                 { Game_id: gameId }, { "data.title": title }
             ]
-        }, { data: true });
+        }, { data: true }).exec();
         for await (let User_id of userIds) {
             const { play_data } = await this.userPlayDataModel.findOne({
                 User_id
-            });
+            }).exec();
             const next_read: number = play_data['next_read'][title] ? play_data['next_read'][title] : 1;
             const contents = data['paragraphs'].filter(p => p.paragraph_idx == next_read);
             const dataForUser = {

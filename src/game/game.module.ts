@@ -19,12 +19,14 @@ import { PushNotificationModule } from 'src/push-notification/push-notification.
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameData, GameDataSchema } from 'src/schemas/gameData.schemas';
 import { UserPlayData, UserPlayDataScheme } from 'src/schemas/userPlayData.schemas';
+import { GameMeta, GameMetaSchema } from 'src/schemas/gameMeta.schemas';
 
 @Module({
   imports: [GameModule, PushNotificationModule, SingleModule, AgoraModule, 
     TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlayKeywords, GamePlayImages, GameUsedImages, GamesRatings, AlarmMembers, Alarms ]),
     MongooseModule.forFeature([
       { name: GameData.name, schema: GameDataSchema },
+      { name: GameMeta.name, schema: GameMetaSchema },
       { name: UserPlayData.name, schema: UserPlayDataScheme }
     ]),
   ],

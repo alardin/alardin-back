@@ -8,9 +8,6 @@ export class GameData {
     @Prop({ required: true })
     Game_id: Number;
 
-    @Prop({ required: true })
-    data_type: String;
-
     @Prop({ type: Object, required: true })
     data: Object;
 

@@ -26,6 +26,7 @@ import { AlarmMembers } from './entities/alarm.members.entity';
 import { GameData, GameDataSchema } from './schemas/gameData.schemas';
 import { Alarms } from './entities/alarms.entity';
 import { UserPlayData, UserPlayDataScheme } from './schemas/userPlayData.schemas';
+import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
 dotenv.config();
 
 @Module({
@@ -45,7 +46,8 @@ dotenv.config();
     }),
     MongooseModule.forFeature([
       { name: GameData.name, schema: GameDataSchema },
-      { name: UserPlayData.name, schema: UserPlayDataScheme }
+      { name: UserPlayData.name, schema: UserPlayDataScheme },
+      { name: GameMeta.name, schema: GameMetaSchema }
     ]),
     TypeOrmModule.forFeature([AlarmMembers, Alarms]),
     ConfigModule.forRoot({ isGlobal: true }),
