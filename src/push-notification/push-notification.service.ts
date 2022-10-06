@@ -69,7 +69,7 @@ export class PushNotificationService {
         }
     }
 
-    async sendMulticast(tokens: string[], title: string, body: string, data?: { [key:string]: string }) {
+    async sendMulticast(tokens: string[], title: string, body: string, data?: { [key: string]: string }) {
         const message: MulticastMessage = {
             data: data ? data : {},
             notification: {

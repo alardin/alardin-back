@@ -5,7 +5,7 @@ export type GameDataDocument = GameData & Document;
 
 @Schema()
 export class GameData {
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true })
     Game_id: Number;
 
     @Prop({ required: true })

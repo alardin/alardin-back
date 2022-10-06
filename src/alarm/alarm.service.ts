@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -114,24 +114,33 @@ export class AlarmService {
             const month = new Date().getMonth();
             const year = new Date().getFullYear();
             
-            const reservedTime = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, -30);
-            const job = new CronJob(reservedTime, async () => {
-                // 알람 울리기 30초 전에
-                // readyForGame()
-                // redis에 데이터 넣기 
+            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, -30);
+            const job = new CronJob(Before30secondsThanAlarm, async () => {
                 const alarmMemberIds = await this.alarmMembersRepository.find({
                     where: { Alarm_id: newAlarm.id },
                     select: {
                         User_id: true
                     }
                 });
-                console.log(alarmMemberIds);
-                await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, 123);
+                const userIds = alarmMemberIds.map(m => m.User_id);
+                let gameDataForAlarm;
+                switch(newAlarm.Game_id) {
+                    case 1:
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds);
+                        break
+                    case 2:
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds, body.data);
+                        break
+                    default:
+                        throw new BadRequestException('Invalid Game_id')
+                        break
+                }
+
+                await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, gameDataForAlarm, { ttl: 60 * 10 });
                 
             });
             this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
             job.start();
-            // cronjob
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException(e);
@@ -207,7 +216,7 @@ export class AlarmService {
         
     }
 
-    async sendMessageToAlarm(myId: number, alarmId: number, title: string, body: string, data?: object) {
+    async sendMessageToAlarm(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
         const { Members: members } = await this.alarmsRepository.findOne({
             where: {
                 id: 29,
@@ -230,7 +239,7 @@ export class AlarmService {
             throw new ForbiddenException();
         }
         const membersDeviceTokens = members.map(m => m.device_token);
-        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body);
+        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
         return 'OK';
         
         

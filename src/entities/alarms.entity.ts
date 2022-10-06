@@ -100,6 +100,9 @@ export class Alarms {
     @Column({ name: 'max_member', default: 2 })
     max_member: number;
 
+    @Column('json', { name: 'data', default: {}})
+    data: object;
+
     @IsDate()
     @CreateDateColumn()
     created_at: Date;

@@ -1,8 +1,9 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
+import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Alarms } from 'src/entities/alarms.entity';
@@ -19,6 +20,7 @@ import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
 import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
+import { UserPlayData, UserPlayDataDocument } from 'src/schemas/userPlayData.schemas';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
@@ -50,13 +52,17 @@ export class GameService {
         private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
+        @InjectRepository(AlarmMembers)
+        private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private readonly agoraService: AgoraService,
-        @InjectModel(GameData.name) private gamedataModel: Model<GameDataDocument>,
+        @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>,
+        @InjectModel(UserPlayData.name) private userPlayDataModel: Model<UserPlayDataDocument>,
         private dataSource: DataSource,
 
     ) {}
 
+    private readonly AWS_S3_STATIC_IMAGE_URL=process.env.AWS_S3_STATIC_IMAGE_URL;
     async getAllGames(skip: number, take: number) {
         if (!skip || !take) {
             skip = 0;
@@ -332,6 +338,18 @@ export class GameService {
             .andWhere('name = :name', { name: String(alarm.id) })
             .execute();
 
+        let gameData = await this.cacheManager.get(`alarm-${alarm.id}-game-data`);
+        if (!gameData) {
+            const alarmMemberIds = await this.alarmMembersRepository.find({
+                where: { Alarm_id: alarm.id },
+                select: {
+                    User_id: true
+                }
+            });
+            const userIds = alarmMemberIds.map(m => m.User_id);
+            gameData = await this.readyForGame(alarm.Game_id, userIds, alarm.data);
+                    
+        }
         const images = await this.gameUsedImagesRespotiroy.createQueryBuilder('gui')
                 .select([
                     'gui.keyword',
@@ -371,35 +389,88 @@ export class GameService {
         .getOne();
     }
 
-    async readyForGame(alarmId: number, userIds: number[]) {
+    async readyForGame(alarmId: number, userIds: number[], data?: object) {
         const { Game_id } = await this.alarmsRepository.findOne({
             where: { id: alarmId },
             select: {
                 Game_id: true
             }
         });
-        console.log(Game_id);
-
+        let gameDataForAlarm;
+        let dataForGame;
         switch(Game_id) {
             case 1:
-                // per user keyword and 6 random images
+                dataForGame = await this.prepareGame1(Game_id, userIds);
                 break
             case 2:
-                // per user next_read
-                // get next_read_paragraph from game_data 
+                dataForGame = await this.gameDataModel.find({
+                    Game_id,
+                }, { data: true });
+                const titles = dataForGame.map(d => d.data['title']);
+                if (!titles.includes(data['title'])) {
+                    throw new BadRequestException('Invalid Title');
+                }
+                gameDataForAlarm = await this.prepareGame2(Game_id, data['title'], userIds);
                 break
             default:
+                throw new BadRequestException('Invalid GameId');
                 break
         }
+        return gameDataForAlarm;
 
     }
 
     async prepareGame1(gameId: number, userIds: number[]) {
-        const res = await this.gamedataModel.aggregate([
-            { $match: { "Game_id": gameId } },
-            { $sample: { size: userIds.length } },
-            { $project: { "Game_id": 0 } }
+        const indexCandidates = [0, 1, 2, 3, 4, 5 ,6 ,7 ,8 ,9];
+
+        const gameDatas = await this.gameDataModel.aggregate([
+            { $match: { Game_id: gameId }},
+            { $sample: { size: userIds.length }},
+            { $project: { data: true }}
+            
         ]);
+
+        const dataForGame = gameDatas.map((d, idx) => { 
+            const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
+            const answerIndex = Math.floor(Math.random() * randImgIndices.length)
+            const images: string[] = randImgIndices.map((i :number)=> `${this.AWS_S3_STATIC_IMAGE_URL}/${d['data']['keyword']}/${d['data']['keyword']}${i}.jpg`);
+            return { User_id: userIds[idx], keyword: d['data']['keyword'], images, answerIndex };
+        });
+
+        return dataForGame;
+
+    } 
+
+    private async prepareGame2(gameId: number, title: string, userIds: number[]) {
+        let dataForGame = [];
+        const { data } = await this.gameDataModel.findOne({
+            $and: [
+                { Game_id: gameId }, { "data.title": title }
+            ]
+        }, { data: true });
+        for await (let User_id of userIds) {
+            const { play_data } = await this.userPlayDataModel.findOne({
+                User_id
+            });
+            const next_read: number = play_data['next_read'][title] ? play_data['next_read'][title] : 1;
+            const contents = data['paragraphs'].filter(p => p.paragraph_idx == next_read);
+            const dataForUser = {
+                User_id,
+                contents
+            }
+            dataForGame = [ dataForUser, ...dataForGame ];
+        }
+        return dataForGame;
+    }
+    private getRandomSubarray(arr, size) {
+        var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
+        while (i-- > min) {
+            index = Math.floor((i + 1) * Math.random());
+            temp = shuffled[index];
+            shuffled[index] = shuffled[i];
+            shuffled[i] = temp;
+        }
+        return shuffled.slice(min);
     }
 
 }
