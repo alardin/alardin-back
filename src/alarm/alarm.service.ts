@@ -109,8 +109,6 @@ export class AlarmService {
                         .set({ Game_channel_id: newChannel.id })
                         .where('id = :id', { id: newAlarm.id })
                         .execute();
-
-            await queryRunner.commitTransaction();
             const [ hour, minute ] = newAlarm.time.split(':').map(t => Number(t));
             const date = new Date().getDate();
             const month = new Date().getMonth();
@@ -143,6 +141,7 @@ export class AlarmService {
             });
             this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
             job.start();
+            await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException(e);
