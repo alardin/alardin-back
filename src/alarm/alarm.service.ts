@@ -291,6 +291,7 @@ export class AlarmService {
             throw new ForbiddenException('Invalid request');
         }
         await this.cacheManager.del(`${myId}_hosted_alarms`);
+        await this.cacheManager.del(`${myId}_joined_alarms`);
         await this.deleteMatesCache(myId);
         return "OK";
     }
