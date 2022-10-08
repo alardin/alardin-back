@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiBody, ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsObject } from 'class-validator';
 import { AppService } from './app.service';
 import { Public } from './common/decorators/public.decorator';
@@ -32,8 +33,9 @@ export class AppController {
     return await this.appService.test();
   }
 
+
   @Public()
-  @Post('bf75b53a1c85c18ac77b7262fec2e0910899f7791669db2198ee8f51f0712c1a')
+  @Post('insert-data')
   async insertData(@Body('data') data: InsertDto[]) {
     return await this.appService.insert(data);
     

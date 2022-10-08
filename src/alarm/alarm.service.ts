@@ -11,6 +11,7 @@ import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { Games } from 'src/entities/games.entity';
+import { Mates } from 'src/entities/mates.entity';
 import { Users } from 'src/entities/users.entity';
 import { GameService } from 'src/game/game.service';
 import { MateService } from 'src/mate/mate.service';
@@ -33,6 +34,8 @@ export class AlarmService {
         private readonly gamePurRepository: Repository<GamePurchaseRecords>,
         @InjectRepository(Games)
         private readonly gamesRepository: Repository<Games>,
+        @InjectRepository(Mates)
+        private readonly matesRepository: Repository<Mates>,
         private dataSource: DataSource,
         private readonly pushNotiService: PushNotificationService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -101,7 +104,6 @@ export class AlarmService {
                 });
             }
 
-            
             await queryRunner.manager.getRepository(Alarms).createQueryBuilder()
                         .update()
                         .set({ Game_channel_id: newChannel.id })
@@ -153,6 +155,7 @@ export class AlarmService {
         if (!newAlarm) {
             return null;
         }
+        await this.deleteMatesCache(myId);
         return newAlarm.id;
     }
 
@@ -201,17 +204,14 @@ export class AlarmService {
                 .set({ member_count: () => 'member_count + 1' })
                 .where('id = :id', { id: alarm.id })
                 .execute();
-            
-
             await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException(e);
         } finally {
             await queryRunner.release();
-            await this.cacheManager.del(`${me.id}_joined_alarms`);
         }
-
+        await this.cacheManager.del(`${me.id}_joined_alarms`);
         return 'OK';
         
     }
@@ -292,6 +292,8 @@ export class AlarmService {
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
+        await this.cacheManager.del(`${myId}_hosted_alarms`);
+        await this.deleteMatesCache(myId);
         return "OK";
     }
 
@@ -307,5 +309,10 @@ export class AlarmService {
                 id: alarmId
             }
         }).catch(_ => { throw new ForbiddenException(); });
+    }
+
+    async deleteMatesCache(myId: number) {
+        const mateIds = await this.mateService.getMateIds(myId);
+        mateIds.map(async (mId) => await this.cacheManager.del(`${mId}_mates_alarm_list`));
     }
 }

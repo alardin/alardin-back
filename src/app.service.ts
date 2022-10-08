@@ -12,6 +12,7 @@ import { UserPlayData, UserPlayDataDocument } from './schemas/userPlayData.schem
 import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GameMeta, GameMetaDocument } from './schemas/gameMeta.schemas';
+import { Mates } from './entities/mates.entity';
 
 
 class InsertDto {
@@ -46,6 +47,8 @@ export class AppService {
     constructor(
         @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
+        @InjectRepository(Mates)
+        private readonly matesRepository: Repository<Mates>,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>,
@@ -54,10 +57,34 @@ export class AppService {
         private readonly kakaoService: KakaoService
     ) {}
     async test() {
-        const res = await this.gameDataModel.findOne({
-            Game_id: 3
-        });
-        console.log(res);
+        const receivedMates = await this.matesRepository.createQueryBuilder('m')
+        .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId: 2 })
+        .innerJoin('m.Sender', 's')
+        .select([
+            'm.id',
+            's.id',
+            's.nickname',
+            's.thumbnail_image_url',
+            's.kakao_id'
+        ])
+        .getMany();
+
+        const sendedMates = await this.matesRepository.createQueryBuilder('m')
+                .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId: 2})
+                .innerJoin('m.Receiver', 'r')
+                .select([
+                    'm.id',
+                    's.id',
+                    'r.id',
+                    'r.nickname',
+                    'r.thumbnail_image_url',
+                    'r.kakao_id'
+                ])
+                .getMany();
+        const usersOfMateIReceived = receivedMates.map(m => m.Sender.id);
+        const usersOfMateISended = sendedMates.map(m => m.Receiver.id);
+        const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
+        return mateFinished;
     }
     async insert(data: InsertDto[]) {
         for await (let d of data) {

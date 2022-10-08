@@ -6,6 +6,7 @@ import { Alarms } from 'src/entities/alarms.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { Games } from 'src/entities/games.entity';
+import { Mates } from 'src/entities/mates.entity';
 import { Users } from 'src/entities/users.entity';
 import { GameModule } from 'src/game/game.module';
 import { MateModule } from 'src/mate/mate.module';
@@ -16,7 +17,7 @@ import { AlarmService } from './alarm.service';
 
 @Module({
   imports: [MateModule, GameModule, PushNotificationModule,
-    TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, GameUsedImages, Users, Games]),
+    TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, GameUsedImages, Users, Games, Mates]),
     MongooseModule.forFeature([{ name: GameData.name, schema: GameDataSchema }])],
   controllers: [AlarmController],
   providers: [AlarmService, Logger]

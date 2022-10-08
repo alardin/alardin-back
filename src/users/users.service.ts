@@ -427,6 +427,10 @@ export class UsersService {
         }
     }
     
+    async syncJoinedAlarms() {
+        
+    }
+
     private async updateUsersRefreshToken(userId: number, refreshToken: string) {
         // this.redisService.setValue('appRT', userId, refreshToken);
         const hashedRT = await bcrypt.hash(refreshToken, 12);
