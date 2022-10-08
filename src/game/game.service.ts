@@ -323,10 +323,9 @@ export class GameService {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException();
         } finally {
-            await queryRunner.release();
-            await this.cacheManager.del(`${myId}_records_by_alarm`);
-            await this.cacheManager.del(`${myId}_records_by_alarm`);
+            await queryRunner.release();    
         }
+        await this.cacheManager.del(`${myId}_records_by_alarm`);
         return 'OK';
     }
 
