@@ -83,7 +83,7 @@ export class MateService {
         };
     }
 
-    async sendMateRequest(me: Users, receiverKakaoId: number, data) {
+    async sendMateRequest(me: Users, receiverKakaoId: number) {
         if (!receiverKakaoId) {
             return null;
         }

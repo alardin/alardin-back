@@ -153,6 +153,7 @@ export class AlarmService {
             return null;
         }
         await this.cacheManager.del(`${myId}_hosted_alarms`);
+        await this.cacheManager.del(`${myId}_joined_alarms`);
         await this.deleteMatesCache(myId);
         return newAlarm.id;
     }
@@ -209,7 +210,9 @@ export class AlarmService {
         } finally {
             await queryRunner.release();
         }
+        await this.cacheManager.del(`${me.id}_hosted_alarms`);
         await this.cacheManager.del(`${me.id}_joined_alarms`);
+        await this.deleteMatesCache(me.id);
         return 'OK';
         
     }
