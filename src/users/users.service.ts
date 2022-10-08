@@ -224,7 +224,9 @@ export class UsersService {
             'members.thumbnail_image_url'
         ])
         .getMany();
-        await this.cacheManager.set(`${myId}_hosted_alarms`, hostedAlarms, { ttl: 60 * 60 * 24 });
+        if (hostedAlarms.length != 0) {
+            await this.cacheManager.set(`${myId}_hosted_alarms`, hostedAlarms, { ttl: 60 * 60 * 24 });
+        }
         return hostedAlarms;
     }
 
@@ -270,7 +272,9 @@ export class UsersService {
                 Members: true
             }
         });
-        await this.cacheManager.set(`${myId}_joined_alarms`, returnJoinedAlarms, { ttl: 60 * 60 * 24 });
+        if (returnJoinedAlarms.length != 0) {
+            await this.cacheManager.set(`${myId}_joined_alarms`, returnJoinedAlarms, { ttl: 60 * 60 * 24 });
+        }
         return returnJoinedAlarms;
     }
     
@@ -325,7 +329,9 @@ export class UsersService {
             }
         });
 
-        await this.cacheManager.set(`${myId}_records_by_alarm`, recordsByAlarm, { ttl: 60 * 60 * 24 });
+        if (recordsByAlarm.length != 0) {
+            await this.cacheManager.set(`${myId}_records_by_alarm`, recordsByAlarm, { ttl: 60 * 60 * 24 });
+        }
         return recordsByAlarm;
     }
     
@@ -394,7 +400,9 @@ export class UsersService {
                 playCount, successCount, failCount, mateDue 
             });
         }
-        await this.cacheManager.set(`${myId}_records_by_count`, playRecordsWithMates, { ttl: 60 * 60 * 24 });
+        if (playRecordsWithMates.length != 0) {
+            await this.cacheManager.set(`${myId}_records_by_count`, playRecordsWithMates, { ttl: 60 * 60 * 24 });
+        }
         return playRecordsWithMates;
 
     }
