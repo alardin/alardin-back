@@ -1,6 +1,6 @@
 const { Client } = require("@notionhq/client")
 const notion = new Client({ auth: process.env.NOTION_KEY })
-const databaseId = process.env.NOTION_MIGRATION_DB_ID;
+const databaseId = process.env.NOTION_DEV_MIGRATION_DB_ID;
 const userId = process.env.USER_ID;
 
 async function uploadToNotionDB(timestamp, status) {
