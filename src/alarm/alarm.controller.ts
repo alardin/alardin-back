@@ -4,6 +4,7 @@ import { get } from 'http';
 import { userInfo } from 'os';
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
+import { SendPushDto } from 'src/push-notification/dto/send-push.dto';
 import { JoinedAlarmsDto } from 'src/users/dto/joined-alarms.dto';
 import { AlarmService } from './alarm.service';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
@@ -83,6 +84,11 @@ export class AlarmController {
     @Get(':alarmId')
     async getAlarm(@User() user, @Param('alarmId') alarmId) {
         return await this.alarmService.getAlarm(user.id, alarmId);
+    }
+
+    @Post('message/:alarmId')
+    async sendMessageToAlarm(@User() user, @Param('alarmId') alarmId: number, @Body() sendMessageDto: SendPushDto) {
+        return await this.alarmService.sendMessageToAlarm(user.id, alarmId, sendMessageDto.title, sendMessageDto.body, sendMessageDto.data);
     }
 
 }

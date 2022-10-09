@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, LoggerService, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessAndRefreshToken } from 'src/auth/auth';
 import { AuthService } from 'src/auth/auth.service';
@@ -45,7 +45,8 @@ export class UsersService {
         private readonly alarmResultsRepository: Repository<AlarmResults>,
         @InjectRepository(Mates)
         private readonly matesRepository: Repository<Mates>,
-        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+        @Inject(Logger) private readonly logger: LoggerService,
     ) {}
         private readonly adminCandidate = process.env.ADMIN_EMAILS.split(' ');
     async auth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
@@ -53,10 +54,13 @@ export class UsersService {
         const kakaoUser: KakaoAccountUsed = await this.kakaoService.getKakaoUser(tokens.accessToken);
 
         if (kakaoUser) {
+            if (kakaoUser.email == undefined || kakaoUser.profile_image_url == undefined || kakaoUser.thumbnail_image_url == undefined) {
+                throw new ForbiddenException(); 
+            }
             if (this.adminCandidate.find(e => e === kakaoUser.email)) {
                 is_admin = true;
             }
-            const userAlreadyExist = await this.usersRepository.findOne({ where: { email: kakaoUser.email } });
+            const userAlreadyExist = await this.usersRepository.findOne({ where: { kakao_id: kakaoUser.id } });
             if (userAlreadyExist) {
                 const appTokens =  this.authService.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
                 const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);
@@ -143,18 +147,21 @@ export class UsersService {
          * https://velog.io/@jkijki12/Jwt-Refresh-Token-%EC%A0%81%EC%9A%A9%EA%B8%B0
     */
    
-    async refreshTokens(userId: number, refreshToken: string) {
-        if (!refreshToken) {
-            return null;
-        }
-        const { id, email, refresh_token } = await this.getUser(userId);
-        const tokenMatched = await bcrypt.compare(refreshToken, refresh_token);
-        if (!tokenMatched) {
-            throw new ForbiddenException('Access denied');
-        }
+    async refreshAppToken(userId: number) {
+
+        const { id, email } = await this.getUser(userId);
         const tokens = this.authService.login({ id, email });
         await this.updateUsersRefreshToken(id, tokens.appRefreshToken);
         return tokens;
+    }
+    async refreshKakaoToken(userId: number) {
+        const { kakao_refresh_token } = await this.getUser(userId);
+        const { accessToken, refreshToken } = await this.kakaoService.refreshKakaoTokens(kakao_refresh_token);
+        await this.updateUser(userId, { 
+            kakao_access_token: accessToken,
+            kakao_refresh_token: refreshToken 
+            }, ['kakao_access_token', 'kakao_refresh_token']
+        );
     }
 
     
@@ -195,7 +202,8 @@ export class UsersService {
     async getUsersHostedAlarm(myId: number): Promise<Alarms[]> {
 
         const cached = await this.cacheManager.get<Alarms[]>(`${myId}_hosted_alarms`);
-        if (cached) {
+        if (cached && cached.length != 0) {
+            this.logger.log('Hit Cache');
             return cached;
         }
         const hostedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
@@ -225,7 +233,8 @@ export class UsersService {
     async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
 
         const cached = await this.cacheManager.get<Alarms[]>(`${myId}_joined_alarms`);
-        if (cached) {
+        if (cached && cached.length != 0) {
+            this.logger.log('Hit Cache');
             return cached;
         }
         const joinedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
@@ -270,8 +279,9 @@ export class UsersService {
     
     async getUserHistoryByAlarm(myId: number) {
 
-        const cached = await this.cacheManager.get(`${myId}_records_by_alarm`);
-        if (cached) {
+        const cached = await this.cacheManager.get<AlarmPlayRecords[]>(`${myId}_records_by_alarm`);
+        if (cached && cached.length != 0) {
+            this.logger.log('Hit Cache');
             return cached;
         }
         const recordsByAlarm = await this.alarmPlayRecordsRepository.find({
@@ -293,6 +303,9 @@ export class UsersService {
                     Game: {
                         name: true,
                         thumbnail_url: true
+                    },
+                    data: {
+                        play_time: true
                     },
                     Alarm: {
                         id: true,
@@ -316,13 +329,16 @@ export class UsersService {
             }
         });
 
-        await this.cacheManager.set(`${myId}_records_by_alarm`, recordsByAlarm, { ttl: 60 * 60 * 24 });
+        if (recordsByAlarm.length != 0) {
+            await this.cacheManager.set(`${myId}_records_by_alarm`, recordsByAlarm, { ttl: 60 * 60 * 24 });
+        }
         return recordsByAlarm;
     }
     
     async getUserHistoryByCount(myId: number) {
-        const cached = await this.cacheManager.get(`${myId}_records_by_count`);
-        if (cached) {
+        const cached = await this.cacheManager.get<MatePlayHistory[]>(`${myId}_records_by_count`);
+        if (cached && cached.length != 0) {
+            this.logger.log('Hit Cache');
             return cached;
         }
         const SendedMates = await this.matesRepository.createQueryBuilder('m')
@@ -385,7 +401,9 @@ export class UsersService {
                 playCount, successCount, failCount, mateDue 
             });
         }
-        await this.cacheManager.set(`${myId}_records_by_count`, playRecordsWithMates, { ttl: 60 * 60 * 24 });
+        if (playRecordsWithMates.length != 0) {
+            await this.cacheManager.set(`${myId}_records_by_count`, playRecordsWithMates, { ttl: 60 * 60 * 24 });
+        }
         return playRecordsWithMates;
 
     }
@@ -401,7 +419,7 @@ export class UsersService {
         if (keyNeededCheck) {
             keyNeededCheck.forEach(key => {
                 if (!user[key]) {
-                    throw new UnauthorizedException();
+                    throw new ForbiddenException('Invalid request');
                 }
             })
         }
@@ -418,6 +436,10 @@ export class UsersService {
         }
     }
     
+    async syncJoinedAlarms() {
+        
+    }
+
     private async updateUsersRefreshToken(userId: number, refreshToken: string) {
         // this.redisService.setValue('appRT', userId, refreshToken);
         const hashedRT = await bcrypt.hash(refreshToken, 12);

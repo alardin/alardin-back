@@ -83,13 +83,19 @@ export class MateService {
         };
     }
 
-    async sendMateRequest(me: Users, receiverKakaoId: number, data) {
+    async sendMateRequest(me: Users, receiverKakaoId: number) {
         if (!receiverKakaoId) {
             return null;
         }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
-        // const messagId = await this.pushNotiService.sendPush(receiver.id, receiver.device_token, title, body, data);
+        const messagId = await this.pushNotiService.sendPush(receiver.id, 
+            receiver.device_token, '메이트 요청', `${me.nickname}님이 메이트로 요청하셨습니다.`, {
+                type: 'mate',
+                senderId: me.id,
+                content: `${me.nickname}님이 메이트를 요청하셨습니다.`,
+                date: new Date(Date.now())
+            });
 
         await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
         return 'OK';
@@ -111,6 +117,7 @@ export class MateService {
             await this.pushNotiService.sendPush(sender.id, sender.device_token, title, body);
             await this.saveMateRequest(me.id, sender.id, 'RESPONSE');
             await this.saveMate(sender.id, me.id);
+            await this.cacheManager.del(`${me.id}_mates`);
         }
 
         return 'OK';
@@ -130,12 +137,13 @@ export class MateService {
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
+        await this.cacheManager.del(`${myId}_mates`);
         return "OK";
     }
 
     async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
         const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
-        if (cached) {
+        if (cached && cached.length != 0) {
             this.logger.log('Hit Cache');
             return cached;
         }
@@ -215,6 +223,36 @@ export class MateService {
                 { Sender_id: mateId, Receiver_id: myId }
             ]
         }).catch(_ => { throw new ForbiddenException() });
+    }
+
+    async getMateIds(myId: number) {
+        const receivedMates = await this.matesRepository.createQueryBuilder('m')
+                                    .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
+                                    .innerJoin('m.Sender', 's')
+                                    .select([
+                                        'm.id',
+                                        's.id',
+                                        's.nickname',
+                                        's.thumbnail_image_url',
+                                        's.kakao_id'
+                                    ])
+                                    .getMany();
+        const sendedMates = await this.matesRepository.createQueryBuilder('m')
+                                    .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
+                                    .innerJoin('m.Receiver', 'r')
+                                    .select([
+                                        'm.id',
+                                        's.id',
+                                        'r.id',
+                                        'r.nickname',
+                                        'r.thumbnail_image_url',
+                                        'r.kakao_id'
+                                    ])
+                                    .getMany();
+        const usersOfMateIReceived = receivedMates.map(m => m.Sender.id);
+        const usersOfMateISended = sendedMates.map(m => m.Receiver.id);
+        const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
+        return mateFinished;
     }
 
 }

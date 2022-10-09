@@ -72,8 +72,8 @@ export class UsersController {
             summary: 'access token 재발급',
             description: 'refresh token 이용해서 access token 재발급'
         })
-        @ApiQuery({
-            name: 'refreshToken',
+        @ApiHeader({
+            name: 'Refresh-Token',
             example: 'jwt refresh token'
         })
         @ApiResponse({
@@ -83,8 +83,9 @@ export class UsersController {
     @Public()
     @UseGuards(RefreshTokenGuard)
     @Get('refresh')
-    async refreshToken(@User() user: Users, @Query('refreshToken') refreshToken) {
-        return await this.usersService.refreshTokens(user.id, refreshToken);
+    async refreshToken(@User() user: Users) {
+        await this.usersService.refreshKakaoToken(user.id);
+        return await this.usersService.refreshAppToken(user.id);
     }
 
         @ApiOperation({

@@ -1,10 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 import { Users } from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
 import { KakaoAccount, KakaoAccountUsed, KakaoFriend } from './kakao.types';
+import * as qs from 'qs';
 @Injectable()
 export class KakaoService {
 
@@ -13,9 +14,11 @@ export class KakaoService {
         private readonly usersRepository: Repository<Users>
     ) {}
     private readonly kakaoApiHost = "https://kapi.kakao.com"
+    private readonly kakaoTokenUrl = 'https://kauth.kakao.com/oauth/token';
     private readonly kakaoMeUrl = `${this.kakaoApiHost}/v2/user/me`;
     private readonly kakaoFriendsUrl = `${this.kakaoApiHost}/v1/api/talk/friends`;
     private readonly kakaoAdminKey = process.env.KAKAO_ADMIN_KEY;
+    private readonly kakaoRestApiKey = process.env.KAKAO_REST_API_KEY;
 
     /**
      * kakaoAuth는 id, email, accessToken, refreshToken만 리턴하도록!
@@ -46,7 +49,7 @@ export class KakaoService {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
             },
-        }).catch(_ => { throw new InvalidTokenException()});
+        }).catch(_ => { throw new UnauthorizedException()});
         return { id, ...kakao_account };
     }
 
@@ -59,8 +62,24 @@ export class KakaoService {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
-        }).catch(e => { throw new ForbiddenException(e) });
+        }).catch(e => { throw new UnauthorizedException() });
         return elements;
+    }
+    
+    async refreshKakaoTokens(refreshToken: string) {
+        const { data } = await axios.post(this.kakaoTokenUrl, qs.stringify({
+            "grant_type": "refresh_token",
+            "client_id": this.kakaoRestApiKey,
+            "refresh_token": refreshToken
+        }), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+            }
+        });
+        return {
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token ? data.refresh_token : refreshToken
+        };
     }
 
 

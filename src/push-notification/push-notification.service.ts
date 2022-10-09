@@ -1,9 +1,11 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as admin from 'firebase-admin';
+import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
 import { Mates } from 'src/entities/mates.entity';
 import { Notifications } from 'src/entities/notifications.entity';
 import { DataSource, Repository } from 'typeorm';
+import { SendPushDto } from './dto/send-push.dto';
 
 @Injectable()
 export class PushNotificationService {
@@ -67,11 +69,20 @@ export class PushNotificationService {
         }
     }
 
-    async sendMulticast(tokens: string[], title: string, body: string) {
-        const message = {
-            data: {
+    async sendMulticast(tokens: string[], title: string, body: string, data?: { [key: string]: string }) {
+        const message: MulticastMessage = {
+            data: data ? data : {},
+            notification: {
                 title,
                 body
+            },
+            android: {
+                priority: 'high'
+            },
+            apns:{
+                "headers":{
+                  "apns-priority": "10"
+                }
             },
             tokens
         }
@@ -82,20 +93,6 @@ export class PushNotificationService {
             throw new UnauthorizedException();
         }
     }
-
-    // topic으로 보내는 거 저장하려면 구독자가 누구인지 알ㅏㅑ 되는데, 그게 어려움
-    // async sendToTopic(topic: string) {
-    //     const message = {
-    //         data: {
-
-    //         },
-    //         topic
-    //     }
-    //     try {
-    //         const messageId = await this.connection.messaging().send(message);
-    //         await this.saveNotification
-    //     }
-    // }
 
     private async saveNotification(userId: number, title: string, body: string) {
         const newNoti = new Notifications();

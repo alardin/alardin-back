@@ -1,0 +1,64 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Develop deploy to EC2 and Dockerhub
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  push-to-dockerhub:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Login to Dockerhub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ${{ secrets.DOCKERHUB_USERNAME }}/alardin-back
+        tags: |
+          type=sha
+        
+    - name: Build and push Docker image to Dockerhub
+      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      with:
+        context: .
+        file: docker/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/alardin-back:latest
+        labels: ${{ steps.meta.outputs.labels }} 
+#
+  deploy-on-ec2:
+    runs-on: ubuntu-latest
+
+    env:
+      S3_BUCKET_NAME: "alardin-back-deploy"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Make .zip file
+        run: mv appspec.dev.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
+        shell: bash
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Upload to S3
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/dev/$GITHUB_SHA-dev.zip
+
+      - name: Code Deploy
+        run: aws deploy create-deployment --application-name alardin-back --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name alardin-back-dev --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=dev/$GITHUB_SHA-dev.zip
