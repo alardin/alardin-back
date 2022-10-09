@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
@@ -14,6 +14,6 @@ import { UsersService } from './users.service';
   imports: [KakaoModule, AuthModule,
     TypeOrmModule.forFeature([Users, Alarms, AlarmPlayRecords, AlarmResults, Mates])],
   controllers: [UsersController],
-  providers: [UsersService]
+  providers: [UsersService, Logger]
 })
 export class UsersModule {}

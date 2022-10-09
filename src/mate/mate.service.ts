@@ -143,7 +143,7 @@ export class MateService {
 
     async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
         const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
-        if (cached) {
+        if (cached && cached.length != 0) {
             this.logger.log('Hit Cache');
             return cached;
         }

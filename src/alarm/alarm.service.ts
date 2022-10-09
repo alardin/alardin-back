@@ -40,10 +40,9 @@ export class AlarmService {
         private readonly pushNotiService: PushNotificationService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private readonly schedulerRegistry: SchedulerRegistry,
-        private readonly logger: Logger,
         @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>
     ) {
-        this.logger = new Logger(AlarmService.name);
+        
     }
 
     async createNewAlarm(myId: number, body: CreateAlarmDto) {
@@ -290,12 +289,12 @@ export class AlarmService {
                 .from(Alarms)
                 .where('id = :id', { id: alarmId })
                 .execute();
+                await this.cacheManager.del(`${myId}_hosted_alarms`);
+                await this.cacheManager.del(`${myId}_joined_alarms`);
+                await this.deleteMatesCache(myId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
-        await this.cacheManager.del(`${myId}_hosted_alarms`);
-        await this.cacheManager.del(`${myId}_joined_alarms`);
-        await this.deleteMatesCache(myId);
         return "OK";
     }
 
