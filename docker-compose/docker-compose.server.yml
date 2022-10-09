@@ -32,4 +32,20 @@ services:
         awslogs-group: "alardin-back-log"
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
+  api-test:
+    image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
+    container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - ../.env
+    network_mode: host
+    ports:
+      - 3000:3000
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: "alardin-back-dev"
+        awslogs-region: "ap-northeast-2"
+        awslogs-stream: "backend-nestjs"
 

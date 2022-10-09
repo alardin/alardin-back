@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "[*] RUN SERVER by CodeDeploy!"
+echo "[*] RUN SERVER by CodeDeploy!!"
 cd /home/ec2-user/alardin-back-test
 
 images=`docker images -aq`
@@ -17,6 +17,6 @@ if [ ! -n $images ]
 then
     docker rmi "$images"
 fi
-docker-compose -f docker-compose/docker-compose.server.yml pull api-prod && \
-    docker-compose -f docker-compose/docker-compose.server.yml up -d api-prod
+docker-compose -f docker-compose/docker-compose.server.yml pull api-test && \
+    docker-compose -f docker-compose/docker-compose.server.yml up -d api-test
 # docker-compose -f docker-compose/docker-compose.server.yml up -d --build api-prod

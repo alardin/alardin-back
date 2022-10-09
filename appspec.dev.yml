@@ -1,0 +1,21 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/ec2-user/alardin-back-develop/
+    overwrite: yes
+
+permissions:
+  - object: /
+    pattern: "**"
+    owner: ec2-user
+    group: ec2-user
+
+hooks:
+  ApplicationStart:
+    - location: scripts/run.sh
+      timeout: 300
+      runas: ec2-user
+    - location: scripts/health_check.sh
+      timout: 300
+      runas: ec2-user
