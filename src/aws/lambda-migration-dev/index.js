@@ -64,7 +64,7 @@ exports.handler = async (event, context, callback) => {
     const timestamp = snsReceived.Timestamp;
     const subject = snsReceived.Subject;
     console.log('[*]', subject)
-    const status = subject.indexOf("INPROGRESS")  == -1 ? subject : "SUCCESS";
+    const status = subject.indexOf("SUCCEEDED")  == -1 ? subject : "SUCCESS";
     await uploadToNotionDB(new Date(new Date(timestamp).getTime() + (1000 * 60 * 60 * 9)), status);
     
 }  
