@@ -228,7 +228,7 @@ export class AlarmService {
             await queryRunner.release();
         }
         await this.clearAlarmsCache(me.id);
-        await this.deleteMembersCache(me.id, alarm.id);
+        // await this.deleteMembersCache(me.id, alarm.id);
         return 'OK';
         
     }
@@ -336,7 +336,7 @@ export class AlarmService {
                 .where('id = :id', { id: alarmId })
                 .execute();
             await this.clearAlarmsCache(myId);
-            await this.deleteMembersCache(myId, alarmId);
+            // await this.deleteMembersCache(myId, alarmId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
