@@ -379,11 +379,12 @@ export class AlarmService {
         if (!members) {
             throw new ForbiddenException();
         }
-        const memberIds = members.filter((m) => m.id !== myId).map(m => m.id);
-        if (!memberIds.includes(myId)) {
-            throw new ForbiddenException();
-        }
-        memberIds.map(async (mId) => await this.clearAlarmsCache(mId));
+        const memberIds = members.map(m => m.id);
+        memberIds.map(async (mId) => { 
+            if (mId != myId) {
+                await this.clearAlarmsCache(mId);
+            }
+        });
     }
     async clearAlarmsCache(myId: number) {
         await this.cacheManager.del(`${myId}_hosted_alarms`);
