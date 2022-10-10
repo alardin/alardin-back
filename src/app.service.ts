@@ -87,28 +87,26 @@ export class AppService {
         const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
         return mateFinished;
     }
-    async insert(data: InsertDto[]) {
-        for await (let d of data) {
-            const game = await this.gameMetaModel.findOne({
-                Game_id: d.Game_id
-            }).exec();
-            if (!game) {
-                throw new BadRequestException('Invalid Game_id');
-            }
-            console.log(game.keys)
-            console.log(Object.keys(d.data))
-            if ( !Object.keys(d.data).every((k) => game.keys.includes(k)) || !game.keys.every((k) => Object.keys(d.data).includes(k))) {
-                throw new BadRequestException('Invalid keys');
-            }
+    // async insert(data: InsertDto[]) {
+    //     for await (let d of data) {
+    //         const game = await this.gameMetaModel.findOne({
+    //             Game_id: d.Game_id
+    //         }).exec();
+    //         if (!game) {
+    //             throw new BadRequestException('Invalid Game_id');
+    //         }
+    //         if ( !Object.keys(d.data).every((k) => game.keys.includes(k)) || !game.keys.every((k) => Object.keys(d.data).includes(k))) {
+    //             throw new BadRequestException('Invalid keys');
+    //         }
 
-            const newGameData = new this.gameDataModel({
-                Game_id: d.Game_id,
-                data: d.data
-            });
+    //         const newGameData = new this.gameDataModel({
+    //             Game_id: d.Game_id,
+    //             data: d.data
+    //         });
 
-            await newGameData.save();
+    //         await newGameData.save();
 
-        }
-        return 'OK';
-    }
+    //     }
+    //     return 'OK';
+    // }
 }
