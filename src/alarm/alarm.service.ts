@@ -228,6 +228,7 @@ export class AlarmService {
             await queryRunner.release();
         }
         await this.clearAlarmsCache(me.id);
+        await this.deleteMembersCache(me.id, alarm.id);
         return 'OK';
         
     }
@@ -358,6 +359,31 @@ export class AlarmService {
     async deleteMatesCache(myId: number) {
         const mateIds = await this.mateService.getMateIds(myId);
         mateIds.map(async (mId) => await this.cacheManager.del(`${mId}_mates_alarm_list`));
+    }
+
+    async deleteMembersCache(myId: number, alarmId: number) {
+        const { Members: members } = await this.alarmsRepository.findOne({
+            where: {
+                id: alarmId
+            },
+            select: {
+                id: true,
+                Members: {
+                    id: true,
+                }
+            },
+            relations: {
+                Members: true
+            }
+        });
+        if (!members) {
+            throw new ForbiddenException();
+        }
+        const memberIds = members.filter((m) => m.id !== myId).map(m => m.id);
+        if (!memberIds.includes(myId)) {
+            throw new ForbiddenException();
+        }
+        memberIds.map(async (mId) => await this.clearAlarmsCache(mId));
     }
     async clearAlarmsCache(myId: number) {
         await this.cacheManager.del(`${myId}_hosted_alarms`);
