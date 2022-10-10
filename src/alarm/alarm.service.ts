@@ -335,7 +335,8 @@ export class AlarmService {
                 .from(Alarms)
                 .where('id = :id', { id: alarmId })
                 .execute();
-                await this.clearAlarmsCache(myId);
+            await this.clearAlarmsCache(myId);
+            await this.deleteMembersCache(myId, alarmId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
