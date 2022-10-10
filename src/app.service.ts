@@ -13,6 +13,7 @@ import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GameMeta, GameMetaDocument } from './schemas/gameMeta.schemas';
 import { Mates } from './entities/mates.entity';
+import { filter } from 'rxjs';
 
 
 class InsertDto {
@@ -94,7 +95,9 @@ export class AppService {
             if (!game) {
                 throw new BadRequestException('Invalid Game_id');
             }
-            if ( Object.keys(d.data) != game.keys ) {
+            console.log(game.keys)
+            console.log(Object.keys(d.data))
+            if ( !Object.keys(d.data).every((k) => game.keys.includes(k)) || !game.keys.every((k) => Object.keys(d.data).includes(k))) {
                 throw new BadRequestException('Invalid keys');
             }
 

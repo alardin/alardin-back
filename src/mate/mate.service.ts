@@ -91,10 +91,13 @@ export class MateService {
                                 .catch(_ => { throw new NotFoundException() });
         const messagId = await this.pushNotiService.sendPush(receiver.id, 
             receiver.device_token, '메이트 요청', `${me.nickname}님이 메이트로 요청하셨습니다.`, {
-                type: 'mate',
-                senderId: String(me.id),
-                content: `${me.nickname}님이 메이트를 요청하셨습니다.`,
-                date: new Date(Date.now()).toISOString()
+                type: 'MATE_ALARM',
+                message: {
+                    type: 'mate',
+                    senderId: String(me.id),
+                    content: `${me.nickname}님이 메이트를 요청하셨습니다.`,
+                    date: new Date(Date.now()).toISOString()
+                }
             });
 
         await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
