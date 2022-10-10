@@ -128,6 +128,9 @@ export class MateService {
         // push?
         // db row 삭제
         const mate = await this.validateMate(myId, mateId);
+        if (!mate) {
+            throw new ForbiddenException('Not Allowed');
+        }
         try {
             await this.matesRepository.createQueryBuilder()
                 .softDelete()
@@ -151,7 +154,10 @@ export class MateService {
         const mates = await this.getMateList(myId, kakaoAccessToken);
         let alarms = [];
         for await (let m of mates.mates) {
-            await this.validateMate(myId, m.id);
+            const validMate = await this.validateMate(myId, m.id);
+            if (!validMate) {
+                throw new ForbiddenException('Not Allowed');
+            }
             const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
                         .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
                         .innerJoin('alarms.Members', 'members')
@@ -173,7 +179,7 @@ export class MateService {
                             'members.thumbnail_image_url'
                         ])
                         .getMany();
-            alarms = [...alarms, ...alarm]
+            alarms = [...alarms, ...alarm];
         }
         await this.cacheManager.set(`${myId}_mates_alarm_list`, alarms, { ttl: 60 * 60 * 24 });
         return alarms;  
@@ -217,12 +223,12 @@ export class MateService {
     }
 
     async validateMate(myId: number, mateId: number) {
-        return await this.matesRepository.findOneOrFail({
+        return await this.matesRepository.findOne({
             where: [
                 { Sender_id: myId, Receiver_id: mateId },
                 { Sender_id: mateId, Receiver_id: myId }
             ]
-        }).catch(_ => { throw new ForbiddenException() });
+        })
     }
 
     async getMateIds(myId: number) {

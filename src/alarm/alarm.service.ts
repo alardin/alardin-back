@@ -177,16 +177,36 @@ export class AlarmService {
     
     async joinAlarm(me: Users, alarmId: number) {
         const alarm = await this.getAlarmById(alarmId);
+        const alarmMemberIds = await this.alarmMembersRepository.find({
+            where: { Alarm_id: alarm.id },
+            select: {
+                User_id: true
+            }
+        });
+        const userIds = alarmMemberIds.map(m => m.User_id).filter(id => id != me.id);
         const queryRunner = this.dataSource.createQueryRunner();
+        let validFlag = false;
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
             if (alarm.is_private) {
+                // member list 중 한명이라도 mate이면 valid
                 const validMate = await this.mateService.validateMate(me.id, alarm.Host_id);
                 if (!validMate) {
                     throw new ForbiddenException();
                 }
+            } else {
+                for await (let uId of userIds) {
+                    const isValid = await this.mateService.validateMate(me.id, uId);
+                    if (isValid) {
+                        validFlag = true;
+                        break;
+                    } 
+                }
             }
+            if (!validFlag) {
+                throw new ForbiddenException('Not Allowed to join');
+            } 
             if (alarm.member_count >= alarm.max_member) {
                 throw new ForbiddenException();
             }
