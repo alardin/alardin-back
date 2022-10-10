@@ -108,38 +108,38 @@ export class AlarmService {
                         .set({ Game_channel_id: newChannel.id })
                         .where('id = :id', { id: newAlarm.id })
                         .execute();
-            const [ hour, minute ] = newAlarm.time.split(':').map(t => Number(t));
-            const date = new Date().getDate();
-            const month = new Date().getMonth();
-            const year = new Date().getFullYear();
+            // const [ hour, minute ] = newAlarm.time.split(':').map(t => Number(t));
+            // const date = new Date().getDate();
+            // const month = new Date().getMonth();
+            // const year = new Date().getFullYear();
             
-            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour, minute, -30);
-            const job = new CronJob(Before30secondsThanAlarm, async () => {
-                const alarmMemberIds = await this.alarmMembersRepository.find({
-                    where: { Alarm_id: newAlarm.id },
-                    select: {
-                        User_id: true
-                    }
-                });
-                const userIds = alarmMemberIds.map(m => m.User_id);
-                let gameDataForAlarm;
-                switch(newAlarm.Game_id) {
-                    case 1:
-                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds);
-                        break
-                    case 2:
-                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds, body.data);
-                        break
-                    default:
-                        throw new BadRequestException('Invalid Game_id')
-                        break
-                }
+            // const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour, minute, -30);
+            // const job = new CronJob(Before30secondsThanAlarm, async () => {
+            //     const alarmMemberIds = await this.alarmMembersRepository.find({
+            //         where: { Alarm_id: newAlarm.id },
+            //         select: {
+            //             User_id: true
+            //         }
+            //     });
+            //     const userIds = alarmMemberIds.map(m => m.User_id);
+            //     let gameDataForAlarm;
+            //     switch(newAlarm.Game_id) {
+            //         case 1:
+            //             gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds);
+            //             break
+            //         case 2:
+            //             gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds, body.data);
+            //             break
+            //         default:
+            //             throw new BadRequestException('Invalid Game_id')
+            //             break
+            //     }
 
-                await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, gameDataForAlarm, { ttl: 60 * 10 });
+            //     await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, gameDataForAlarm, { ttl: 60 * 10 });
                 
-            });
-            this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
-            job.start();
+            // });
+            // this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
+            // job.start();
             await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();

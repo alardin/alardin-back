@@ -206,26 +206,47 @@ export class UsersService {
             this.logger.log('Hit Cache');
             return cached;
         }
-        const hostedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
-        .innerJoin('alarms.Host', 'h', 'h.id = :myId', { myId })
-        .innerJoin('alarms.Game', 'game')
-        .innerJoin('alarms.Members', 'members')
-        .select([
-            'alarms.id',
-            'alarms.time',
-            'alarms.is_repeated',
-            'alarms.is_private',
-            'alarms.music_volume',
-            'alarms.max_member',
-            'alarms.created_at', 
-            'game.id', 
-            'game.name',
-            'game.thumbnail_url',
-            'members.id', 
-            'members.nickname',
-            'members.thumbnail_image_url'
-        ])
-        .getMany();
+        let hostedAlarms = await this.alarmsRepository.find({
+            select: {
+                id: true,
+                name: true,
+                time: true,
+                is_repeated: true,
+                is_private: true,
+                music_name: true,
+                max_member: true,
+                created_at: true,
+                Host_id: true,
+                Game_id: true,
+                Game: {
+                    id: true,
+                    name: true,
+                    thumbnail_url: true
+                },
+                Host: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true
+                },
+                Members: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true,
+                }
+            },
+            where: {
+                Host_id: myId
+            },
+            relations: {
+                Game: true,
+                Members: true,
+                Host: true
+            }
+        });
+        hostedAlarms = hostedAlarms.map(({ Host, ...withOutHost}) => {
+            withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
+            return {...withOutHost, Host};
+        });
         await this.cacheManager.set(`${myId}_hosted_alarms`, hostedAlarms, { ttl: 60 * 60 * 24 });
         return hostedAlarms;
     }
@@ -244,7 +265,7 @@ export class UsersService {
                 ])
                 .getMany();
         const joinedAlarmsIds = joinedAlarms.map(m => m.id);
-        const returnJoinedAlarms = await this.alarmsRepository.find({
+        let returnJoinedAlarms = await this.alarmsRepository.find({
             select: {
                 id: true,
                 name: true,
@@ -254,10 +275,17 @@ export class UsersService {
                 music_name: true,
                 max_member: true,
                 created_at: true,
+                Host_id: true,
+                Game_id: true,
                 Game: {
                     id: true,
                     name: true,
                     thumbnail_url: true
+                },
+                Host: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true
                 },
                 Members: {
                     id: true,
@@ -266,12 +294,17 @@ export class UsersService {
                 }
             },
             where: {
-                id: In(joinedAlarmsIds)
+                id: In(joinedAlarmsIds),
             },
             relations: {
                 Game: true,
-                Members: true
+                Members: true,
+                Host: true
             }
+        });
+        returnJoinedAlarms = returnJoinedAlarms.map(({ Host, ...withOutHost}) => {
+            withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
+            return {...withOutHost, Host};
         });
         await this.cacheManager.set(`${myId}_joined_alarms`, returnJoinedAlarms, { ttl: 60 * 60 * 24 });
         return returnJoinedAlarms;

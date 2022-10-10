@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Model } from 'mongoose';
 import { title } from 'process';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { AlarmMembers } from './entities/alarm.members.entity';
 import { Alarms } from './entities/alarms.entity';
 import { KakaoService } from './external/kakao/kakao.service';
@@ -62,13 +62,57 @@ export class AppService {
         private readonly alarmService: AlarmService,
     ) {}
     async test() {
-        // if (!members) {
-        //     throw new ForbiddenException();
-        // }
-        // const memberIds = members.filter((m) => m.id !== 2).map(m => m.id);
-        // if (!memberIds.includes(2)) {
-        //     throw new ForbiddenException();
-        // }
+        const joinedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
+            .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId: 2 })
+            .select([
+                'alarms.id',
+            ])
+            .getMany();
+        
+        const joinedAlarmsIds = joinedAlarms.map(m => m.id);
+        let returnJoinedAlarms = await this.alarmsRepository.find({
+            select: {
+                id: true,
+                name: true,
+                time: true,
+                is_repeated: true,
+                is_private: true,
+                music_name: true,
+                max_member: true,
+                created_at: true,
+                Host_id: true,
+                Game_id: true,
+                Game: {
+                    id: true,
+                    name: true,
+                    thumbnail_url: true
+                },
+                Host: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true
+                },
+                Members: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true,
+                }
+            },
+            where: {
+                id: In(joinedAlarmsIds),
+            },
+            relations: {
+                Game: true,
+                Members: true,
+                Host: true
+            }
+        });
+        returnJoinedAlarms = returnJoinedAlarms.map(({ Host, ...withOutHost}) => {
+            withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
+            return {...withOutHost, Host};
+        })
+        const res = returnJoinedAlarms
+        return res;
     }
     // async insert(data: InsertDto[]) {
     //     for await (let d of data) {
