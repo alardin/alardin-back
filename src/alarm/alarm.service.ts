@@ -151,9 +151,7 @@ export class AlarmService {
         if (!newAlarm) {
             return null;
         }
-        await this.cacheManager.del(`${myId}_hosted_alarms`);
-        await this.cacheManager.del(`${myId}_joined_alarms`);
-        await this.deleteMatesCache(myId);
+        await this.clearAlarmsCache(myId);
         return newAlarm.id;
     }
 
@@ -209,9 +207,7 @@ export class AlarmService {
         } finally {
             await queryRunner.release();
         }
-        await this.cacheManager.del(`${me.id}_hosted_alarms`);
-        await this.cacheManager.del(`${me.id}_joined_alarms`);
-        await this.deleteMatesCache(me.id);
+        await this.clearAlarmsCache(me.id);
         return 'OK';
         
     }
@@ -289,9 +285,7 @@ export class AlarmService {
                 .from(Alarms)
                 .where('id = :id', { id: alarmId })
                 .execute();
-                await this.cacheManager.del(`${myId}_hosted_alarms`);
-                await this.cacheManager.del(`${myId}_joined_alarms`);
-                await this.deleteMatesCache(myId);
+                await this.clearAlarmsCache(myId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
@@ -315,5 +309,10 @@ export class AlarmService {
     async deleteMatesCache(myId: number) {
         const mateIds = await this.mateService.getMateIds(myId);
         mateIds.map(async (mId) => await this.cacheManager.del(`${mId}_mates_alarm_list`));
+    }
+    async clearAlarmsCache(myId: number) {
+        await this.cacheManager.del(`${myId}_hosted_alarms`);
+        await this.cacheManager.del(`${myId}_joined_alarms`);
+        await this.deleteMatesCache(myId);
     }
 }
