@@ -330,6 +330,8 @@ export class AlarmService {
     async deleteAlarm(myId: number, alarmId: number) {
         await this.validateAlarmHost(myId, alarmId);
         try {
+            const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }});
+            await this.sendMessageToAlarmByHost(myId, alarmId, '알람방 삭제', `방장이 ${alarm.time} 알람을 삭제했습니다`, {});
             await this.alarmsRepository.createQueryBuilder()
                 .softDelete()
                 .from(Alarms)
