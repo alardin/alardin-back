@@ -125,10 +125,10 @@ export class AlarmService {
                 let gameDataForAlarm;
                 switch(newAlarm.Game_id) {
                     case 1:
-                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds);
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds);
                         break
                     case 2:
-                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds, body.data);
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds, body.data);
                         break
                     default:
                         throw new BadRequestException('Invalid Game_id')
