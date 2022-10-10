@@ -11,7 +11,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refreshTok
         private readonly authService: AuthService
     ) {
         super({
-            jwtFromRequest: ExtractJwt.fromHeader('Refresh-Token'),
+            jwtFromRequest: ExtractJwt.fromUrlQueryParameter('refreshToken'),
             ignoreExpiration: false,
             secretOrKey: process.env.JWT_SECRET,
             passReqToCallback: true
@@ -19,7 +19,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refreshTok
     }
 
     async validate(req: Request, { sub, email }) {
-        const user = await this.authService.validateRefreshToken(sub, email, req.headers['Refresh-Token']);
+        const user = await this.authService.validateRefreshToken(sub, email, req.query['refreshToken']);
         // TODO: kakao accessToken
         if (!user) {
             throw new InvalidTokenException();

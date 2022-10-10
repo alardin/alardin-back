@@ -78,18 +78,13 @@ export class GameService {
 
     async getGameDetailsById(gameId: number): Promise<GameDetail> {
         const game = await this.getGameById(gameId);
-        const gameScreenshots = await this.gamesScreenRepository.find({
-            where: {
-                Game_id: game.id
-            },
-            select: {
-                screenshot_url: true,
-            }
-        });
-        const sshotsReturning = gameScreenshots.map(s => s.screenshot_url);
+        const gameMeta = await this.gameMetaModel.findOne({
+            Game_id: game.id
+        }).exec();
+        // mongodb에서 screenshots 가져오기
         return {
             game,
-            gameScreenshots: sshotsReturning
+            gameScreenshots: gameMeta.screenshot_urls
         };
     }
 

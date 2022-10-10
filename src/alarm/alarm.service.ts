@@ -254,7 +254,7 @@ export class AlarmService {
         if (!members) {
             throw new ForbiddenException();
         }
-        const membersDeviceTokens = members.map(m => m.device_token);
+        const membersDeviceTokens = members.filter((m) => m.id !== myId).map(m => m.device_token);
         await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
         return 'OK';    
         
@@ -281,7 +281,7 @@ export class AlarmService {
         if (!members) {
             throw new ForbiddenException('Not allowed to send message');
         }
-        const memberIds = members.map(m => m.id);
+        const memberIds = members.filter((m) => m.id !== myId).map(m => m.id);
         const membersDeviceTokens = members.map(m => m.device_token);
         if(!memberIds.includes(myId)) {
             throw new ForbiddenException('Not allowed to send message');
