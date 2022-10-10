@@ -113,7 +113,7 @@ export class AlarmService {
             const month = new Date().getMonth();
             const year = new Date().getFullYear();
             
-            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, -30);
+            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour, minute, -30);
             const job = new CronJob(Before30secondsThanAlarm, async () => {
                 const alarmMemberIds = await this.alarmMembersRepository.find({
                     where: { Alarm_id: newAlarm.id },
