@@ -245,6 +245,7 @@ export class UsersService {
         });
         hostedAlarms = hostedAlarms.map(({ Host, ...withOutHost}) => {
             withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
+            withOutHost.Members = [Host, ...withOutHost.Members];
             return {...withOutHost, Host};
         });
         await this.cacheManager.set(`${myId}_hosted_alarms`, hostedAlarms, { ttl: 60 * 60 * 24 });
@@ -304,6 +305,7 @@ export class UsersService {
         });
         returnJoinedAlarms = returnJoinedAlarms.map(({ Host, ...withOutHost}) => {
             withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
+            withOutHost.Members = [Host, ...withOutHost.Members];
             return {...withOutHost, Host};
         });
         await this.cacheManager.set(`${myId}_joined_alarms`, returnJoinedAlarms, { ttl: 60 * 60 * 24 });
