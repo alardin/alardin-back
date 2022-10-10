@@ -232,11 +232,11 @@ export class AlarmService {
         
     }
 
-    async sendMessageToAlarm(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
+    async sendMessageToAlarmByHost(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
         const { Members: members } = await this.alarmsRepository.findOne({
             where: {
-                id: 29,
-                Host_id: 2
+                id: alarmId,
+                Host_id: myId
             },
             select: {
                 id: true,
@@ -256,10 +256,39 @@ export class AlarmService {
         }
         const membersDeviceTokens = members.map(m => m.device_token);
         await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
-        return 'OK';
+        return 'OK';    
         
-        
-        
+    }
+
+    async sendMessageToAlarmByMember(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
+        const { Members: members } = await this.alarmsRepository.findOne({
+            where: {
+                id: alarmId
+            },
+            select: {
+                id: true,
+                Host_id: true,
+                Game_id: true,
+                Members: {
+                    id: true,
+                    device_token: true
+                }
+            },
+            relations: {
+                Members: true
+            }
+        });
+        if (!members) {
+            throw new ForbiddenException('Not allowed to send message');
+        }
+        const memberIds = members.map(m => m.id);
+        const membersDeviceTokens = members.map(m => m.device_token);
+        if(!memberIds.includes(myId)) {
+            throw new ForbiddenException('Not allowed to send message');
+        }
+
+        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
+        return 'OK'; 
     }
 
     // alarm 조회할 권한
