@@ -201,11 +201,11 @@ export class UsersService {
     
     async getUsersHostedAlarm(myId: number): Promise<Alarms[]> {
 
-        const cached = await this.cacheManager.get<Alarms[]>(`${myId}_hosted_alarms`);
-        if (cached && cached.length != 0) {
-            this.logger.log('Hit Cache');
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<Alarms[]>(`${myId}_hosted_alarms`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         let hostedAlarms = await this.alarmsRepository.find({
             select: {
                 id: true,
@@ -253,11 +253,11 @@ export class UsersService {
 
     async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
 
-        const cached = await this.cacheManager.get<Alarms[]>(`${myId}_joined_alarms`);
-        if (cached && cached.length != 0) {
-            this.logger.log('Hit Cache');
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<Alarms[]>(`${myId}_joined_alarms`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         const joinedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
                 .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId })
                 .select([
@@ -312,11 +312,11 @@ export class UsersService {
     
     async getUserHistoryByAlarm(myId: number) {
 
-        const cached = await this.cacheManager.get<AlarmPlayRecords[]>(`${myId}_records_by_alarm`);
-        if (cached && cached.length != 0) {
-            this.logger.log('Hit Cache');
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<AlarmPlayRecords[]>(`${myId}_records_by_alarm`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         const recordsByAlarm = await this.alarmPlayRecordsRepository.find({
             where: {
                 User_id: myId,
@@ -369,11 +369,11 @@ export class UsersService {
     }
     
     async getUserHistoryByCount(myId: number) {
-        const cached = await this.cacheManager.get<MatePlayHistory[]>(`${myId}_records_by_count`);
-        if (cached && cached.length != 0) {
-            this.logger.log('Hit Cache');
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<MatePlayHistory[]>(`${myId}_records_by_count`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         const SendedMates = await this.matesRepository.createQueryBuilder('m')
                     .select([
                         'Receiver_id as id',

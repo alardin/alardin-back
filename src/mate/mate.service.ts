@@ -37,11 +37,11 @@ export class MateService {
 
     async getMateList(myId: number, kakaoAccessToken: string):Promise<TMateList> {
 
-        const cached = await this.cacheManager.get<TMateList>(`${myId}_mates`);
-        if (cached) {
-            this.logger.log(`Hit Cache!`)
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<TMateList>(`${myId}_mates`);
+        // if (cached) {
+        //     this.logger.log(`Hit Cache!`)
+        //     return cached;
+        // }
 
         const receivedMates = await this.matesRepository.createQueryBuilder('m')
                                     .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
@@ -148,11 +148,11 @@ export class MateService {
     }
 
     async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
-        const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
-        if (cached && cached.length != 0) {
-            this.logger.log('Hit Cache');
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         
         const mates = await this.getMateList(myId, kakaoAccessToken);
         let alarms = [];
