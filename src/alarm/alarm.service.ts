@@ -368,7 +368,6 @@ export class AlarmService {
                 id: alarmId
             },
             select: {
-                id: true,
                 Members: {
                     id: true,
                 }

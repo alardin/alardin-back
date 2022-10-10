@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Injectable } from '@nestjs/common';
+import { BadRequestException, Body, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Model } from 'mongoose';
@@ -14,6 +14,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { GameMeta, GameMetaDocument } from './schemas/gameMeta.schemas';
 import { Mates } from './entities/mates.entity';
 import { filter } from 'rxjs';
+import { MateService } from './mate/mate.service';
+import { AlarmService } from './alarm/alarm.service';
 
 
 class InsertDto {
@@ -55,37 +57,18 @@ export class AppService {
         @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>,
         @InjectModel(GameMeta.name) private gameMetaModel: Model<GameMetaDocument>,
         @InjectModel(UserPlayData.name) private userPlayDataModel: Model<UserPlayDataDocument>,
-        private readonly kakaoService: KakaoService
+        private readonly kakaoService: KakaoService,
+        private readonly mateService: MateService,
+        private readonly alarmService: AlarmService,
     ) {}
     async test() {
-        const receivedMates = await this.matesRepository.createQueryBuilder('m')
-        .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId: 2 })
-        .innerJoin('m.Sender', 's')
-        .select([
-            'm.id',
-            's.id',
-            's.nickname',
-            's.thumbnail_image_url',
-            's.kakao_id'
-        ])
-        .getMany();
-
-        const sendedMates = await this.matesRepository.createQueryBuilder('m')
-                .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId: 2})
-                .innerJoin('m.Receiver', 'r')
-                .select([
-                    'm.id',
-                    's.id',
-                    'r.id',
-                    'r.nickname',
-                    'r.thumbnail_image_url',
-                    'r.kakao_id'
-                ])
-                .getMany();
-        const usersOfMateIReceived = receivedMates.map(m => m.Sender.id);
-        const usersOfMateISended = sendedMates.map(m => m.Receiver.id);
-        const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
-        return mateFinished;
+        // if (!members) {
+        //     throw new ForbiddenException();
+        // }
+        // const memberIds = members.filter((m) => m.id !== 2).map(m => m.id);
+        // if (!memberIds.includes(2)) {
+        //     throw new ForbiddenException();
+        // }
     }
     // async insert(data: InsertDto[]) {
     //     for await (let d of data) {
