@@ -16,9 +16,20 @@ import { GamesRatings } from 'src/entities/games.ratings.entity';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { PushNotificationModule } from 'src/push-notification/push-notification.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { GameData, GameDataSchema } from 'src/schemas/gameData.schemas';
+import { UserPlayData, UserPlayDataScheme } from 'src/schemas/userPlayData.schemas';
+import { GameMeta, GameMetaSchema } from 'src/schemas/gameMeta.schemas';
 
 @Module({
-  imports: [GameModule, PushNotificationModule, SingleModule, AgoraModule, TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlayKeywords, GamePlayImages, GameUsedImages, GamesRatings, AlarmMembers, Alarms ])],
+  imports: [GameModule, PushNotificationModule, SingleModule, AgoraModule, 
+    TypeOrmModule.forFeature([Games, GamesScreenshots, GamePurchaseRecords, Users, Assets, GamePlayKeywords, GamePlayImages, GameUsedImages, GamesRatings, AlarmMembers, Alarms ]),
+    MongooseModule.forFeature([
+      { name: GameData.name, schema: GameDataSchema },
+      { name: GameMeta.name, schema: GameMetaSchema },
+      { name: UserPlayData.name, schema: UserPlayDataScheme }
+    ]),
+  ],
   providers: [GameService],
   controllers: [GameController],
   exports: [GameService]

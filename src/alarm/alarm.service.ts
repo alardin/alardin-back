@@ -1,18 +1,22 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { CronJob } from 'cron';
+import { Model } from 'mongoose';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { Games } from 'src/entities/games.entity';
+import { Mates } from 'src/entities/mates.entity';
 import { Users } from 'src/entities/users.entity';
 import { GameService } from 'src/game/game.service';
 import { MateService } from 'src/mate/mate.service';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
+import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
 import { DataSource, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
@@ -30,13 +34,15 @@ export class AlarmService {
         private readonly gamePurRepository: Repository<GamePurchaseRecords>,
         @InjectRepository(Games)
         private readonly gamesRepository: Repository<Games>,
+        @InjectRepository(Mates)
+        private readonly matesRepository: Repository<Mates>,
         private dataSource: DataSource,
         private readonly pushNotiService: PushNotificationService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private readonly schedulerRegistry: SchedulerRegistry,
-        private readonly logger: Logger,
+        @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>
     ) {
-        this.logger = new Logger(AlarmService.name);
+        
     }
 
     async createNewAlarm(myId: number, body: CreateAlarmDto) {
@@ -77,6 +83,8 @@ export class AlarmService {
                 Alarm_id: newAlarm.id,
                 player_count: 0,
             });
+            // Not keyword, image
+            // Data1, Data2
             const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
             const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
             
@@ -95,29 +103,57 @@ export class AlarmService {
                 });
             }
 
-            
             await queryRunner.manager.getRepository(Alarms).createQueryBuilder()
                         .update()
                         .set({ Game_channel_id: newChannel.id })
                         .where('id = :id', { id: newAlarm.id })
                         .execute();
+            const [ hour, minute ] = newAlarm.time.split(':').map(t => Number(t));
+            const date = new Date().getDate();
+            const month = new Date().getMonth();
+            const year = new Date().getFullYear();
+            
+            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, -30);
+            const job = new CronJob(Before30secondsThanAlarm, async () => {
+                const alarmMemberIds = await this.alarmMembersRepository.find({
+                    where: { Alarm_id: newAlarm.id },
+                    select: {
+                        User_id: true
+                    }
+                });
+                const userIds = alarmMemberIds.map(m => m.User_id);
+                let gameDataForAlarm;
+                switch(newAlarm.Game_id) {
+                    case 1:
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds);
+                        break
+                    case 2:
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds, body.data);
+                        break
+                    default:
+                        throw new BadRequestException('Invalid Game_id')
+                        break
+                }
 
-
+                await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, gameDataForAlarm, { ttl: 60 * 10 });
+                
+            });
+            this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
+            job.start();
             await queryRunner.commitTransaction();
-            // push alarm
-            // random image select?
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException(e);
 
         } finally {
             await queryRunner.release();
-            await this.cacheManager.del(`${myId}_hosted_alarms`);
-            
         }
         if (!newAlarm) {
             return null;
         }
+        await this.cacheManager.del(`${myId}_hosted_alarms`);
+        await this.cacheManager.del(`${myId}_joined_alarms`);
+        await this.deleteMatesCache(myId);
         return newAlarm.id;
     }
 
@@ -166,76 +202,47 @@ export class AlarmService {
                 .set({ member_count: () => 'member_count + 1' })
                 .where('id = :id', { id: alarm.id })
                 .execute();
-
-            const anotherMemberProfile = await this.alarmMembersRepository.createQueryBuilder('m')
-                .select([
-                    'm.created_at',
-                    'u.id',
-                    'u.device_token',
-                    'u.nickname',
-                    'u.thumbnail_image_url'
-                ])
-                .innerJoin('m.User', 'u')
-                .where('Alarm_id = :alarmId', { alarmId })
-                .andWhere('User_id != :myId', { myId: me.id })
-                .getOne();
-
-            const antoherMemberDataForMe = {
-                alarmId: alarm.id,
-                id: anotherMemberProfile.User.id,
-                nickname: anotherMemberProfile.User.nickname,
-                thumbnail_url: anotherMemberProfile.User.thumbnail_image_url,
-                userType: 'A'
-            }
-
-            const myDataForAntoherMember = {
-                alarmId: alarm.id,
-                id: me.id,
-                nickname: me.nickname,
-                thumbnail_url: me.thumbnail_image_url,
-                userType: 'B'
-            }
-
-            const [ hour, minute ] = alarm.time.split(':').map(t => Number(t));
-            const date = new Date().getDate();
-            const month = new Date().getMonth();
-            const year = new Date().getFullYear();
-            
-            const reservedTime = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, 0);
-            const job = new CronJob(reservedTime, async () => {
-                await this.pushNotiService.sendPush(
-                    antoherMemberDataForMe.id,
-                    anotherMemberProfile.User.device_token,
-                    'Alarm',
-                    'Alarm ring ring',
-                    {
-                        type: 'ALARM_START',
-                        message: JSON.stringify(myDataForAntoherMember)
-                    }
-                );
-                await this.pushNotiService.sendPush(
-                    me.id,
-                    me.device_token,
-                    'Alarm',
-                    'Alarm ring ring',
-                    {
-                        type: 'ALARM_START',
-                        message: JSON.stringify(antoherMemberDataForMe)
-                    }
-                );
-            });
-            this.schedulerRegistry.addCronJob(`alarm-${alarm.id}`, job);
-            job.start();
             await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();
             throw new ForbiddenException(e);
         } finally {
             await queryRunner.release();
-            await this.cacheManager.del(`${me.id}_joined_alarms`);
         }
-
+        await this.cacheManager.del(`${me.id}_hosted_alarms`);
+        await this.cacheManager.del(`${me.id}_joined_alarms`);
+        await this.deleteMatesCache(me.id);
         return 'OK';
+        
+    }
+
+    async sendMessageToAlarm(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
+        const { Members: members } = await this.alarmsRepository.findOne({
+            where: {
+                id: 29,
+                Host_id: 2
+            },
+            select: {
+                id: true,
+                Host_id: true,
+                Game_id: true,
+                Members: {
+                    id: true,
+                    device_token: true
+                }
+            },
+            relations: {
+                Members: true
+            }
+        });
+        if (!members) {
+            throw new ForbiddenException();
+        }
+        const membersDeviceTokens = members.map(m => m.device_token);
+        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
+        return 'OK';
+        
+        
         
     }
 
@@ -282,6 +289,9 @@ export class AlarmService {
                 .from(Alarms)
                 .where('id = :id', { id: alarmId })
                 .execute();
+                await this.cacheManager.del(`${myId}_hosted_alarms`);
+                await this.cacheManager.del(`${myId}_joined_alarms`);
+                await this.deleteMatesCache(myId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
@@ -300,5 +310,10 @@ export class AlarmService {
                 id: alarmId
             }
         }).catch(_ => { throw new ForbiddenException(); });
+    }
+
+    async deleteMatesCache(myId: number) {
+        const mateIds = await this.mateService.getMateIds(myId);
+        mateIds.map(async (mId) => await this.cacheManager.del(`${mId}_mates_alarm_list`));
     }
 }

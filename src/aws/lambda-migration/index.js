@@ -3,7 +3,7 @@ const notion = new Client({ auth: process.env.NOTION_KEY })
 const databaseId = process.env.NOTION_MIGRATION_DB_ID;
 const userId = process.env.USER_ID;
 
-async function uploadToNotionDB(timestamp, status, spentTime) {
+async function uploadToNotionDB(timestamp, status) {
     console.log('[*] Update to Notion');
     let years = timestamp.getFullYear();
     let months = timestamp.getMonth()+1;
@@ -64,18 +64,7 @@ exports.handler = async (event, context, callback) => {
     const timestamp = snsReceived.Timestamp;
     const subject = snsReceived.Subject;
     console.log('[*]', subject)
-    if (subject.indexOf('CodeDeploy notification') == -1) {
-        const status = subject.indexOf("SUCCEEDED")  == -1 ? subject : "SUCCESS";
-        let spentTime = '';
-        if (status === "SUCCESS") {
-            const message = snsReceived.Message;
-            const lifecycleEvents = JSON.parse(JSON.parse(message).lifecycleEvents);
-            const appStartEvent = lifecycleEvents.filter(e => e.LifecycleEvent == 'ApplicationStart');
-            const totalSeconds = (new Date(appStartEvent[0].EndTime) - new Date(appStartEvent[0].StartTime)) / 1000;
-            const spentMinutes = Math.floor(totalSeconds / 60);
-            const spentSeconds = totalSeconds % 60;
-            spentTime = `${spentMinutes < 10 ? '0'+spentMinutes : spentMinutes}:${spentSeconds < 10 ? '0'+spentSeconds : spentSeconds}`
-        }
-        await uploadToNotionDB(new Date(new Date(timestamp).getTime() + (1000 * 60 * 60 * 9)), status, spentTime);
-    }
+    const status = subject.indexOf("INPROGRESS")  == -1 ? subject : "SUCCESS";
+    await uploadToNotionDB(new Date(new Date(timestamp).getTime() + (1000 * 60 * 60 * 9)), status);
+    
 }  

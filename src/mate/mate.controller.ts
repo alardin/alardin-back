@@ -45,8 +45,8 @@ export class MateController {
             description: '성공 시 메세지 ID 리턴',
         })
     @Post()
-    async sendMateRequest(@User() user, @Query('targetUserId') targetUserId, @Body() data) {
-        return await this.mateService.sendMateRequest(user, targetUserId, data);
+    async sendMateRequest(@User() user, @Query('targetUserId') targetUserId) {
+        return await this.mateService.sendMateRequest(user, targetUserId);
     }
 
         @ApiOperation({
