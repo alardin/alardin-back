@@ -344,7 +344,7 @@ export class GameService {
                 }
             });
             const userIds = alarmMemberIds.map(m => m.User_id);
-            gameData = await this.readyForGame(alarm.Game_id, userIds, alarm.data);
+            gameData = await this.readyForGame(alarm.id, userIds, alarm.data);
                     
         }
         const images = await this.gameUsedImagesRespotiroy.createQueryBuilder('gui')
