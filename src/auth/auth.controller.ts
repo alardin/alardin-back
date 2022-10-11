@@ -16,8 +16,4 @@ export class AuthController {
         return 'OK'
     }
 
-    @Post('apple/callback')
-    async appleAuthCallback(@Body() data: AppleLoginDto) {
-        return this.authService.appleLogin(data);
-    }
 }

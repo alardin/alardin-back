@@ -32,7 +32,7 @@ export class AlarmResults {
         example: '2022-07-22:09:00:00'
     })
     @IsNotEmpty()
-    @Column('date', { name: 'start_time' })
+    @Column('datetime', { name: 'start_time' })
     start_time: Date;
 
     @ApiProperty({
@@ -40,7 +40,7 @@ export class AlarmResults {
         example: '2022-07-22:09:03:00'
     })
     @IsNotEmpty()
-    @Column('date', { name: 'end_time' })
+    @Column('datetime', { name: 'end_time' })
     end_time: Date;
 
     @IsBoolean()
