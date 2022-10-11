@@ -79,6 +79,7 @@ export class AlarmService {
             });
 
             const newChannel = await queryRunner.manager.getRepository(GameChannel).save({
+                id: newAlarm.id,
                 name: String(newAlarm.id),
                 Alarm_id: newAlarm.id,
                 player_count: 0,
