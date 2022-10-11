@@ -86,61 +86,61 @@ export class AlarmService {
             });
             // Not keyword, image
             // Data1, Data2
-            const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
-            const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
+            // const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
+            // const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
             
-            for await (let img of images1) {
-                await queryRunner.manager.getRepository(GameUsedImages).save({
-                    Game_channel_id: newChannel.id,
-                    keyword: keyword1,
-                    Game_play_image_id: img.id
-                });
-            }
-            for await (let img of images2) {
-                await queryRunner.manager.getRepository(GameUsedImages).save({
-                    Game_channel_id: newChannel.id,
-                    keyword: keyword2,
-                    Game_play_image_id: img.id
-                });
-            }
+            // for await (let img of images1) {
+            //     await queryRunner.manager.getRepository(GameUsedImages).save({
+            //         Game_channel_id: newChannel.id,
+            //         keyword: keyword1,
+            //         Game_play_image_id: img.id
+            //     });
+            // }
+            // for await (let img of images2) {
+            //     await queryRunner.manager.getRepository(GameUsedImages).save({
+            //         Game_channel_id: newChannel.id,
+            //         keyword: keyword2,
+            //         Game_play_image_id: img.id
+            //     });
+            // }
 
             await queryRunner.manager.getRepository(Alarms).createQueryBuilder()
                         .update()
                         .set({ Game_channel_id: newChannel.id })
                         .where('id = :id', { id: newAlarm.id })
                         .execute();
-            // const [ hour, minute ] = newAlarm.time.split(':').map(t => Number(t));
-            // const date = new Date().getDate();
-            // const month = new Date().getMonth();
-            // const year = new Date().getFullYear();
+            const [ hour, minute ] = newAlarm.time.split(':').map(t => Number(t));
+            const date = new Date().getDate();
+            const month = new Date().getMonth();
+            const year = new Date().getFullYear();
             
-            // const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour, minute, -30);
-            // const job = new CronJob(Before30secondsThanAlarm, async () => {
-            //     const alarmMemberIds = await this.alarmMembersRepository.find({
-            //         where: { Alarm_id: newAlarm.id },
-            //         select: {
-            //             User_id: true
-            //         }
-            //     });
-            //     const userIds = alarmMemberIds.map(m => m.User_id);
-            //     let gameDataForAlarm;
-            //     switch(newAlarm.Game_id) {
-            //         case 1:
-            //             gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds);
-            //             break
-            //         case 2:
-            //             gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds, body.data);
-            //             break
-            //         default:
-            //             throw new BadRequestException('Invalid Game_id')
-            //             break
-            //     }
+            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, process.env.NODE_ENV == 'dev' ? hour : hour - 9, minute, -30);
+            const job = new CronJob(Before30secondsThanAlarm, async () => {
+                const alarmMemberIds = await this.alarmMembersRepository.find({
+                    where: { Alarm_id: newAlarm.id },
+                    select: {
+                        User_id: true
+                    }
+                });
+                const userIds = alarmMemberIds.map(m => m.User_id);
+                let gameDataForAlarm;
+                switch(newAlarm.Game_id) {
+                    case 1:
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds);
+                        break
+                    case 2:
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds, body.data);
+                        break
+                    default:
+                        throw new BadRequestException('Invalid Game_id')
+                        break
+                }
 
-            //     await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, gameDataForAlarm, { ttl: 60 * 10 });
+                await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, gameDataForAlarm, { ttl: 60 * 10 });
                 
-            // });
-            // this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
-            // job.start();
+            });
+            this.schedulerRegistry.addCronJob(`alarm-${newAlarm.id}-game-data`, job);
+            job.start();
             await queryRunner.commitTransaction();
         } catch(e) {
             await queryRunner.rollbackTransaction();

@@ -101,7 +101,7 @@ export class GameService {
     };
   }
 
-  async createNewGame(myId: number, body: CreateGameDto) {
+  async createNewGame(body: CreateGameDto) {
     const { screenshot_urls, data_type, keys, ...bodyWithoutMeta } = body;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -397,32 +397,12 @@ export class GameService {
       const userIds = alarmMemberIds.map((m) => m.User_id);
       gameData = await this.readyForGame(alarm.id, userIds, alarm.data);
     }
-    const images = await this.gameUsedImagesRespotiroy
-      .createQueryBuilder('gui')
-      .select(['gui.keyword', 'gpi.url'])
-      .innerJoin('gui.Game_play_image', 'gpi')
-      .innerJoin('gpi.Keyword', 'k')
-      .where('gui.Game_channel_id = :id', { id: alarm.id })
-      .getMany();
-    const images1 = images.slice(0, 6);
-    const player1Keyword = images1[0].keyword;
-    const player1Images = images1.map((i) => i.Game_play_image.url);
-    const player1AnswerIndex = 3;
-
-    const images2 = images.slice(6);
-    const player2Keyword = images2[0].keyword;
-    const player2Images = images2.map((i) => i.Game_play_image.url);
-    const player2AnswerIndex = 2;
+   
 
     return {
       rtcToken,
       rtmToken,
-      player1Keyword,
-      player1Images,
-      player1AnswerIndex,
-      player2Keyword,
-      player2Images,
-      player2AnswerIndex,
+      gameData,
       channelName: String(alarm.id),
       Game_id: alarm.Game_id,
     };
@@ -443,13 +423,12 @@ export class GameService {
       },
     });
     let gameDataForAlarm;
-    let dataForGame;
     switch (Game_id) {
       case 1:
-        dataForGame = await this.prepareGame1(Game_id, userIds);
+        gameDataForAlarm = await this.prepareGame1(Game_id, userIds);
         break;
       case 2:
-        dataForGame = await this.gameDataModel
+        const dataForGame = await this.gameDataModel
           .find(
             {
               Game_id,
@@ -469,7 +448,6 @@ export class GameService {
         break;
       default:
         throw new BadRequestException('Invalid GameId');
-        break;
     }
     return gameDataForAlarm;
   }
