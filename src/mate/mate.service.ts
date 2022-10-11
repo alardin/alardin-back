@@ -37,11 +37,11 @@ export class MateService {
 
     async getMateList(myId: number, kakaoAccessToken: string):Promise<TMateList> {
 
-        const cached = await this.cacheManager.get<TMateList>(`${myId}_mates`);
-        if (cached) {
-            this.logger.log(`Hit Cache!`)
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<TMateList>(`${myId}_mates`);
+        // if (cached) {
+        //     this.logger.log(`Hit Cache!`)
+        //     return cached;
+        // }
 
         const receivedMates = await this.matesRepository.createQueryBuilder('m')
                                     .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
@@ -91,10 +91,13 @@ export class MateService {
                                 .catch(_ => { throw new NotFoundException() });
         const messagId = await this.pushNotiService.sendPush(receiver.id, 
             receiver.device_token, '메이트 요청', `${me.nickname}님이 메이트로 요청하셨습니다.`, {
-                type: 'mate',
-                senderId: me.id,
-                content: `${me.nickname}님이 메이트를 요청하셨습니다.`,
-                date: new Date(Date.now())
+                type: 'MATE_ALARM',
+                message: JSON.stringify({
+                    type: 'mate',
+                    senderId: me.id,
+                    content: `${me.nickname}님이 메이트를 요청하셨습니다.`,
+                    date: new Date(Date.now()).toISOString()
+                })
             });
 
         await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
@@ -128,6 +131,9 @@ export class MateService {
         // push?
         // db row 삭제
         const mate = await this.validateMate(myId, mateId);
+        if (!mate) {
+            throw new ForbiddenException('Not Allowed');
+        }
         try {
             await this.matesRepository.createQueryBuilder()
                 .softDelete()
@@ -142,16 +148,19 @@ export class MateService {
     }
 
     async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
-        const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
-        if (cached && cached.length != 0) {
-            this.logger.log('Hit Cache');
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         
         const mates = await this.getMateList(myId, kakaoAccessToken);
         let alarms = [];
         for await (let m of mates.mates) {
-            await this.validateMate(myId, m.id);
+            const validMate = await this.validateMate(myId, m.id);
+            if (!validMate) {
+                throw new ForbiddenException('Not Allowed');
+            }
             const alarm = await this.alarmsRepository.createQueryBuilder('alarms')
                         .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :mateId', { mateId: m.id })
                         .innerJoin('alarms.Members', 'members')
@@ -173,7 +182,7 @@ export class MateService {
                             'members.thumbnail_image_url'
                         ])
                         .getMany();
-            alarms = [...alarms, ...alarm]
+            alarms = [...alarms, ...alarm];
         }
         await this.cacheManager.set(`${myId}_mates_alarm_list`, alarms, { ttl: 60 * 60 * 24 });
         return alarms;  
@@ -217,12 +226,12 @@ export class MateService {
     }
 
     async validateMate(myId: number, mateId: number) {
-        return await this.matesRepository.findOneOrFail({
+        return await this.matesRepository.findOne({
             where: [
                 { Sender_id: myId, Receiver_id: mateId },
                 { Sender_id: mateId, Receiver_id: myId }
             ]
-        }).catch(_ => { throw new ForbiddenException() });
+        })
     }
 
     async getMateIds(myId: number) {

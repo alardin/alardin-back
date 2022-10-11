@@ -28,6 +28,8 @@ import { Alarms } from './entities/alarms.entity';
 import { UserPlayData, UserPlayDataScheme } from './schemas/userPlayData.schemas';
 import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
 import { Mates } from './entities/mates.entity';
+import { AlarmService } from './alarm/alarm.service';
+import { MateService } from './mate/mate.service';
 dotenv.config();
 
 @Module({

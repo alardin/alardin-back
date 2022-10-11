@@ -61,8 +61,8 @@ export class GameController {
     @UseGuards(new RoleGuard(new Reflector()))
     @ForRoles(['admin'])
     @Post()
-    async createNewGame(@User() user, @Body() body: CreateGameDto) {
-        return this.gameService.createNewGame(user.id, body);
+    async createNewGame(@Body() body: CreateGameDto) {
+        return this.gameService.createNewGame(body);
     }
 
         @ApiOperation({
