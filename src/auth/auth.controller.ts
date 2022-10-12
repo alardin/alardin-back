@@ -22,7 +22,7 @@ export class AuthController {
         return await this.authService.kakaoAuth(tokens);
     }
 
-    @Post('apple/callback')
+    @Post('apple')
     async appleAuth(@Body() data: AppleLoginDto) {
         await this.authService.appleAuth(data, data.deviceToken);
     }
