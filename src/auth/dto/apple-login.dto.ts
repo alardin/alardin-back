@@ -12,4 +12,5 @@ export class AppleLoginDto {
     };
     identityToken: string;
     nonce: string;
+    deviceToken: string;
 }

@@ -397,7 +397,27 @@ export class GameService {
       const userIds = alarmMemberIds.map((m) => m.User_id);
       gameData = await this.readyForGame(alarm.id, userIds, alarm.data);
     }
-   
+    const alarmMemberIds = await this.alarmMembersRepository.find({
+        where: { Alarm_id: alarm.id },
+        select: {
+            User_id: true
+        }
+    });
+    const userIds = alarmMemberIds.map(m => m.User_id);
+    let gameDataForAlarm;
+    switch(alarm.Game_id) {
+        case 1:
+            gameDataForAlarm = await this.readyForGame(alarm.id, userIds);
+            break
+        case 2:
+            gameDataForAlarm = await this.gameService.readyForGame(alarm.id, userIds, body.data);
+            break
+        default:
+            throw new BadRequestException('Invalid Game_id')
+            break
+    }
+
+    await this.cacheManager.set(`alarm-${newAlarm.id}-game-data`, gameDataForAlarm, { ttl: 60 * 10 });
 
     return {
       rtcToken,

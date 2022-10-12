@@ -23,8 +23,8 @@ export class AuthController {
     }
 
     @Post('apple/callback')
-    async appleAuth(@Body() { identifyToken, nonce }) {
-        await this.authService.appleAuth(identifyToken, nonce);
+    async appleAuth(@Body() data: AppleLoginDto) {
+        await this.authService.appleAuth(data, data.deviceToken);
     }
 
 }
