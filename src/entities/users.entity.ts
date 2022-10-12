@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, IsUrl } from "class-validator";
+import { IsEmail, IsNotEmpty, IsNumber, IsString, IsUrl } from "class-validator";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Alarms } from "./alarms.entity";
 import { AlarmMembers } from "./alarm.members.entity";
@@ -15,7 +15,6 @@ import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Notifications } from "./notifications.entity";
 import { MateRequestRecords } from "./mate-request.records.entity";
 import { PremiumRefunds } from "./premium.refunds.entity";
-import { GameChannel } from "./game.channel.entity";
 
 @Entity({ schema: 'alardin', name: 'users' })
 export class Users {
@@ -26,12 +25,19 @@ export class Users {
     @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
     id: number;
 
-    @IsNotEmpty()
+    @IsNumber()
     @Column('bigint', { name: 'kakao_id' })
     kakao_id: number;
 
+    @IsString()
+    @Column('varchar', { name: 'apple_id' })
+    apple_id: string;
+
     @IsEmail()
-    @IsNotEmpty()
+    @Column('varchar', { name: 'apple_email' })
+    apple_email: string;
+
+    @IsEmail()
     @ApiProperty({
         name: 'email',
         required: true,
