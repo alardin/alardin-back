@@ -138,7 +138,6 @@ export class AuthService {
 
 
     async appleAuth(data: AppleLoginDto, deviceToken: string) {
-        const clientID = process.env.APPLE_CLIENT_ID;
         let newUser: Users, is_admin: boolean = false;
         // const clientSecret = appleSignin.getClientSecret({
         //     clientID,
