@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthDto } from 'src/users/dto/auth.dto';
 import { AuthService } from './auth.service';
 import { AppleLoginDto } from './dto/apple-login.dto';
 
@@ -14,6 +15,16 @@ export class AuthController {
     async appleLogin(): Promise<any> {
         // update device token;
         return 'OK'
+    }
+
+    @Post('kakao')
+    async kakaoAuth(@Body() tokens: AuthDto) {
+        return await this.authService.kakaoAuth(tokens);
+    }
+
+    @Post('apple/callback')
+    async appleAuth(@Body() { identifyToken, nonce }) {
+        await this.authService.appleAuth(identifyToken, nonce);
     }
 
 }

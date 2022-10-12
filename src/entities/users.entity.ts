@@ -15,7 +15,6 @@ import { AlarmPlayRecords } from "./alarm.play.records.entity";
 import { Notifications } from "./notifications.entity";
 import { MateRequestRecords } from "./mate-request.records.entity";
 import { PremiumRefunds } from "./premium.refunds.entity";
-import { GameChannel } from "./game.channel.entity";
 
 @Entity({ schema: 'alardin', name: 'users' })
 export class Users {
@@ -26,12 +25,10 @@ export class Users {
     @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
     id: number;
 
-    @IsNotEmpty()
     @Column('bigint', { name: 'kakao_id' })
     kakao_id: number;
 
     @IsEmail()
-    @IsNotEmpty()
     @ApiProperty({
         name: 'email',
         required: true,
@@ -39,6 +36,13 @@ export class Users {
     })
     @Column('varchar', { name: 'email', unique: true, length: 320 })
     email: string;
+
+    @Column('bigint', { name: 'kakao_id' })
+    apple_id: string;
+
+    @IsEmail()
+    @Column('varchar', { name: 'email', unique: true, length: 320 })
+    apple_email: string;
 
     @IsString()
     @ApiProperty({

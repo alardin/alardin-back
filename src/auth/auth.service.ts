@@ -1,18 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 import { Users } from 'src/entities/users.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { AccessAndRefreshToken } from './auth';
 import * as bcrypt from 'bcryptjs';
+import appleSignin from 'apple-signin-auth';
+import { UsersService } from 'src/users/users.service';
+import { AppleLoginDto } from './dto/apple-login.dto';
+import { Assets } from 'src/entities/assets.entity';
+import { AuthDto } from 'src/users/dto/auth.dto';
+import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
+import { KakaoService } from 'src/external/kakao/kakao.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly jwtService: JwtService,
         @InjectRepository(Users) 
-        private readonly usersRepository: Repository<Users>
+        private readonly usersRepository: Repository<Users>,
+        private readonly usersService: UsersService,
+        private readonly kakaoService: KakaoService,
+        private dataSource: DataSource
     ) {}
 
     async validateUser(userId: number, email: string) {
@@ -53,5 +63,149 @@ export class AuthService {
                 secret: process.env.JWT_SECRET
             })
         };
+    }
+
+
+    async kakaoAuth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
+        let newUser: Users, is_admin: boolean = false;
+        const adminCandidate = process.env.ADMIN_EMAILS.split(' ');
+        const kakaoUser: KakaoAccountUsed = await this.kakaoService.getKakaoUser(tokens.accessToken);
+        if (kakaoUser) {
+            if (kakaoUser.email == undefined || kakaoUser.profile_image_url == undefined || kakaoUser.thumbnail_image_url == undefined) {
+                throw new ForbiddenException(); 
+            }
+            if (adminCandidate.find(e => e === kakaoUser.email)) {
+                is_admin = true;
+            }
+            const userAlreadyExist = await this.usersRepository.findOne({ where: { kakao_id: kakaoUser.id } });
+            if (userAlreadyExist) {
+                const appTokens =  this.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
+                const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);
+                await this.usersService.updateUser(userAlreadyExist.id, {
+                    device_token: tokens.deviceToken,
+                    refresh_token: hashedRT,
+                    kakao_access_token: tokens.accessToken,
+                    kakao_refresh_token: tokens.refreshToken
+                });
+                return appTokens;
+            } else {
+                const queryRunner = this.dataSource.createQueryRunner();
+                await queryRunner.connect();
+                await queryRunner.startTransaction();
+                try {
+                    newUser = await queryRunner.manager.getRepository(Users).save({
+                        kakao_id: kakaoUser.id,
+                        email: kakaoUser.email,
+                        nickname: kakaoUser.nickname,
+                        profile_image_url: kakaoUser.profile_image_url,
+                        thumbnail_image_url: kakaoUser.thumbnail_image_url,
+                        age_range: kakaoUser.age_range,
+                        gender: kakaoUser.gender,
+                        is_admin: is_admin,
+                        device_token: tokens.deviceToken,
+                        kakao_access_token: tokens.accessToken,
+                        kakao_refresh_token: tokens.refreshToken,
+                        refresh_token: null
+                    });
+
+                    const newAsset = await queryRunner.manager.getRepository(Assets).save({
+                        User_id: newUser.id,
+                        coin: is_admin ? 9999999 : 0
+                    });
+                    await queryRunner.manager.getRepository(Users).createQueryBuilder()
+                            .update()
+                            .set({ Asset_id: newAsset.id })
+                            .where('id = :id', { id: newUser.id })
+                            .execute();
+                    await queryRunner.commitTransaction();
+
+                } catch (e) {
+                    await queryRunner.rollbackTransaction();
+                    throw new ForbiddenException('Invalid request');
+                } finally {
+                    await queryRunner.release();
+                    const appTokens =  this.login({ id: newUser.id, email: newUser.email });
+                    await this.usersService.updateUser(newUser.id, {
+                        refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
+                    });
+                    return appTokens;
+                }
+            }
+        } else {
+            throw new InvalidTokenException();
+        }
+    }
+
+
+    async appleAuth(data: AppleLoginDto, deviceToken: string, ) {
+        const clientID = process.env.APPLE_CLIENT_ID;
+        let newUser: Users, is_admin: boolean = false;
+        // const clientSecret = appleSignin.getClientSecret({
+        //     clientID,
+        //     teamID: process.env.APPLE_TEAM_ID,
+        //     keyIdentifier: process.env.APPLE_KEY_ID,
+        //     privateKey: process.env.APPLE_PRIVATE_KEY
+        // });
+        // const options = {
+        //     clientID,
+        //     redirectUri: process.env.APPLE_REDIRECT_URI,
+        //     clientSecret
+        // }
+
+        try {
+            const { sub: appleId, email } = await appleSignin.verifyIdToken(data.identityToken, {
+                // Optional Options for further verification - Full list can be found here https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
+                audience: clientID, // client id - can also be an array
+                nonce: data.nonce, // nonce // Check this note if coming from React Native AS RN automatically SHA256-hashes the nonce https://github.com/invertase/react-native-apple-authentication#nonce
+            });
+
+            const userAlreadyExist = await this.usersRepository.findOne({ where: { apple_id: appleId } });
+            if (userAlreadyExist) {
+                const appTokens =  this.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
+                const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);
+                await this.usersService.updateUser(userAlreadyExist.id, {
+                    device_token: deviceToken,
+                    refresh_token: hashedRT,
+                });
+                return appTokens;
+            } else {
+                const queryRunner = this.dataSource.createQueryRunner();
+                await queryRunner.connect();
+                await queryRunner.startTransaction();
+                try {
+                    newUser = await queryRunner.manager.getRepository(Users).save({
+                        nickname: data.fullName.familyName + data.fullName.givenName,
+                        profile_image_url: process.env.DEFAULT_PROFILE_URL,
+                        thumbnail_image_url: process.env.DEFAULT_THUMBNAIL_IMAGE_URL,
+                        device_token: deviceToken,
+                        is_admin,
+                        refresh_token: null
+                    });
+
+                    const newAsset = await queryRunner.manager.getRepository(Assets).save({
+                        User_id: newUser.id,
+                        coin: is_admin ? 9999999 : 0
+                    });
+                    await queryRunner.manager.getRepository(Users).createQueryBuilder()
+                            .update()
+                            .set({ Asset_id: newAsset.id })
+                            .where('id = :id', { id: newUser.id })
+                            .execute();
+                    await queryRunner.commitTransaction();
+                } catch (e) {
+                    await queryRunner.rollbackTransaction();
+                    throw new ForbiddenException('Invalid request');
+                } finally {
+                    await queryRunner.release();
+                    const appTokens =  this.login({ id: newUser.id, email: newUser.email });
+                    await this.usersService.updateUser(newUser.id, {
+                        refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
+                    });
+                    return appTokens;
+                }
+            }
+        } catch(e) {
+            throw new UnauthorizedException(e);
+        }
     }
 }

@@ -1,8 +1,15 @@
 import { IsString } from "class-validator";
 
 export class AppleLoginDto {
-
-    code: string;
-    id_token: string;
-    user: string;
+    email: string | null;
+    fullName: {
+      familyName: string | null;
+      givenName: string | null;
+      middleName: string | null;
+      namePrefix: string | null;
+      nameSuffix: string | null;
+      nickname: string | null;
+    };
+    identityToken: string;
+    nonce: string;
 }
