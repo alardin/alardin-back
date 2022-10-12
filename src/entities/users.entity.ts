@@ -37,11 +37,11 @@ export class Users {
     @Column('varchar', { name: 'email', unique: true, length: 320 })
     email: string;
 
-    @Column('bigint', { name: 'kakao_id' })
+    @Column('bigint', { name: 'apple_id' })
     apple_id: string;
 
     @IsEmail()
-    @Column('varchar', { name: 'email', unique: true, length: 320 })
+    @Column('varchar', { name: 'apple_email', unique: true, length: 320 })
     apple_email: string;
 
     @IsString()
