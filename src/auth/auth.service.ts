@@ -178,6 +178,8 @@ export class AuthService {
                         profile_image_url: process.env.DEFAULT_PROFILE_URL,
                         thumbnail_image_url: process.env.DEFAULT_THUMBNAIL_IMAGE_URL,
                         device_token: deviceToken,
+                        apple_id: appleId,
+                        apple_email: email,
                         is_admin,
                         refresh_token: null
                     });
