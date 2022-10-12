@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { forwardRef, Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';

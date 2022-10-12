@@ -84,7 +84,9 @@ export class UsersController {
     @UseGuards(RefreshTokenGuard)
     @Get('refresh')
     async refreshToken(@User() user: Users) {
-        await this.usersService.refreshKakaoToken(user.id);
+        if (user.kakao_id) {
+            await this.usersService.refreshKakaoToken(user.id);
+        } 
         return await this.usersService.refreshAppToken(user.id);
     }
 

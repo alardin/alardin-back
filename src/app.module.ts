@@ -61,12 +61,11 @@ dotenv.config();
       port: +process.env.REDIS_PORT
     }),
     MongooseModule.forRoot(`mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`),
-    MateModule, 
+    MateModule,
     GameModule, 
     AlarmModule,
     AgoraModule, 
-    AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule],
+    AssetsModule, PushNotificationModule, KakaoModule, AgoraModule, AwsModule, UsersModule, AuthModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,

@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
@@ -13,6 +13,7 @@ import { Assets } from 'src/entities/assets.entity';
 import { AuthDto } from 'src/users/dto/auth.dto';
 import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
 import { KakaoService } from 'src/external/kakao/kakao.service';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,6 @@ export class AuthService {
         private readonly jwtService: JwtService,
         @InjectRepository(Users) 
         private readonly usersRepository: Repository<Users>,
-        private readonly usersService: UsersService,
         private readonly kakaoService: KakaoService,
         private dataSource: DataSource
     ) {}
@@ -81,7 +81,7 @@ export class AuthService {
             if (userAlreadyExist) {
                 const appTokens =  this.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
                 const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);
-                await this.usersService.updateUser(userAlreadyExist.id, {
+                await this.updateUser(userAlreadyExist.id, {
                     device_token: tokens.deviceToken,
                     refresh_token: hashedRT,
                     kakao_access_token: tokens.accessToken,
@@ -125,7 +125,7 @@ export class AuthService {
                 } finally {
                     await queryRunner.release();
                     const appTokens =  this.login({ id: newUser.id, email: newUser.email });
-                    await this.usersService.updateUser(newUser.id, {
+                    await this.updateUser(newUser.id, {
                         refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
                     });
                     return appTokens;
@@ -163,7 +163,7 @@ export class AuthService {
             if (userAlreadyExist) {
                 const appTokens =  this.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
                 const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);
-                await this.usersService.updateUser(userAlreadyExist.id, {
+                await this.updateUser(userAlreadyExist.id, {
                     device_token: deviceToken,
                     refresh_token: hashedRT,
                 });
@@ -198,7 +198,7 @@ export class AuthService {
                 } finally {
                     await queryRunner.release();
                     const appTokens =  this.login({ id: newUser.id, email: newUser.email });
-                    await this.usersService.updateUser(newUser.id, {
+                    await this.updateUser(newUser.id, {
                         refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
                     });
                     return appTokens;
@@ -206,6 +206,32 @@ export class AuthService {
             }
         } catch(e) {
             throw new UnauthorizedException(e);
+        }
+    }
+    private async getUser(userId: number) {
+        return await this.usersRepository.findOneOrFail({ where: { id: userId }})
+                    .catch((e) => { throw new ForbiddenException('Access denied') });
+    }
+    async updateUser(userId: number, condition: QueryDeepPartialEntity<Users>, keyNeededCheck?: string[]): Promise<string> {
+        const user = await this.getUser(userId);
+        
+        if (keyNeededCheck) {
+            keyNeededCheck.forEach(key => {
+                if (!user[key]) {
+                    throw new ForbiddenException('Invalid request');
+                }
+            })
+        }
+        
+        try {
+            await this.usersRepository.createQueryBuilder()
+            .update(Users)
+            .set(condition)
+            .where('id = :userId', { userId: user.id })
+            .execute();
+            return 'OK';
+        } catch(e) {
+            throw new ForbiddenException('Invalid request');
         }
     }
 }
