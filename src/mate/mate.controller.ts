@@ -86,12 +86,15 @@ export class MateController {
         })
     @Get('requests')
     async getMateRequestsList(@User() user) {
-        return this.mateService.getMateRequestList(user);
+        return await this.mateService.getMateRequestList(user);
     }
 
+        @ApiOperation({
+            summary: '요청 취소',
+        })
     @Delete('request')
-    async cancelRequest(@User() user) {
-        
+    async cancelRequest(@User() user, @Body('receiverId') receiverId: number) {
+        return await this.mateService.cancelRequest(user, receiverId);
     }
 
         @ApiOperation({

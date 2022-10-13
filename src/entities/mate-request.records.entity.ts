@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Users } from "./users.entity";
 
 @Entity({ schema: 'alardin' })
@@ -11,7 +11,10 @@ export class MateRequestRecords {
     is_rejected: boolean;
 
     @CreateDateColumn({ name: 'sended_at' })
-    sended_at: Date;    
+    sended_at: Date;
+
+    @DeleteDateColumn()
+    deleted_at: Date | null;
 
     @Column({ name: 'Sender_id', primary: true })
     Sender_id: number;

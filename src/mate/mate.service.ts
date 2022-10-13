@@ -176,6 +176,20 @@ export class MateService {
         }
     }
 
+    async cancelRequest(me: Users, receiverId: number) {
+        try {
+            await this.mateReqRepository.createQueryBuilder()
+                .softDelete()
+                .from(MateRequestRecords)
+                .where('Sender_id = :myId', { myId: me.id })
+                .andWhere('Receiver_id = :receiverId', { receiverId })
+                .execute();
+        } catch(e) {
+            throw new ForbiddenException();
+        }
+        return 'OK';
+    }
+
     async removeMate(myId: number, mateId: number) {
         // push?
         // db row 삭제
@@ -311,8 +325,8 @@ export class MateService {
             await this.mateReqRepository.createQueryBuilder('mr')
                             .update()
                             .set(toBeUpdated)
-                            .where('sender_id = :senderId', { senderId })
-                            .andWhere('receiver_id = :receiverId', { receiverId })
+                            .where('Sender_id = :senderId', { senderId })
+                            .andWhere('Receiver_id = :receiverId', { receiverId })
                             .execute();
         } catch (error) {
             throw new ForbiddenException('Invalid request');
