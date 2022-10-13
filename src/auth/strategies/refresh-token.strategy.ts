@@ -18,8 +18,8 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refreshTok
         })
     }
 
-    async validate(req: Request, { sub, email }) {
-        const user = await this.authService.validateRefreshToken(sub, email, req.headers['Refresh-Token']);
+    async validate({ sub, email }) {
+        const user = await this.authService.validateRefreshToken(sub, email);
         if (!user) {
             throw new InvalidTokenException();
         }

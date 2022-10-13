@@ -38,13 +38,13 @@ export class AuthService {
         return user;
     }
 
-    async validateRefreshToken(userId: number, email: string, refreshToken: any): Promise<Users> | null {
+    async validateRefreshToken(userId: number, email: string): Promise<Users> | null {
         const user = await this.usersRepository.findOneOrFail({ where: { id: userId, email }})
             .catch(_ => { throw new InvalidTokenException() });
-        const tokenMatched = await bcrypt.compare(refreshToken, user.refresh_token);
-        if (!tokenMatched) {
-            return null;
-        }
+        // const tokenMatched = await bcrypt.compare(refreshToken, user.refresh_token);
+        // if (!tokenMatched) {
+        //     return null;
+        // }
         return user;
     }
 
