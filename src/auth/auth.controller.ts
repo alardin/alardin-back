@@ -35,7 +35,10 @@ export class AuthController {
     @UseGuards(NotLoggedInGuard)
     @Post('kakao')
     async kakaoAuth(@Body() tokens: AuthDto) {
-        return await this.authService.kakaoAuth(tokens);
+        const res = await this.authService.kakaoAuth(tokens);
+        console.log('hi');
+        console.log(res);
+        return res;
     }
 
         @ApiOperation({
