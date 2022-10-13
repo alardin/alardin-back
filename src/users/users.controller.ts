@@ -44,23 +44,6 @@ export class UsersController {
         return await this.usersService.deleteUser(user.id);
     }
 
-        @ApiOperation({
-            summary: '카카오 로그인/회원가입',
-        })
-        @ApiBody({
-            type: AuthDto
-        })
-        @ApiResponse({
-            status: 201,
-            type: AppTokens
-        })
-    @Public()
-    @UseGuards(NotLoggedInGuard)
-    @Post('auth')
-    async kakaoAuth(@Body() tokens: AuthDto): Promise<AppTokens> {
-        return await this.usersService.auth(tokens);
-    }
-
     @UseGuards(LoggedInGuard)
     @Post('logout')
     async logout(@Req() req, @User() user: Users) {
