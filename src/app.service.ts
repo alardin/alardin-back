@@ -15,8 +15,6 @@ import { Mates } from './entities/mates.entity';
 import { MateService } from './mate/mate.service';
 import { AlarmService } from './alarm/alarm.service';
 import { MateRequestRecords } from './entities/mate-request.records.entity';
-import { Users } from './entities/users.entity';
-
 
 class InsertDto {
     @ApiProperty({
@@ -62,39 +60,10 @@ export class AppService {
         private readonly kakaoService: KakaoService,
         private readonly mateService: MateService,
         private readonly alarmService: AlarmService,
-    ) {}
+    ) {
+    }
     async test() {
-        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: false, is_rejected: false };
-        let userOption: FindOptionsSelect<Users> = { id: true, nickname: true, thumbnail_image_url: true };
-        const requests = await this.mateReqRepository.find({
-            select: {
-                Receiver: userOption,
-                sended_at: true,
-            },
-            where: {
-                Sender_id: 2,
-                ...whereOption
-            },
-            relations: {
-                Receiver: true
-            }
-        });
-        const responses = await this.mateReqRepository.find({
-            select: {
-                Sender:userOption,
-                sended_at: true,
-            },
-            where: {
-                Receiver_id: 2,
-                ...whereOption
-            },
-            relations: {
-                Sender: true
-            }
-        });
-        const responseIReceived = responses.map(({ sended_at, Sender }) => ({sended_at, ...Sender})); 
-        const requestISent = requests.map(({ sended_at, Receiver }) => ({sended_at, ...Receiver}));
-        return 'hi';
+
     }
     // async insert(data: InsertDto[]) {
     //     for await (let d of data) {

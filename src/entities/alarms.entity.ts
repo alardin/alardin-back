@@ -103,13 +103,14 @@ export class Alarms {
     @Column('json', { name: 'data', default: {}})
     data: object;
 
-    @IsDate()
     @CreateDateColumn()
     created_at: Date;
 
-    @IsDate()
     @UpdateDateColumn()
     updated_at: Date;
+
+    @Column('datetime', { name: 'expired_at' })
+    expired_at: Date | null;
 
     @DeleteDateColumn()
     deleted_at: Date | null;
