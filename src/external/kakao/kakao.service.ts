@@ -75,7 +75,7 @@ export class KakaoService {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
             }
-        });
+        }).catch(e => console.log(e));
         return {
             accessToken: data.access_token,
             refreshToken: data.refresh_token ? data.refresh_token : refreshToken
