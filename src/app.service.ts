@@ -2,8 +2,7 @@ import { BadRequestException, Body, ForbiddenException, Injectable } from '@nest
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Model } from 'mongoose';
-import { title } from 'process';
-import { In, Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, In, Repository } from 'typeorm';
 import { AlarmMembers } from './entities/alarm.members.entity';
 import { Alarms } from './entities/alarms.entity';
 import { KakaoService } from './external/kakao/kakao.service';
@@ -13,9 +12,10 @@ import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { GameMeta, GameMetaDocument } from './schemas/gameMeta.schemas';
 import { Mates } from './entities/mates.entity';
-import { filter } from 'rxjs';
 import { MateService } from './mate/mate.service';
 import { AlarmService } from './alarm/alarm.service';
+import { MateRequestRecords } from './entities/mate-request.records.entity';
+import { Users } from './entities/users.entity';
 
 
 class InsertDto {
@@ -52,6 +52,8 @@ export class AppService {
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @InjectRepository(Mates)
         private readonly matesRepository: Repository<Mates>,
+        @InjectRepository(MateRequestRecords)
+        private readonly mateReqRepository: Repository<MateRequestRecords>,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>,
@@ -62,57 +64,37 @@ export class AppService {
         private readonly alarmService: AlarmService,
     ) {}
     async test() {
-        const joinedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
-            .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId: 2 })
-            .select([
-                'alarms.id',
-            ])
-            .getMany();
-        
-        const joinedAlarmsIds = joinedAlarms.map(m => m.id);
-        let returnJoinedAlarms = await this.alarmsRepository.find({
+        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: false, is_rejected: false };
+        let userOption: FindOptionsSelect<Users> = { id: true, nickname: true, thumbnail_image_url: true };
+        const requests = await this.mateReqRepository.find({
             select: {
-                id: true,
-                name: true,
-                time: true,
-                is_repeated: true,
-                is_private: true,
-                music_name: true,
-                max_member: true,
-                created_at: true,
-                Host_id: true,
-                Game_id: true,
-                Game: {
-                    id: true,
-                    name: true,
-                    thumbnail_url: true
-                },
-                Host: {
-                    id: true,
-                    nickname: true,
-                    thumbnail_image_url: true
-                },
-                Members: {
-                    id: true,
-                    nickname: true,
-                    thumbnail_image_url: true,
-                }
+                Receiver: userOption,
+                sended_at: true,
             },
             where: {
-                id: In(joinedAlarmsIds),
+                Sender_id: 2,
+                ...whereOption
             },
             relations: {
-                Game: true,
-                Members: true,
-                Host: true
+                Receiver: true
             }
         });
-        returnJoinedAlarms = returnJoinedAlarms.map(({ Host, ...withOutHost}) => {
-            withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
-            return {...withOutHost, Host};
-        })
-        const res = returnJoinedAlarms
-        return res;
+        const responses = await this.mateReqRepository.find({
+            select: {
+                Sender:userOption,
+                sended_at: true,
+            },
+            where: {
+                Receiver_id: 2,
+                ...whereOption
+            },
+            relations: {
+                Sender: true
+            }
+        });
+        const responseIReceived = responses.map(({ sended_at, Sender }) => ({sended_at, ...Sender})); 
+        const requestISent = requests.map(({ sended_at, Receiver }) => ({sended_at, ...Receiver}));
+        return 'hi';
     }
     // async insert(data: InsertDto[]) {
     //     for await (let d of data) {

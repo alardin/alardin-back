@@ -8,7 +8,8 @@ import { Users } from 'src/entities/users.entity';
 import { KakaoService } from 'src/external/kakao/kakao.service';
 import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
-import { Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 
 type TMateList = {
@@ -99,8 +100,11 @@ export class MateService {
                     date: new Date(Date.now()).toISOString()
                 })
             });
-
-        await this.saveMateRequest(me.id, receiver.id, 'REQUEST');
+        const newMateReq = new MateRequestRecords()
+        newMateReq.Sender_id = me.id;
+        newMateReq.Receiver_id = receiver.id;
+        newMateReq.is_accepted = false, newMateReq.is_rejected = false;
+        await this.mateReqRepository.save(newMateReq);
         return 'OK';
     }
 
@@ -114,17 +118,62 @@ export class MateService {
 
         const sender = await this.getUserByUserId(mateReq.Sender_id);
 
-        if (response === 'ACCEPT') {
-            const title = 'Mate repsonse';
-            const body = `${me.nickname} accept the request`;
-            await this.pushNotiService.sendPush(sender.id, sender.device_token, title, body);
-            await this.saveMateRequest(me.id, sender.id, 'RESPONSE');
-            await this.saveMate(sender.id, me.id);
-            await this.cacheManager.del(`${me.id}_mates`);
+        let title: string, body: string;
+        switch(response) {
+            case 'ACCEPT':
+                title = 'Mate repsonse';
+                body = `${me.nickname} accept the request`;
+                await this.updateMateRequest(me.id, sender.id, true);
+                await this.saveMate(sender.id, me.id);
+                await this.cacheManager.del(`${me.id}_mates`);
+                break;
+            case 'REJECT':
+                await this.updateMateRequest(me.id, sender.id, false);
+                break;
+            default:
+                break;
         }
+        await this.pushNotiService.sendPush(sender.id, sender.device_token, title, body);
 
         return 'OK';
  
+    }
+
+    async getMateRequestList(me: Users) {
+        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: false, is_rejected: false };
+        let userOption: FindOptionsSelect<Users> = { id: true, nickname: true, thumbnail_image_url: true };
+        const requests = await this.mateReqRepository.find({
+            select: {
+                Receiver: userOption,
+                sended_at: true,
+            },
+            where: {
+                Sender_id: me.id,
+                ...whereOption
+            },
+            relations: {
+                Receiver: true
+            }
+        });
+        const responses = await this.mateReqRepository.find({
+            select: {
+                Sender:userOption,
+                sended_at: true,
+            },
+            where: {
+                Receiver_id: me.id,
+                ...whereOption
+            },
+            relations: {
+                Sender: true
+            }
+        });
+        const requestISent = requests.map(({ sended_at, Receiver }) => ({sended_at, ...Receiver}));
+        const responseIReceived = responses.map(({ sended_at, Sender }) => ({sended_at, ...Sender})); 
+        return {
+            requestISent,
+            responseIReceived
+        }
     }
 
     async removeMate(myId: number, mateId: number) {
@@ -188,43 +237,6 @@ export class MateService {
         return alarms;  
     }
 
-    private async getMateById(id: number) {
-        return await this.matesRepository.findOneOrFail({ where: { id }})
-            .catch(_ => { throw new ForbiddenException() });
-    }
-
-    private async getUserByUserId(userId: number) {
-        return await this.usersRepository.findOneOrFail({ where: { id: userId }})
-                            .catch(_ => { throw new UnauthorizedException() });
-    }
-
-    private async saveMate(senderId: number, receiverId: number) {
-        const newMate = new Mates();
-        newMate.Sender_id = senderId, newMate.Receiver_id = receiverId;
-        try {
-            await this.matesRepository.save(newMate);
-            await this.cacheManager.del(`${senderId}_mates`);
-            await this.cacheManager.del(`${receiverId}_mates`);
-            await this.cacheManager.del(`${senderId}_mates_alarm_list`);
-            await this.cacheManager.del(`${receiverId}_mates_alarm_list`);
-        } catch(e) {
-            throw new ForbiddenException('Invalid request');
-        }
-    }
-
-    private async saveMateRequest(senderId: number, receiverId: number, type: string) {
-        const newMateReq = new MateRequestRecords()
-        newMateReq.Sender_id = senderId;
-        newMateReq.Receiver_id = receiverId;
-        newMateReq.type = type
-
-        try {
-            await this.mateReqRepository.save(newMateReq);
-        } catch (error) {
-            throw new ForbiddenException('Invalid request');
-        }
-    }
-
     async validateMate(myId: number, mateId: number) {
         return await this.matesRepository.findOne({
             where: [
@@ -264,4 +276,46 @@ export class MateService {
         return mateFinished;
     }
 
+    private async getMateById(id: number) {
+        return await this.matesRepository.findOneOrFail({ where: { id }})
+            .catch(_ => { throw new ForbiddenException() });
+    }
+
+    private async getUserByUserId(userId: number) {
+        return await this.usersRepository.findOneOrFail({ where: { id: userId }})
+                            .catch(_ => { throw new UnauthorizedException() });
+    }
+
+    private async saveMate(senderId: number, receiverId: number) {
+        const newMate = new Mates();
+        newMate.Sender_id = senderId, newMate.Receiver_id = receiverId;
+        try {
+            await this.matesRepository.save(newMate);
+            await this.cacheManager.del(`${senderId}_mates`);
+            await this.cacheManager.del(`${receiverId}_mates`);
+            await this.cacheManager.del(`${senderId}_mates_alarm_list`);
+            await this.cacheManager.del(`${receiverId}_mates_alarm_list`);
+        } catch(e) {
+            throw new ForbiddenException('Invalid request');
+        }
+    }
+
+    private async updateMateRequest(senderId: number, receiverId: number, accept: boolean) {
+        let toBeUpdated: QueryDeepPartialEntity<MateRequestRecords>;
+        if (accept) {
+            toBeUpdated = { is_accepted: true }
+        } else {
+            toBeUpdated = { is_rejected: true }
+        }
+        try {
+            await this.mateReqRepository.createQueryBuilder('mr')
+                            .update()
+                            .set(toBeUpdated)
+                            .where('sender_id = :senderId', { senderId })
+                            .andWhere('receiver_id = :receiverId', { receiverId })
+                            .execute();
+        } catch (error) {
+            throw new ForbiddenException('Invalid request');
+        }
+    }
 }

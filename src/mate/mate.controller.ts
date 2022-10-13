@@ -50,6 +50,21 @@ export class MateController {
     }
 
         @ApiOperation({
+            summary: '메이트 제거',
+            description: '메이트 관계 종료'
+        })
+        @ApiBody({
+            type: RemoveMateDto,
+        })
+        @ApiResponse({
+            status: 200,
+            type: OnlyStatusResponse
+        })
+    @Delete()
+    async removeMate(@User() user, @Body() { mateId }) {
+        return await this.mateService.removeMate(user.id, mateId);
+    }
+        @ApiOperation({
             summary: '메이트 요청에 응답',
             description: '메이트 요청 수락/거절 응답을 통해 메이트 관계 결정'
         })
@@ -66,19 +81,17 @@ export class MateController {
     }
 
         @ApiOperation({
-            summary: '메이트 제거',
-            description: '메이트 관계 종료'
+            summary: '메이트 요청 중 리스트',
+            description: '처리되지 않은 요청/응답 리스트'
         })
-        @ApiBody({
-            type: RemoveMateDto,
-        })
-        @ApiResponse({
-            status: 200,
-            type: OnlyStatusResponse
-        })
-    @Delete()
-    async removeMate(@User() user, @Body() { mateId }) {
-        return await this.mateService.removeMate(user.id, mateId);
+    @Get('requests')
+    async getMateRequestsList(@User() user) {
+        return this.mateService.getMateRequestList(user);
+    }
+
+    @Delete('request')
+    async cancelRequest(@User() user) {
+        
     }
 
         @ApiOperation({

@@ -30,6 +30,8 @@ import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
 import { Mates } from './entities/mates.entity';
 import { AlarmService } from './alarm/alarm.service';
 import { MateService } from './mate/mate.service';
+import { MateRequestRecords } from './entities/mate-request.records.entity';
+import { Users } from './entities/users.entity';
 dotenv.config();
 
 @Module({
@@ -52,7 +54,7 @@ dotenv.config();
       { name: UserPlayData.name, schema: UserPlayDataScheme },
       { name: GameMeta.name, schema: GameMetaSchema }
     ]),
-    TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates]),
+    TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates, MateRequestRecords, Users]),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
