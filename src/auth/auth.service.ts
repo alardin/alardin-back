@@ -51,13 +51,13 @@ export class AuthService {
     login({ id, email }): AccessAndRefreshToken {
         return {
             appAccessToken: this.jwtService.sign({ email }, {
-                expiresIn: '12h',
+                expiresIn: '12 hrs',
                 subject: String(id),
                 issuer: 'alardin',
                 secret: process.env.JWT_SECRET
             }),
             appRefreshToken: this.jwtService.sign({ email }, {
-                expiresIn: '30d',
+                expiresIn: '30 days',
                 subject: String(id),
                 issuer: 'alardin',
                 secret: process.env.JWT_SECRET
