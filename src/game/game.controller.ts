@@ -142,7 +142,7 @@ export class GameController {
     })
     @Public()
     @Get(':gameId')
-    async getGameDetailById(gameId: number) {
+    async getGameDetailById(@Param('gameId') gameId: number) {
         return await this.gameService.getGameDetailsById(gameId);
     }
 
