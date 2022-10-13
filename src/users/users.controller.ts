@@ -64,7 +64,7 @@ export class UsersController {
             type: AppTokens
         })
     @Public()
-    @UseGuards(RefreshTokenGuard)
+    @UseGuards(new RefreshTokenGuard())
     @Get('refresh')
     async refreshToken(@Req() req, @User() user: Users) {
         console.log(req.headers);
