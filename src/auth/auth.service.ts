@@ -42,6 +42,7 @@ export class AuthService {
         console.log('email', email)
         const user = await this.usersRepository.findOneOrFail({ where: { id: userId, email }})
             .catch(_ => { throw new InvalidTokenException() });
+        console.log(user);
         // const tokenMatched = await bcrypt.compare(refreshToken, user.refresh_token);
         // if (!tokenMatched) {
         //     return null;
