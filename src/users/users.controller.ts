@@ -66,7 +66,8 @@ export class UsersController {
     @Public()
     @UseGuards(RefreshTokenGuard)
     @Get('refresh')
-    async refreshToken(@User() user: Users) {
+    async refreshToken(@Req() req, @User() user: Users) {
+        console.log(req.headers);
         if (user.kakao_id) {
             await this.usersService.refreshKakaoToken(user.id);
         } 
