@@ -283,11 +283,12 @@ export class AlarmService {
         if (!members) {
             throw new ForbiddenException('Not allowed to send message');
         }
-        const memberIds = members.filter((m) => m.id !== myId).map(m => m.id);
-        const membersDeviceTokens = members.map(m => m.device_token);
+        let memberIds = members.map(m => m.id);
+        memberIds = memberIds.filter(id => id != myId);
         if(!memberIds.includes(myId)) {
             throw new ForbiddenException('Not allowed to send message');
         }
+        const membersDeviceTokens = members.map(m => m.device_token);
 
         membersDeviceTokens.length != 0 && (await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data));
         return 'OK'; 
