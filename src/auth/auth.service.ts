@@ -26,25 +26,20 @@ export class AuthService {
     ) {}
 
     async validateUser(userId: number, email: string) {
-        const user = await this.usersRepository.findOne({
-            where: {
-                id: userId,
-                email
-            }
-        });
+        const user = await this.usersRepository.findOne({ where: { id: userId } });
         if (!user) {
             return null;
         }
         return user;
     }
 
-    async validateRefreshToken(userId: number, email: string): Promise<Users> | null {
+    async validateRefreshToken(userId: number, email: string, refreshToken: string): Promise<Users> | null {
         const user = await this.usersRepository.findOneOrFail({ where: { id: userId }})
             .catch(_ => { throw new InvalidTokenException() });
-        // const tokenMatched = await bcrypt.compare(refreshToken, user.refresh_token);
-        // if (!tokenMatched) {
-        //     return null;
-        // }
+        const tokenMatched = await bcrypt.compare(refreshToken, user.refresh_token);
+        if (!tokenMatched) {
+            return null;
+        }
         return user;
     }
 

@@ -13,7 +13,7 @@ export class AuthController {
     constructor(
         private readonly authService: AuthService
     ) {}
-    
+
         @ApiOperation({
             summary: '카카오 로그인/회원가입',
         })
@@ -29,8 +29,6 @@ export class AuthController {
     @Post('kakao')
     async kakaoAuth(@Body() tokens: AuthDto) {
         const res = await this.authService.kakaoAuth(tokens);
-        console.log('hi');
-        console.log(res);
         return res;
     }
 
