@@ -110,7 +110,6 @@ export class GameService {
       const newGame = await queryRunner.manager.getRepository(Games).save({
         ...bodyWithoutMeta,
       });
-      await queryRunner.commitTransaction();
       const newGameMeta = new this.gameMetaModel({
         Game_id: newGame.id,
         data_type: data_type,
@@ -118,6 +117,7 @@ export class GameService {
         screenshot_urls: screenshot_urls,
       });
       await newGameMeta.save();
+      await queryRunner.commitTransaction();
     } catch (e) {
       await queryRunner.rollbackTransaction();
       throw new ForbiddenException(e);
