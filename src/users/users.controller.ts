@@ -123,7 +123,7 @@ export class UsersController {
     })
     @Get('history-count')
     async getUserHistoyByCount(@User() user) {
-        return this.usersService.getUserHistoryByCount(user.id);
+        return await this.usersService.getUserHistoryByCount(user.id);
     }
         @ApiOperation({
             summary: '프로필 수정',
