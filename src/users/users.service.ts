@@ -340,7 +340,7 @@ export class UsersService {
         let playRecordsWithMates: MatePlayHistory[] = [];
         for await (let mate of mates) {
             let playCount = 0, successCount = 0, failCount = 0, mateDue = 0;
-            mateDue = Math.floor((new Date().getTime() - mate.updated_at.getTime()) / (1000*60*60*24));
+            mateDue = Math.ceil((new Date().getTime() - mate.updated_at.getTime()) / (1000*60*60*24));
 
             const membersOfAlarmPlayedByMate = await this.alarmPlayRecordsRepository.query(
                 `SELECT alarm_members.Alarm_id, GROUP_CONCAT(alarm_members.User_id) as User_ids 
