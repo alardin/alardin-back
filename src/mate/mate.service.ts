@@ -244,6 +244,7 @@ export class MateService {
                             'members.nickname',
                             'members.thumbnail_image_url'
                         ])
+                        .where('alarms.expired_at < :now', { now: new Date() })
                         .getMany();
             alarms = [...alarms, ...alarm];
         }

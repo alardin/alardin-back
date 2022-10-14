@@ -1,7 +1,7 @@
 import { ApiProperty, PickType } from "@nestjs/swagger";
 import { Alarms } from "src/entities/alarms.entity";
 
-export class CreateAlarmDto extends PickType(Alarms, ['is_private', 'time', 'is_repeated', 'Game_id', 'music_volume', 'max_member', 'music_name', 'name']) {
+export class CreateAlarmDto extends PickType(Alarms, ['is_private', 'time', 'is_repeated', 'Game_id', 'music_volume', 'max_member', 'music_name', 'name', 'expired_at']) {
     @ApiProperty({
         name: 'data',
         description: 'optional data for games',

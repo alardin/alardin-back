@@ -32,6 +32,7 @@ import { AlarmService } from './alarm/alarm.service';
 import { MateService } from './mate/mate.service';
 import { MateRequestRecords } from './entities/mate-request.records.entity';
 import { Users } from './entities/users.entity';
+import { Games } from './entities/games.entity';
 dotenv.config();
 
 @Module({
@@ -47,14 +48,15 @@ dotenv.config();
         entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
         migrations: ['../src/migrations/*.ts'],
         logging: true,
-        synchronize: false
+        synchronize: false,
+        timezone: 'UTC'
     }),
     MongooseModule.forFeature([
       { name: GameData.name, schema: GameDataSchema },
       { name: UserPlayData.name, schema: UserPlayDataScheme },
       { name: GameMeta.name, schema: GameMetaSchema }
     ]),
-    TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates, MateRequestRecords, Users]),
+    TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates, MateRequestRecords, Users, Games]),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,

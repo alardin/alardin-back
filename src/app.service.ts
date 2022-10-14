@@ -2,7 +2,7 @@ import { BadRequestException, Body, ForbiddenException, Injectable } from '@nest
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Model } from 'mongoose';
-import { FindOptionsSelect, FindOptionsWhere, In, Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, In, LessThan, MoreThan, Repository } from 'typeorm';
 import { AlarmMembers } from './entities/alarm.members.entity';
 import { Alarms } from './entities/alarms.entity';
 import { KakaoService } from './external/kakao/kakao.service';
@@ -15,6 +15,7 @@ import { Mates } from './entities/mates.entity';
 import { MateService } from './mate/mate.service';
 import { AlarmService } from './alarm/alarm.service';
 import { MateRequestRecords } from './entities/mate-request.records.entity';
+import { Games } from './entities/games.entity';
 
 class InsertDto {
     @ApiProperty({
@@ -46,6 +47,8 @@ class InsertDto {
 @Injectable()
 export class AppService {
     constructor(
+        @InjectRepository(Games)
+        private readonly gamesRepository: Repository<Games>,
         @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
         @InjectRepository(Mates)
@@ -63,7 +66,35 @@ export class AppService {
     ) {
     }
     async test() {
-
+        // const body = {
+        //     "name": "alarm 1",
+        //     "time": "15:30",
+        //     "is_repeated": "123",
+        //     "is_private": false,
+        //     "music_name": "Cooped Up",
+        //     "music_volume": 70,
+        //     "max_member": 2,
+        //     "Game_id": 1,
+        //     "data": {
+        //       "title": "좋아한다는 착각",
+        //       "info": "data is optional for games needed to use data"
+        //     },
+        //     "expired_at": new Date(),
+        //   }
+        // const game = await this.gamesRepository.findOneOrFail({
+        //     where: {
+        //         id: body.Game_id
+        //     }
+        // }).catch(e => { throw new ForbiddenException(); });
+        // let newAlarm: Alarms;
+        // newAlarm = await this.alarmsRepository.save({
+        //     Host_id: 2,
+        //     member_count: 1,
+        //     min_player: game.min_player,
+        //     ...body
+        // });
+        // console.log(newAlarm);
+        
     }
     // async insert(data: InsertDto[]) {
     //     for await (let d of data) {

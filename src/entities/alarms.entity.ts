@@ -109,6 +109,11 @@ export class Alarms {
     @UpdateDateColumn()
     updated_at: Date;
 
+
+        @ApiProperty({
+            name: 'expired_at',
+            example: new Date()
+        })
     @Column('datetime', { name: 'expired_at' })
     expired_at: Date | null;
 

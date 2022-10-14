@@ -13,14 +13,7 @@ export class AuthController {
     constructor(
         private readonly authService: AuthService
     ) {}
-
-    @UseGuards(AuthGuard('apple'))
-    @Get('apple')
-    async appleLogin(): Promise<any> {
-        // update device token;
-        return 'OK'
-    }
-
+    
         @ApiOperation({
             summary: '카카오 로그인/회원가입',
         })

@@ -8,7 +8,7 @@ import { Assets } from 'src/entities/assets.entity';
 import { Users } from 'src/entities/users.entity';
 import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
 import { KakaoService } from 'src/external/kakao/kakao.service';
-import { DataSource, In, Not, Repository } from 'typeorm';
+import { DataSource, In, LessThan, LessThanOrEqual, Not, Repository } from 'typeorm';
 import { AuthDto } from './dto/auth.dto';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { OthersProfileDto } from './dto/others.profile.dto';
@@ -170,7 +170,8 @@ export class UsersService {
                 }
             },
             where: {
-                Host_id: myId
+                Host_id: myId,
+                expired_at: LessThan(new Date()) 
             },
             relations: {
                 Game: true,
@@ -231,6 +232,7 @@ export class UsersService {
             },
             where: {
                 id: In(joinedAlarmsIds),
+                expired_at: LessThan(new Date())
             },
             relations: {
                 Game: true,
