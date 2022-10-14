@@ -257,7 +257,7 @@ export class AlarmService {
             throw new ForbiddenException();
         }
         const membersDeviceTokens = members.filter((m) => m.id !== myId).map(m => m.device_token);
-        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
+        membersDeviceTokens.length != 0 && (await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data));
         return 'OK';    
         
     }
@@ -289,7 +289,7 @@ export class AlarmService {
             throw new ForbiddenException('Not allowed to send message');
         }
 
-        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
+        membersDeviceTokens.length != 0 && (await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data));
         return 'OK'; 
     }
 

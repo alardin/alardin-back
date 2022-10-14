@@ -19,7 +19,6 @@ export class MateRequestReponseDto {
     })
     @IsNotEmpty()
     @IsString()
-    @Matches(/^(ACCEPT|REJECT)$/gm)
     public response: 'ACCEPT' | 'REJECT'
 
 }
