@@ -46,27 +46,9 @@ export class PushNotificationService {
             throw new UnauthorizedException();
         }
     }
-
-    async sendToMate(mateId: number, title: string, body: string) {
-        const mate = await this.matesRepository.findOneOrFail({
-            where: {
-                id: mateId
-            },
-            relations: {
-                Sender: true,
-                Receiver: true
-            }
-        }).catch(_ => { throw new ForbiddenException() });
-        const messageId = await this.sendMulticast([mate.Sender.device_token, mate.Receiver.device_token], title, body);
-        if (!messageId) {
-            return null;
-        }
-        try {
-            await this.saveNotification(mate.Sender_id, title, body);
-            await this.saveNotification(mate.Receiver_id, title, body);
-        } catch(e) {
-            throw new UnauthorizedException();
-        }
+    // sendPushByAdmin(user.id, user.device_token, title, body, data);
+    async sendPushByAdmin(title: string, body: string, data?: { [key: string]: string }) {
+        // all users
     }
 
     async sendMulticast(tokens: string[], title: string, body: string, data?: { [key: string]: string }) {

@@ -67,10 +67,21 @@ export class AppService {
         private readonly alarmService: AlarmService,
     ) {
     }
-    async test(body) {
-        await this.alarmService.createNewAlarm(2, body);
-        const res = await this.usersService.getUsersHostedAlarm(2);
-        return res;
+    async test() {
+        const alarmMemberIds = await this.alarmMembersRepository.find({
+            where: { Alarm_id: 48 },
+            select: {
+                User_id: true,
+                User: {
+                    device_token: true
+                }
+            },
+            relations: {
+                User: true
+            }
+        });
+
+        return alarmMemberIds.map(m => m.User.device_token);
         
     }
     // async insert(data: InsertDto[]) {

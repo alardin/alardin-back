@@ -156,9 +156,9 @@ export class AlarmService {
         return newAlarm.id;
     }
 
-    async editAlarm(myId: number, alarmId: number, condition: QueryDeepPartialEntity<Alarms>) {
+    async editAlarm(me: Users, alarmId: number, condition: QueryDeepPartialEntity<Alarms>) {
         const alarm = await this.getAlarmById(alarmId);
-        if (myId !== alarm.Host_id) {
+        if (me.id !== alarm.Host_id) {
             throw new ForbiddenException();
         }
         await this.alarmsRepository.createQueryBuilder()
@@ -166,7 +166,20 @@ export class AlarmService {
             .set(condition)
             .where('id = :id', { id: alarm.id })
             .execute();
-            
+        
+        await this.sendMessageToAlarmByHost(me.id, 
+            alarm.id, 
+            `${me.nickname}님께서 ${alarm.time} 알람방을 수정했습니다.`,
+            `${alarm.time} 알람 수정 발생`,
+            {
+                type: "ROOM_ALARM",
+                message: JSON.stringify({
+                        type: 'room',
+                        content: `${me.nickname}님께서 ${alarm.time} 알람방을 수정했습니다.`,
+                        date: new Date(Date.now()).toISOString(),
+                }),
+            }
+        );
         return 'OK';
     }
 
@@ -178,13 +191,19 @@ export class AlarmService {
     
     async joinAlarm(me: Users, alarmId: number) {
         const alarm = await this.getAlarmById(alarmId);
-        const alarmMemberIds = await this.alarmMembersRepository.find({
+        const alarmMembers = await this.alarmMembersRepository.find({
             where: { Alarm_id: alarm.id },
             select: {
-                User_id: true
+                User_id: true,
+                User: {
+                    device_token: true
+                }
+            },
+            relations: {
+                User: true
             }
         });
-        const userIds = alarmMemberIds.map(m => m.User_id).filter(id => id != me.id);
+        const memberIdsExceptMe = alarmMembers.filter(m => m.User_id != me.id).map(m => m.User_id);
         const queryRunner = this.dataSource.createQueryRunner();
         let validFlag = false;
         await queryRunner.connect();
@@ -197,7 +216,7 @@ export class AlarmService {
                     throw new ForbiddenException();
                 }
             } else {
-                for await (let uId of userIds) {
+                for await (let uId of memberIdsExceptMe) {
                     const isValid = await this.mateService.validateMate(me.id, uId);
                     if (isValid) {
                         validFlag = true;
@@ -208,6 +227,7 @@ export class AlarmService {
             if (!validFlag) {
                 throw new ForbiddenException('Not Allowed to join');
             } 
+            
             if (alarm.member_count >= alarm.max_member) {
                 throw new ForbiddenException();
             }
@@ -227,7 +247,22 @@ export class AlarmService {
             throw new ForbiddenException(e);
         } finally {
             await queryRunner.release();
+            
         }
+
+        await this.sendMessageToAlarmByMember(me.id, alarm.id, 
+            `${me.nickname}님께서 ${alarm.time} 알람방에 참가하였습니다.`,
+            `${me.nickname}님의 알람방 참가`,
+            {
+                type: "ROOM_ALARM",
+                message: JSON.stringify({
+                        type: 'room',
+                        content: `${me.nickname}님께서 ${alarm.time} 알람방에 참가하였습니다.`,
+                        date: new Date(Date.now()).toISOString(),
+                }),
+            }
+        );
+
         await this.clearAlarmsCache(me.id);
         // await this.deleteMembersCache(me.id, alarm.id);
         return 'OK';
@@ -263,34 +298,25 @@ export class AlarmService {
     }
 
     async sendMessageToAlarmByMember(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
-        const { Members: members } = await this.alarmsRepository.findOne({
-            where: {
-                id: alarmId
-            },
+        const alarmMembers = await this.alarmMembersRepository.find({
+            where: { Alarm_id: alarmId },
             select: {
-                id: true,
-                Host_id: true,
-                Game_id: true,
-                Members: {
-                    id: true,
+                User_id: true,
+                User: {
                     device_token: true
                 }
             },
             relations: {
-                Members: true
+                User: true
             }
         });
-        if (!members) {
-            throw new ForbiddenException('Not allowed to send message');
-        }
-        let memberIds = members.map(m => m.id);
-        memberIds = memberIds.filter(id => id != myId);
+        const memberIds = alarmMembers.map(m => m.User_id);
         if(!memberIds.includes(myId)) {
             throw new ForbiddenException('Not allowed to send message');
         }
-        const membersDeviceTokens = members.map(m => m.device_token);
+        const memberDTokens = alarmMembers.filter(m => m.User_id != myId).map(m => m.User.device_token);
 
-        membersDeviceTokens.length != 0 && (await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data));
+        memberDTokens.length != 0 && (await this.pushNotiService.sendMulticast(memberDTokens, title, body, data));
         return 'OK'; 
     }
 
@@ -329,21 +355,33 @@ export class AlarmService {
         
     }
 
-    async deleteAlarm(myId: number, alarmId: number) {
-        await this.validateAlarmHost(myId, alarmId);
+    async deleteAlarm(me: Users, alarmId: number) {
+        await this.validateAlarmHost(me.id, alarmId);
+        const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
+                            .catch(e => { throw new BadRequestException() });
         try {
-            const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }});
-            await this.sendMessageToAlarmByHost(myId, alarmId, '알람방 삭제', `방장이 ${alarm.time} 알람을 삭제했습니다`, {});
             await this.alarmsRepository.createQueryBuilder()
                 .softDelete()
                 .from(Alarms)
-                .where('id = :id', { id: alarmId })
+                .where('id = :id', { id: alarm.id })
                 .execute();
             // await this.clearAlarmsCache(myId);
             // await this.deleteMembersCache(myId, alarmId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
+        await this.sendMessageToAlarmByHost(me.id, alarm.id, 
+            `${me.nickname}님께서 ${alarm.time} 알람방을 삭제했습니다.`, 
+            `방장이 ${alarm.time} 알람을 삭제했습니다`, 
+            {
+                type: "ROOM_ALARM",
+                message: JSON.stringify({
+                        type: 'room',
+                        content: `${me.nickname}님께서 ${alarm.time} 알람방을 삭제했습니다.`,
+                        date: new Date(Date.now()).toISOString(),
+                }),
+            }
+        );
         return "OK";
     }
 

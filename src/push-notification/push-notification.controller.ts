@@ -14,39 +14,22 @@ export class PushNotificationController {
         private readonly pushNotificationService: PushNotificationService
     ) {}
 
-    @ApiOperation({
-        summary: 'push 알림 전송',
-        description: 'notification 타입 알림 전송'
-    })
-    @ApiBody({
-        type: SendPushDto, 
-    })
-    @ForRoles(['admin'])
-    @UseGuards(new RoleGuard(new Reflector()))
-    @Post()
-    async sendPushNotification(
-        @User() user,
-        @Body() { data, title, body }: SendPushDto
-    ) {
-        return await this.pushNotificationService.sendPush(user.id, user.device_token, title, body, data);
-    }
-
     // @ApiOperation({
-    //     summary: 'push 데이터 전송',
-    //     description: 'data 타입 알림 전송'
+    //     summary: 'push 알림 전송',
+    //     description: 'notification 타입 알림 전송'
     // })
-    // @Post('data')
-    // sendPushData() {
-
+    // @ApiBody({
+    //     type: SendPushDto, 
+    // })
+    // @ForRoles(['admin'])
+    // @UseGuards(new RoleGuard(new Reflector()))
+    // @Post()
+    // async sendPushNotificationByAdmin(
+    //     @User() user,
+    //     @Body() { data, title, body }: SendPushDto
+    // ) {
+    //     return await this.pushNotificationService.sendPushByAdmin(user.id, user.device_token, title, body, data);
     // }
 
-    // @ApiOperation({
-    //     summary: 'push 알림&데이터 전송',
-    //     description: 'notification & data 타입 알림 전송'
-    // })
-    // @Post('both')
-    // sendPushBoth() {
-
-    // }
 
 }

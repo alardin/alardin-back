@@ -4,8 +4,10 @@ import { get } from 'http';
 import { userInfo } from 'os';
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
+import { Alarms } from 'src/entities/alarms.entity';
 import { SendPushDto } from 'src/push-notification/dto/send-push.dto';
 import { JoinedAlarmsDto } from 'src/users/dto/joined-alarms.dto';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { AlarmService } from './alarm.service';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
 import { JoinAlarmDto } from './dto/join-alarm.dto';
@@ -37,9 +39,9 @@ export class AlarmController {
             summary: '알람 수정',
             description: 'developing'
         })
-    @Put()
-    editAlarm() {
-
+    @Put(':alarmId')
+    async editAlarm(@User() user, @Param('alarmId') alarmId: number, @Body() data: QueryDeepPartialEntity<Alarms>) {
+        return await this.alarmService.editAlarm(user, alarmId, data);
     }
 
         @ApiOperation({
@@ -68,7 +70,7 @@ export class AlarmController {
         })
     @Delete(':alarmId')
     async deleteAlarm(@User() user, @Param('alarmId') alarmId: number) {
-        return await this.alarmService.deleteAlarm(user.id, alarmId); 
+        return await this.alarmService.deleteAlarm(user, alarmId); 
     }
 
         @ApiOperation({
@@ -91,9 +93,9 @@ export class AlarmController {
         return await this.alarmService.sendMessageToAlarmByHost(user.id, alarmId, sendMessageDto.title, sendMessageDto.body, sendMessageDto.data);
     }
 
-    @Post('message/member/:alarmId')
-    async sendMessageToAlarmByMember(@User() user, @Param('alarmId') alarmId: number, @Body() sendMessageDto: SendPushDto) {
-        return await this.alarmService.sendMessageToAlarmByMember(user.id, alarmId, sendMessageDto.title, sendMessageDto.body, sendMessageDto.data);
-    }
+    // @Post('message/member/:alarmId')
+    // async sendMessageToAlarmByMember(@User() user, @Param('alarmId') alarmId: number, @Body() sendMessageDto: SendPushDto) {
+    //     return await this.alarmService.sendMessageToAlarmByMember(user.id, alarmId, sendMessageDto.title, sendMessageDto.body, sendMessageDto.data);
+    // }
 
 }

@@ -97,21 +97,27 @@ export class MateService {
         }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
-        const messagId = await this.pushNotiService.sendPush(receiver.id, 
-            receiver.device_token, '메이트 요청', `${me.nickname}님이 메이트로 요청하셨습니다.`, {
-                type: 'MATE_ALARM',
-                message: JSON.stringify({
-                    type: 'mate',
-                    senderId: me.id,
-                    content: `${me.nickname}님이 메이트를 요청하셨습니다.`,
-                    date: new Date(Date.now()).toISOString()
-                })
-            });
         const newMateReq = new MateRequestRecords()
         newMateReq.Sender_id = me.id;
         newMateReq.Receiver_id = receiver.id;
         newMateReq.is_accepted = false, newMateReq.is_rejected = false;
         await this.mateReqRepository.save(newMateReq);
+        
+        await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
+            `${me.nickname}님의 메이트를 요청`, 
+            `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`, 
+            {
+                type: "MATE_ALARM",
+                message: JSON.stringify({
+                        type: 'mate',
+                        content: `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`,
+                        date: new Date(Date.now()).toISOString(),
+                        id: me.id,   // number
+                        nickname: me.nickname,  // string
+                        thumbnail_image_url: me.thumbnail_image_url,
+                }),
+            }
+        );
         return 'OK';
     }
 
@@ -127,11 +133,20 @@ export class MateService {
 
         switch(response) {
             case 'ACCEPT':
-                const title = 'Mate repsonse';
-                const body = `${me.nickname} accept the request`;
                 await this.updateMateRequest(me.id, sender.id, true);
                 await this.saveMate(sender.id, me.id);
-                await this.pushNotiService.sendPush(sender.id, sender.device_token, title, body);
+                await this.pushNotiService.sendPush(sender.id, sender.device_token, 
+                    `${me.nickname}님과 메이트 수락`, 
+                    `${me.nickname}님께서 회원님과의 메이트를 수락했습니다.`,
+                    {
+                        type: "MATE_ALARM",
+                        message: JSON.stringify({
+                                type: 'mate',
+                                content: `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`,
+                                date: new Date(Date.now()).toISOString(),
+                        }),
+                    }
+                );
                 await this.cacheManager.del(`${me.id}_mates`);
                 break;
             case 'REJECT':
