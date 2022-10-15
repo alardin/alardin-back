@@ -28,17 +28,9 @@ export class AppController {
     return 'Alardin-backend';
   }
   
-  @Public()
-  @Get('test')
-  async test(@Body() body: CreateAlarmDto) {
-    return await this.appService.test(body);
-  }
-
-
   // @Public()
-  // @Post('insert-data')
-  // async insertData(@Body('data') data: InsertDto[]) {
-  //   return await this.appService.insert(data);
-    
+  // @Get('test')
+  // async test(@Body() body: CreateAlarmDto) {
+  //   return await this.appService.test(body);
   // }
 }
