@@ -14,6 +14,7 @@ import { UsersService } from './users.service';
   imports: [KakaoModule, AuthModule,
     TypeOrmModule.forFeature([Users, Alarms, AlarmPlayRecords, AlarmResults, Mates])],
   controllers: [UsersController],
-  providers: [UsersService, Logger]
+  providers: [UsersService, Logger],
+  exports: [UsersService]
 })
 export class UsersModule {}

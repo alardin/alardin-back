@@ -8,9 +8,10 @@ import { Users } from 'src/entities/users.entity';
 import { MateRequestRecords } from 'src/entities/mate-request.records.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { KakaoModule } from 'src/external/kakao/kakao.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [PushNotificationModule, KakaoModule, TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms])],
+  imports: [PushNotificationModule, KakaoModule, UsersModule, TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms])],
   providers: [MateService, Logger],
   controllers: [MateController],
   exports: [MateService]

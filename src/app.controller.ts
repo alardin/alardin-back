@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiBody, ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsObject } from 'class-validator';
+import { CreateAlarmDto } from './alarm/dto/create-alarm.dto';
 import { AppService } from './app.service';
 import { Public } from './common/decorators/public.decorator';
 
@@ -29,8 +30,8 @@ export class AppController {
   
   @Public()
   @Get('test')
-  async test() {
-    return await this.appService.test();
+  async test(@Body() body: CreateAlarmDto) {
+    return await this.appService.test(body);
   }
 
 

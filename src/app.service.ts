@@ -16,6 +16,7 @@ import { MateService } from './mate/mate.service';
 import { AlarmService } from './alarm/alarm.service';
 import { MateRequestRecords } from './entities/mate-request.records.entity';
 import { Games } from './entities/games.entity';
+import { UsersService } from './users/users.service';
 
 class InsertDto {
     @ApiProperty({
@@ -62,38 +63,14 @@ export class AppService {
         @InjectModel(UserPlayData.name) private userPlayDataModel: Model<UserPlayDataDocument>,
         private readonly kakaoService: KakaoService,
         private readonly mateService: MateService,
+        private readonly usersService: UsersService,
         private readonly alarmService: AlarmService,
     ) {
     }
-    async test() {
-        // const body = {
-        //     "name": "alarm 1",
-        //     "time": "15:30",
-        //     "is_repeated": "123",
-        //     "is_private": false,
-        //     "music_name": "Cooped Up",
-        //     "music_volume": 70,
-        //     "max_member": 2,
-        //     "Game_id": 1,
-        //     "data": {
-        //       "title": "좋아한다는 착각",
-        //       "info": "data is optional for games needed to use data"
-        //     },
-        //     "expired_at": new Date(),
-        //   }
-        // const game = await this.gamesRepository.findOneOrFail({
-        //     where: {
-        //         id: body.Game_id
-        //     }
-        // }).catch(e => { throw new ForbiddenException(); });
-        // let newAlarm: Alarms;
-        // newAlarm = await this.alarmsRepository.save({
-        //     Host_id: 2,
-        //     member_count: 1,
-        //     min_player: game.min_player,
-        //     ...body
-        // });
-        // console.log(newAlarm);
+    async test(body) {
+        await this.alarmService.createNewAlarm(2, body);
+        const res = await this.usersService.getUsersHostedAlarm(2);
+        return res;
         
     }
     // async insert(data: InsertDto[]) {

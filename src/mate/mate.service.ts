@@ -8,6 +8,7 @@ import { Users } from 'src/entities/users.entity';
 import { KakaoService } from 'src/external/kakao/kakao.service';
 import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
+import { UsersService } from 'src/users/users.service';
 import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
@@ -29,6 +30,7 @@ export class MateService {
         private readonly usersRepository: Repository<Users>,
         @InjectRepository(MateRequestRecords)
         private readonly mateReqRepository: Repository<MateRequestRecords>,
+        private readonly usersService: UsersService,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -37,12 +39,6 @@ export class MateService {
     }
 
     async getMateList(myId: number, kakaoAccessToken: string):Promise<TMateList> {
-
-        // const cached = await this.cacheManager.get<TMateList>(`${myId}_mates`);
-        // if (cached) {
-        //     this.logger.log(`Hit Cache!`)
-        //     return cached;
-        // }
 
         const receivedMates = await this.matesRepository.createQueryBuilder('m')
                                     .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
@@ -74,6 +70,17 @@ export class MateService {
 
         const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
         const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
+        const mateIds = mateFinished.map(m => m.id);
+        const joinedAlarms = await this.usersService.getUsersJoinedAlarm(myId);
+        const hostedAlarms = await this.usersService.getUsersHostedAlarm(myId);
+        const myAlarms = [...joinedAlarms, ...hostedAlarms];
+        for await (let mId of mateIds) {
+            let alarmCount = 0;
+            for await (let alarm of myAlarms) {
+                alarmCount = Number(alarm.Members.map(m => m.id).includes(mId));
+            }
+            // mateFinished에 추가
+        }
         await this.cacheManager.set(`${myId}_mates`, {
             mates: mateFinished,
             kakaoFriends: friends  
@@ -118,13 +125,13 @@ export class MateService {
 
         const sender = await this.getUserByUserId(mateReq.Sender_id);
 
-        let title: string, body: string;
         switch(response) {
             case 'ACCEPT':
-                title = 'Mate repsonse';
-                body = `${me.nickname} accept the request`;
+                const title = 'Mate repsonse';
+                const body = `${me.nickname} accept the request`;
                 await this.updateMateRequest(me.id, sender.id, true);
                 await this.saveMate(sender.id, me.id);
+                await this.pushNotiService.sendPush(sender.id, sender.device_token, title, body);
                 await this.cacheManager.del(`${me.id}_mates`);
                 break;
             case 'REJECT':
@@ -133,7 +140,6 @@ export class MateService {
             default:
                 break;
         }
-        await this.pushNotiService.sendPush(sender.id, sender.device_token, title, body);
 
         return 'OK';
  
@@ -244,7 +250,7 @@ export class MateService {
                             'members.nickname',
                             'members.thumbnail_image_url'
                         ])
-                        .where('alarms.expired_at < :now', { now: new Date() })
+                        .where('alarms.expired_at > :now', { now: new Date() })
                         .getMany();
             alarms = [...alarms, ...alarm];
         }
