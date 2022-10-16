@@ -27,6 +27,18 @@ export class MateController {
     async getMateList(@User() user) {
         return await this.mateService.getMateList(user.id, user.kakao_access_token);
     }
+
+        @ApiOperation({
+            summary: 'nickname으로 메이트 검색'
+        })
+        @ApiQuery({
+            name: 'keyword',
+            example: '이상혁'
+        })
+    @Get('search')
+    async searchMates(@Query('keyword') keyword: string) {
+        return await this.mateService.searchMates(keyword);
+    }
     
         @ApiOperation({
             summary: '메이트 요청',

@@ -163,11 +163,22 @@ export class MateService {
  
     }
 
-    async searchMates(me: Users, keyword: string) {
-        const searchedUsers = await this.usersRepository.findBy({
-            nickname: ILike(`%${keyword}%`),
-            is_private: false
-        });
+    async searchMates(keyword: string) {
+        let searchedUsers: Users[] = [];
+        if (keyword.length > 0) {
+            searchedUsers = await this.usersRepository.find({
+                where: {
+                    is_private: false,
+                    nickname: ILike(`%${keyword}%`)
+                },
+                select: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true,
+                }
+            });
+        }
+        return searchedUsers;
     }
 
     async getMateRequestList(me: Users) {
