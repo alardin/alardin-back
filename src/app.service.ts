@@ -2,7 +2,7 @@ import { BadRequestException, Body, ForbiddenException, Injectable } from '@nest
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Model } from 'mongoose';
-import { FindOptionsSelect, FindOptionsWhere, In, LessThan, MoreThan, Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, ILike, In, LessThan, MoreThan, Repository } from 'typeorm';
 import { AlarmMembers } from './entities/alarm.members.entity';
 import { Alarms } from './entities/alarms.entity';
 import { KakaoService } from './external/kakao/kakao.service';
@@ -17,33 +17,7 @@ import { AlarmService } from './alarm/alarm.service';
 import { MateRequestRecords } from './entities/mate-request.records.entity';
 import { Games } from './entities/games.entity';
 import { UsersService } from './users/users.service';
-
-class InsertDto {
-    @ApiProperty({
-        name: 'Game_id',
-        example: 1
-    })
-    @IsNumber()
-    @IsNotEmpty()
-    Game_id: number;
-
-
-    @ApiProperty({
-        name: 'data',
-        example: {
-            title: '좋아한다는 착각2',
-            paragraphs: [
-              { paragraph_idx: 1, contents: 'test contents' },
-              { paragraph_idx: 2, contents: 'test contents2' }
-            ]
-        }
-    })
-    @IsObject()
-    @IsNotEmpty()
-    data: object;
-  
-}
-
+import { Users } from './entities/users.entity';
 
 @Injectable()
 export class AppService {
@@ -52,6 +26,8 @@ export class AppService {
         private readonly gamesRepository: Repository<Games>,
         @InjectRepository(AlarmMembers)
         private readonly alarmMembersRepository: Repository<AlarmMembers>,
+        @InjectRepository(Users)
+        private readonly usersRepository: Repository<Users>,
         @InjectRepository(Mates)
         private readonly matesRepository: Repository<Mates>,
         @InjectRepository(MateRequestRecords)
@@ -68,20 +44,11 @@ export class AppService {
     ) {
     }
     async test() {
-        const alarmMemberIds = await this.alarmMembersRepository.find({
-            where: { Alarm_id: 48 },
-            select: {
-                User_id: true,
-                User: {
-                    device_token: true
-                }
-            },
-            relations: {
-                User: true
-            }
+        const searchedUsers = await this.usersRepository.findBy({
+            nickname: ILike(`%성%`),
+            is_private: false
         });
-
-        return alarmMemberIds.map(m => m.User.device_token);
+        return searchedUsers
         
     }
     // async insert(data: InsertDto[]) {

@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Public } from './common/decorators/public.decorator';
 
@@ -15,9 +15,9 @@ export class AppController {
     return 'Alardin-backend';
   }
   
-  // @Public()
-  // @Get('test')
-  // async test(@Body() body: CreateAlarmDto) {
-  //   return await this.appService.test(body);
-  // }
+  @Public()
+  @Get('test')
+  async test() {
+    return await this.appService.test();
+  }
 }

@@ -59,15 +59,17 @@ export class GameController {
         @ApiResponse({
             type: OnlyStatusResponse
         })
-    @UseGuards(new RoleGuard(new Reflector()))
-    @ForRoles(['admin'])
+    // @UseGuards(new RoleGuard(new Reflector()))
+    // @ForRoles(['admin'])
+    @Public()
     @Post()
     async createNewGame(@Body() body: CreateGameDto) {
         return await this.gameService.createNewGame(body);
     }
 
-    @UseGuards(new RoleGuard(new Reflector()))
-    @ForRoles(['admin'])
+    // @UseGuards(new RoleGuard(new Reflector()))
+    // @ForRoles(['admin'])
+    @Public()
     @Post()
     async insertGameData(@Body('data') data: InsertDto[]) {
         return await this.gameService.insertGameData(data);

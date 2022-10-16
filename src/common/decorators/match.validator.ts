@@ -11,7 +11,6 @@ export function IsMatchWithRegex(property: RegExp, validationOptions?: Validatio
             validator: {
                 validate(value: any, args: ValidationArguments) {
                     const [ regex ] = args.constraints;
-                    console.log(value, regex);
                     return regex instanceof RegExp && regex.test(value);
                 }
             }

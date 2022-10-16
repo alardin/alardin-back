@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, IsUrl } from "class-validator";
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUrl } from "class-validator";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Alarms } from "./alarms.entity";
 import { AlarmMembers } from "./alarm.members.entity";
@@ -97,6 +97,15 @@ export class Users {
     })
     @Column('varchar', { name: 'age_range', nullable: true })
     age_range: string | null;
+
+    @ApiProperty({
+        name: 'is_private',
+        example: false
+    })
+    @IsBoolean()
+    @IsNotEmpty()
+    @Column()
+    is_private: boolean;
 
     @ApiProperty({
         name: 'gender',

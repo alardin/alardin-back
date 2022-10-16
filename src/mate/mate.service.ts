@@ -9,7 +9,7 @@ import { KakaoService } from 'src/external/kakao/kakao.service';
 import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { UsersService } from 'src/users/users.service';
-import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 
@@ -161,6 +161,13 @@ export class MateService {
 
         return 'OK';
  
+    }
+
+    async searchMates(me: Users, keyword: string) {
+        const searchedUsers = await this.usersRepository.findBy({
+            nickname: ILike(`%${keyword}%`),
+            is_private: false
+        });
     }
 
     async getMateRequestList(me: Users) {
