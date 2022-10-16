@@ -13,13 +13,6 @@ export class CreateGameDto extends PickType(Games, ['name', 'category', 'price',
     screenshot_urls: string[];
 
     @ApiProperty({
-        name: 'data_type',
-        example: 'image'
-    })
-    @IsString()
-    data_type: 'image' | 'text';
-
-    @ApiProperty({
         name: 'keys',
         example: ['keyword', 'images']
     })

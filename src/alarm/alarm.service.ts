@@ -359,29 +359,53 @@ export class AlarmService {
         await this.validateAlarmHost(me.id, alarmId);
         const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
                             .catch(e => { throw new BadRequestException() });
+        const { Members: members } = await this.alarmsRepository.findOne({
+            where: {
+                id: alarmId,
+                Host_id: me.id
+            },
+            select: {
+                id: true,
+                Host_id: true,
+                Game_id: true,
+                Members: {
+                    id: true,
+                    device_token: true
+                }
+            },
+            relations: {
+                Members: true
+            }
+        });
+        if (!members) {
+            throw new ForbiddenException();
+        }
+        const membersDeviceTokens = members.filter((m) => m.id !== me.id).map(m => m.device_token);
         try {
             await this.alarmsRepository.createQueryBuilder()
                 .softDelete()
                 .from(Alarms)
                 .where('id = :id', { id: alarm.id })
                 .execute();
+            
+                membersDeviceTokens.length != 0 &&
+                await this.pushNotiService.sendMulticast(membersDeviceTokens, 
+                    `${me.nickname}님께서 ${alarm.time} 알람방을 삭제했습니다.`, 
+                    `방장이 ${alarm.time} 알람을 삭제했습니다`,
+                    {
+                        type: "ROOM_ALARM",
+                        message: JSON.stringify({
+                                type: 'room',
+                                content: `${me.nickname}님께서 ${alarm.time} 알람방을 삭제했습니다.`,
+                                date: new Date(Date.now()).toISOString(),
+                        }),
+                    }
+                )
             // await this.clearAlarmsCache(myId);
             // await this.deleteMembersCache(myId, alarmId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
-        await this.sendMessageToAlarmByHost(me.id, alarm.id, 
-            `${me.nickname}님께서 ${alarm.time} 알람방을 삭제했습니다.`, 
-            `방장이 ${alarm.time} 알람을 삭제했습니다`, 
-            {
-                type: "ROOM_ALARM",
-                message: JSON.stringify({
-                        type: 'room',
-                        content: `${me.nickname}님께서 ${alarm.time} 알람방을 삭제했습니다.`,
-                        date: new Date(Date.now()).toISOString(),
-                }),
-            }
-        );
         return "OK";
     }
 

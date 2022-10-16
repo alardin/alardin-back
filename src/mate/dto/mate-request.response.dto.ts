@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString, Matches } from "class-validator";
+import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsMatchWithRegex } from "src/common/decorators/match.validator";
 
 export class MateRequestReponseDto {
 
@@ -18,7 +19,7 @@ export class MateRequestReponseDto {
         description: '요청에 대한 응답'
     })
     @IsNotEmpty()
-    @IsString()
+    @IsMatchWithRegex(/ACCPET|REJECT/)
     public response: 'ACCEPT' | 'REJECT'
 
 }

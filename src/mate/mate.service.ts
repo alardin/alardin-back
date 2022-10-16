@@ -102,7 +102,7 @@ export class MateService {
         newMateReq.Receiver_id = receiver.id;
         newMateReq.is_accepted = false, newMateReq.is_rejected = false;
         await this.mateReqRepository.save(newMateReq);
-        
+
         await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
             `${me.nickname}님의 메이트를 요청`, 
             `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`, 
@@ -141,9 +141,12 @@ export class MateService {
                     {
                         type: "MATE_ALARM",
                         message: JSON.stringify({
-                                type: 'mate',
-                                content: `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`,
-                                date: new Date(Date.now()).toISOString(),
+                            type: 'mate',
+                            content: `${me.nickname}님께서 회원님과의 메이트를 수락했습니다.`,
+                            date: new Date(Date.now()).toISOString(),
+                            id: me.id,   // number
+                            nickname: me.nickname,  // string
+                            thumbnail_image_url: me.thumbnail_image_url,
                         }),
                     }
                 );

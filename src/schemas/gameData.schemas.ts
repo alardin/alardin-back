@@ -10,9 +10,6 @@ export class GameData {
 
     @Prop({ type: Object, required: true })
     data: Object;
-
-    @Prop({ required: true })
-    keys: String[];
 }
 
 export const GameDataSchema = SchemaFactory.createForClass(GameData);

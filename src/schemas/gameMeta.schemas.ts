@@ -9,7 +9,7 @@ export class GameMeta {
     Game_id: number;
 
     @Prop({ required: true })
-    data_type: string;
+    name: string;
 
     @Prop({ required: true })
     keys: string[];

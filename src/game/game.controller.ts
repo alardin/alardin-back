@@ -10,6 +10,7 @@ import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
 import { Users } from 'src/entities/users.entity';
 import { CreateGameDto } from './dto/create-game.dto';
+import { InsertDto } from './dto/insert.dto';
 import { JoinChannelDto } from './dto/join-channel.dto';
 import { RateGameDto, RateResponse } from './dto/rate-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
@@ -62,7 +63,14 @@ export class GameController {
     @ForRoles(['admin'])
     @Post()
     async createNewGame(@Body() body: CreateGameDto) {
-        return this.gameService.createNewGame(body);
+        return await this.gameService.createNewGame(body);
+    }
+
+    @UseGuards(new RoleGuard(new Reflector()))
+    @ForRoles(['admin'])
+    @Post()
+    async insertGameData(@Body('data') data: InsertDto[]) {
+        return await this.gameService.insertGameData(data);
     }
 
         @ApiOperation({

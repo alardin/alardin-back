@@ -34,6 +34,7 @@ import {
 } from 'src/schemas/userPlayData.schemas';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
+import { InsertDto } from './dto/insert.dto';
 import { SaveGameDto } from './dto/save-game.dto';
 import { GameKeywordImages } from './types/game-keyword-images.type';
 
@@ -47,8 +48,6 @@ export class GameService {
   constructor(
     @InjectRepository(Games)
     private readonly gamesRepoistory: Repository<Games>,
-    @InjectRepository(GamesScreenshots)
-    private readonly gamesScreenRepository: Repository<GamesScreenshots>,
     @InjectRepository(GamePurchaseRecords)
     private readonly gamePurRepository: Repository<GamePurchaseRecords>,
     @InjectRepository(Users)
@@ -102,17 +101,18 @@ export class GameService {
   }
 
   async createNewGame(body: CreateGameDto) {
-    const { screenshot_urls, data_type, keys, ...bodyWithoutMeta } = body;
+    const { screenshot_urls, keys, name, ...bodyWithoutMeta } = body;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       const newGame = await queryRunner.manager.getRepository(Games).save({
+        name, 
         ...bodyWithoutMeta,
       });
       const newGameMeta = new this.gameMetaModel({
         Game_id: newGame.id,
-        data_type: data_type,
+        name,
         keys: keys,
         screenshot_urls: screenshot_urls,
       });
@@ -125,6 +125,27 @@ export class GameService {
       await queryRunner.release();
     }
     return 'OK';
+  }
+
+  async insertGameData(data: InsertDto[]) {
+        for await (let d of data) {
+            const game = await this.gameMetaModel.findOne({
+                name: d.name
+            }).exec();
+            if (!game) {
+                throw new BadRequestException('Invalid Game_id');
+            }
+            if ( !Object.keys(d.data).every((k) => game.keys.includes(k)) || !game.keys.every((k) => Object.keys(d.data).includes(k))) {
+                throw new BadRequestException('Invalid keys');
+            }
+
+            const newGameData = new this.gameDataModel({
+                Game_id: game.Game_id,
+                data: d.data
+            });
+            await newGameData.save();
+        }
+        return 'OK';
   }
 
   //transaction

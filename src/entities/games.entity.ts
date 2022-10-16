@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsInt, IsNotEmpty, IsNumber, IsNumberString, IsString, IsUrl, MaxLength } from "class-validator";
+import { IsMatchWithRegex } from "src/common/decorators/match.validator";
 import { Column, Entity, JoinColumn, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmResults } from "./alarm.results.entity";
 import { Alarms } from "./alarms.entity";
@@ -29,10 +30,10 @@ export class Games {
 
     @ApiProperty({
         name: 'category',
-        example: '1234'
+        example: 'image'
     })
-    @IsNumberString()
     @IsNotEmpty()
+    @IsMatchWithRegex(/image|text/)
     @Column({ name: 'category'})
     category: string;
 
