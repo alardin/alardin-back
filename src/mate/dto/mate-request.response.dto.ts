@@ -19,7 +19,9 @@ export class MateRequestReponseDto {
         description: '요청에 대한 응답'
     })
     @IsNotEmpty()
-    @IsMatchWithRegex(/ACCPET|REJECT/)
+    @IsMatchWithRegex(/ACCEPT|REJECT/, {
+        message: 'response should be match with /ACCEPT|REJECT/'
+    })
     public response: 'ACCEPT' | 'REJECT'
 
 }

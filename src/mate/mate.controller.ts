@@ -76,8 +76,8 @@ export class MateController {
             type: OnlyStatusResponse
         })
     @Post('response')
-    async responseToMateRequest(@User() user, @Body() { senderId, response }: MateRequestReponseDto) {
-        return await this.mateService.responseToMateRequest(user, senderId, response);
+    async responseToMateRequest(@User() user, @Body() data: MateRequestReponseDto) {
+        return await this.mateService.responseToMateRequest(user, data.senderId, data.response);
     }
 
         @ApiOperation({
