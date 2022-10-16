@@ -134,17 +134,6 @@ export class AuthService {
 
     async appleAuth(data: AppleLoginDto, deviceToken: string) {
         let newUser: Users, is_admin: boolean = false;
-        // const clientSecret = appleSignin.getClientSecret({
-        //     clientID,
-        //     teamID: process.env.APPLE_TEAM_ID,
-        //     keyIdentifier: process.env.APPLE_KEY_ID,
-        //     privateKey: process.env.APPLE_PRIVATE_KEY
-        // });
-        // const options = {
-        //     clientID,
-        //     redirectUri: process.env.APPLE_REDIRECT_URI,
-        //     clientSecret
-        // }
 
         try {
             const { sub: appleId, email } = await appleSignin.verifyIdToken(data.identityToken);

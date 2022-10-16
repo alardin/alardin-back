@@ -117,8 +117,8 @@ export class UsersService {
         };
     }
     
-    async editUserProfile(myId: number, { nickname, profile_image_url, thumbnail_image_url, bio }: EditProfileDto) {
-        await this.updateUser(myId, { nickname, profile_image_url, thumbnail_image_url, bio });
+    async editUserProfile(myId: number, { nickname, profile_image_url, thumbnail_image_url, bio, is_private }: EditProfileDto) {
+        await this.updateUser(myId, { nickname, profile_image_url, thumbnail_image_url, bio, is_private });
         return 'OK';
     }
     
