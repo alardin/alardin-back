@@ -33,6 +33,8 @@ services:
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
   api-test:
+    depends_on:
+      - redis
     image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
     container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     volumes:
@@ -48,4 +50,12 @@ services:
         awslogs-group: "alardin-back-dev"
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
-
+  redis: # Name of container
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+volumes:
+  redis:
+    driver: local
