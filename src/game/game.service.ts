@@ -468,7 +468,7 @@ export class GameService {
           userIds,
         );
         case 3:
-          gameDataForAlarm = await this.prepareGame3(3, userIds);
+          gameDataForAlarm = await this.prepareGame3(1, userIds);
           break;
       default:
         throw new BadRequestException('Invalid GameId');
@@ -541,7 +541,7 @@ export class GameService {
 
     const [ gameDatas ] = await this.gameDataModel
       .aggregate([
-        { $match: { Game_id: 1 } },
+        { $match: { Game_id: gameId } },
         { $sample: { size: 1 } },
         { $project: { data: true } },
       ])
