@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "[*] RUN SERVER by CodeDeploy!"
+echo "[*] RUN SERVER by CodeDeploy!!"
 cd /home/ec2-user/alardin-back-test
 cp ../.alardin-envs/.dev.env .env
 images=`docker images -aq`
