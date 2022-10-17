@@ -91,7 +91,37 @@ export class MateService {
         };
     }
 
-    async sendMateRequest(me: Users, receiverKakaoId: number) {
+    async sendMateRequest(me: Users, receiverId: number) {
+        if (!receiverId) {
+            return null;
+        }
+        const receiver = await this.usersRepository.findOneOrFail({ where: { id: receiverId }})
+                                .catch(_ => { throw new NotFoundException() });
+        const newMateReq = new MateRequestRecords()
+        newMateReq.Sender_id = me.id;
+        newMateReq.Receiver_id = receiver.id;
+        newMateReq.is_accepted = false, newMateReq.is_rejected = false;
+        await this.mateReqRepository.save(newMateReq);
+
+        await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
+            `${me.nickname}님의 메이트를 요청`, 
+            `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`, 
+            {
+                type: "MATE_ALARM",
+                message: JSON.stringify({
+                        type: 'mate',
+                        content: `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`,
+                        date: new Date(Date.now()).toISOString(),
+                        id: me.id,   // number
+                        nickname: me.nickname,  // string
+                        thumbnail_image_url: me.thumbnail_image_url,
+                }),
+            }
+        );
+        return 'OK';
+    }
+
+    async sendMateRequestFromKakao(me: Users, receiverKakaoId: number) {
         if (!receiverKakaoId) {
             return null;
         }
@@ -120,6 +150,7 @@ export class MateService {
         );
         return 'OK';
     }
+    
 
     async responseToMateRequest(me: Users, senderId: number, response: string) {
         // if ok -> mate db save, 요청자에게 push

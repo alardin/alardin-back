@@ -45,7 +45,28 @@ export class MateController {
             description: '타겟 유저에게 푸쉬 알림 전송, 메시지 ID 리턴'
         })
         @ApiQuery({
-            name: 'targetUserId',
+            name: 'receiverId',
+            example: 3,
+            description: '타겟 유저의 id'
+        })
+        @ApiBody({
+            type: AnyDataDto
+        })
+        @ApiResponse({
+            status: 200,
+            description: '성공 시 메세지 ID 리턴',
+        })
+    @Post()
+    async sendMateRequest(@User() user, @Query('receiverId') receiverId: number) {
+        return await this.mateService.sendMateRequest(user, receiverId);
+    }
+
+        @ApiOperation({
+            summary: '카카오 친구 목록 중 메이트 요청',
+            description: '타겟 유저에게 푸쉬 알림 전송, 메시지 ID 리턴'
+        })
+        @ApiQuery({
+            name: 'targetUserKakaoId',
             example: 212312312,
             description: '타겟 유저의 카카오 id'
         })
@@ -56,9 +77,9 @@ export class MateController {
             status: 200,
             description: '성공 시 메세지 ID 리턴',
         })
-    @Post()
-    async sendMateRequest(@User() user, @Query('targetUserId') targetUserId) {
-        return await this.mateService.sendMateRequest(user, targetUserId);
+    @Post('kakao')
+    async sendMateRequestFromKakao(@User() user, @Query('targetUserKakaoId') targetUserId: number) {
+        return await this.mateService.sendMateRequestFromKakao(user, targetUserId);
     }
 
         @ApiOperation({
