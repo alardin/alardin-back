@@ -16,9 +16,9 @@ export class AppController {
     return 'Alardin-backend';
   }
   
-  // @Public()
-  // @Get('test')
-  // async test(@Query('key') key:string) {
-  //   return await this.appService.test(key);
-  // }
+  @Public()
+  @Get('test')
+  async test(@Query('key') key:string) {
+    return await this.appService.test();
+  }
 }

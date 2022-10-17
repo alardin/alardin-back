@@ -43,22 +43,15 @@ export class AppService {
         private readonly alarmService: AlarmService,
     ) {
     }
-    async test(k: string) {
-        let searchedUsers = [];
-        if (k.length > 0) {
-            searchedUsers = await this.usersRepository.find({
-                where: {
-                    is_private: false,
-                    nickname: ILike(`%${k}%`)
-                },
-                select: {
-                    id: true,
-                    nickname: true,
-                    thumbnail_image_url: true,
-                }
-            });
-        }
-        return searchedUsers;
+    async test() {
+        const gameDatas = await this.gameDataModel
+            .aggregate([
+                { $match: { Game_id: 1 } },
+                { $sample: { size: 1 } },
+                { $project: { data: true } },
+            ])
+            .exec();
+        return gameDatas;
         
     }
     // async insert(data: InsertDto[]) {
