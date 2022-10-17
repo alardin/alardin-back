@@ -550,7 +550,7 @@ export class GameService {
     const answerIndex = Math.floor(Math.random() * randImgIndices.length);
     const images: string[] = randImgIndices.map(
       (i: number) =>
-        `${this.AWS_S3_STATIC_IMAGE_URL}/${gameDatas['data']['keyword']}/${['data']['keyword']}${i}.jpg`,
+        `${this.AWS_S3_STATIC_IMAGE_URL}/${gameDatas['data']['keyword']}/${gameDatas['data']['keyword']}${i}.jpg`,
     );
     const dataForGame = userIds.map((id) => {
       return {
