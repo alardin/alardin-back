@@ -1,22 +1,15 @@
-import { BadRequestException, CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { BadRequestException, CACHE_MANAGER, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
-import { CronJob } from 'cron';
-import { Model } from 'mongoose';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
-import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { Games } from 'src/entities/games.entity';
-import { Mates } from 'src/entities/mates.entity';
 import { Users } from 'src/entities/users.entity';
 import { GameService } from 'src/game/game.service';
 import { MateService } from 'src/mate/mate.service';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
-import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
 import { DataSource, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
@@ -34,13 +27,9 @@ export class AlarmService {
         private readonly gamePurRepository: Repository<GamePurchaseRecords>,
         @InjectRepository(Games)
         private readonly gamesRepository: Repository<Games>,
-        @InjectRepository(Mates)
-        private readonly matesRepository: Repository<Mates>,
         private dataSource: DataSource,
         private readonly pushNotiService: PushNotificationService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-        private readonly schedulerRegistry: SchedulerRegistry,
-        @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>
     ) {
         
     }

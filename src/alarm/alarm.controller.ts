@@ -1,7 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { get } from 'http';
-import { userInfo } from 'os';
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Alarms } from 'src/entities/alarms.entity';

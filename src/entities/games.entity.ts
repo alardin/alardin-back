@@ -4,10 +4,8 @@ import { IsMatchWithRegex } from "src/common/decorators/match.validator";
 import { Column, Entity, JoinColumn, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AlarmResults } from "./alarm.results.entity";
 import { Alarms } from "./alarms.entity";
-import { GamePlayKeywords } from './game-play.keywords.entity';
 import { GamePurchaseRecords } from "./game.purchase.records.entity";
 import { GamesRatings } from "./games.ratings.entity";
-import { GamesScreenshots } from "./games.screenshots.entity";
 import { Users } from "./users.entity";
 
 @Entity({ schema: 'alardin', name: 'games' })
@@ -93,9 +91,6 @@ export class Games {
     @Column('int', { name: 'keyword_count', default: 0 })
     keyword_count: number;
 
-    @OneToMany(() => GamesScreenshots, gamesScreenshots => gamesScreenshots.Game)
-    Games_screenshots: GamesScreenshots[];
-
     @OneToMany(() => GamesRatings, gamesRatings => gamesRatings.Game)
     Games_ratings: GamesRatings[];
 
@@ -107,9 +102,6 @@ export class Games {
 
     @ManyToMany(() => Users, users => users.Purchased_games)
     Purchasers: Users[];
-
-    @OneToMany(_ => GamePlayKeywords, gamePlayKeywords => gamePlayKeywords.Game)
-    Game_play_keywords: GamePlayKeywords[];
 
     @OneToMany(_ => AlarmResults, alarmResults => alarmResults.Game)
     Alarm_results: AlarmResults[];

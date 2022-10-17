@@ -16,14 +16,10 @@ import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { Assets } from 'src/entities/assets.entity';
 import { CoinUseRecords } from 'src/entities/coin.use.records.entity';
-import { GamePlayImages } from 'src/entities/game-play.images.entity';
-import { GamePlayKeywords } from 'src/entities/game-play.keywords.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
-import { GameUsedImages } from 'src/entities/game.used-images.entity';
 import { Games } from 'src/entities/games.entity';
 import { GamesRatings } from 'src/entities/games.ratings.entity';
-import { GamesScreenshots } from 'src/entities/games.screenshots.entity';
 import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
 import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
@@ -36,7 +32,6 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { InsertDto } from './dto/insert.dto';
 import { SaveGameDto } from './dto/save-game.dto';
-import { GameKeywordImages } from './types/game-keyword-images.type';
 
 type GameDetail = {
   game: Games;
@@ -54,12 +49,6 @@ export class GameService {
     private readonly usersRepository: Repository<Users>,
     @InjectRepository(Assets)
     private readonly assetsRepositry: Repository<Assets>,
-    @InjectRepository(GamePlayKeywords)
-    private readonly gamePlayKeywordsRepository: Repository<GamePlayKeywords>,
-    @InjectRepository(GameUsedImages)
-    private readonly gameUsedImagesRespotiroy: Repository<GameUsedImages>,
-    @InjectRepository(GamePlayImages)
-    private readonly gamePlayImagesRepository: Repository<GamePlayImages>,
     @InjectRepository(Alarms)
     private readonly alarmsRepository: Repository<Alarms>,
     @InjectRepository(AlarmMembers)
@@ -153,53 +142,6 @@ export class GameService {
   // keyword 있는지 확인
   // 있으면 추가, 위에 아무거나 걸리면 exception
   // 추가할 거를 모아서 하게끔??
-  async addGameImages(myId: number, gameId: number, gKI: GameKeywordImages) {
-    const queryRunner = this.dataSource.createQueryRunner();
-
-    await queryRunner.startTransaction();
-    await queryRunner.connect();
-
-    // game 있는지 확인
-    const game = await this.getGameById(gameId);
-    // keyword 있는지 확인
-    let gameKeyword = await this.gamePlayKeywordsRepository.findOne({
-      where: { keyword: gKI.keyword, Game_id: game.id },
-    });
-    if (!gameKeyword) {
-      const newGPK = new GamePlayKeywords();
-      newGPK.Game_id = game.id;
-      newGPK.keyword = gKI.keyword;
-      gameKeyword = await this.gamePlayKeywordsRepository.save(newGPK);
-      await this.gamesRepoistory
-        .createQueryBuilder()
-        .update(Games, { keyword_count: () => 'keyword_count + 1' })
-        .where('id = :id', { id: game.id })
-        .execute();
-    }
-
-    try {
-      for await (let url of gKI.images) {
-        const newGPI = new GamePlayImages();
-        newGPI.Keyword_id = gameKeyword.id;
-        newGPI.url = url;
-        await queryRunner.manager.getRepository(GamePlayImages).save(newGPI);
-        await queryRunner.manager
-          .getRepository(GamePlayKeywords)
-          .createQueryBuilder()
-          .update(GamePlayKeywords, { image_count: () => 'image_count + 1' })
-          .where('id = :id', { id: gameKeyword.id })
-          .execute();
-      }
-      await queryRunner.commitTransaction();
-    } catch (e) {
-      await queryRunner.rollbackTransaction();
-      throw new ForbiddenException();
-    } finally {
-      await queryRunner.release();
-    }
-
-    return 'OK';
-  }
   async purchaseGame(myId: number, gameId: number) {
     // transaction
     // 살 수 있는지 확인
@@ -264,49 +206,6 @@ export class GameService {
       });
   }
 
-  private async getRandomKeyword(gameId: number, keywordCount: number) {
-    const { id: randomKeywordId, keyword } =
-      await this.gamePlayKeywordsRepository
-        .createQueryBuilder('gpk')
-        .select(['gpk.id', 'gpk.keyword'])
-        .innerJoin('gpk.Game', 'g', 'g.id = :gameId', { gameId })
-        .skip(Math.floor(Math.random() * keywordCount))
-        .take(1)
-        .getOne();
-    return { randomKeywordId, keyword };
-  }
-  async getImagesForGame(myId: number, gameId: number, except?: number) {
-    const game = await this.getGameById(gameId);
-    const keywordCount = game.keyword_count;
-    console.log('[*] Keyword Count', keywordCount);
-    let { randomKeywordId, keyword } = await this.getRandomKeyword(
-      game.id,
-      keywordCount,
-    );
-    while (except && randomKeywordId === except) {
-      const newKeyword = await this.getRandomKeyword(game.id, keywordCount);
-      keyword = newKeyword.keyword;
-      randomKeywordId = newKeyword.randomKeywordId;
-    }
-    const imageCount = (
-      await this.gamePlayKeywordsRepository.findOne({
-        where: { id: randomKeywordId },
-      })
-    ).image_count;
-    const selectedGPIs = await this.gamePlayImagesRepository
-      .createQueryBuilder('gpi')
-      .select(['gpi.id', 'k.keyword', 'gpi.url'])
-      .innerJoin('gpi.Keyword', 'k', 'k.id = :kId', { kId: randomKeywordId })
-      .skip(Math.floor(Math.random() * (imageCount - 6)))
-      .take(6)
-      .getMany();
-    return {
-      randomKeywordId,
-      keyword,
-      selectedGPIs,
-    };
-  }
-
   async rateGame(myId: number, gameId: number, score: number) {
     let updatedRating: number | undefined;
     const game = await this.getGameById(gameId);
@@ -363,6 +262,14 @@ export class GameService {
         User_id: myId,
         Alarm_result_id: alarmResult.id,
       });
+
+      await this.userPlayDataModel.insertMany([
+        {
+          User_id: myId,
+          play_data: body.data.data ? body.data.data : {},
+          created_at: new Date()
+        }
+      ]);
       await queryRunner.commitTransaction();
     } catch (e) {
       await queryRunner.rollbackTransaction();
@@ -370,7 +277,6 @@ export class GameService {
     } finally {
       await queryRunner.release();
     }
-    await this.cacheManager.del(`${myId}_records_by_alarm`);
     return 'OK';
   }
 

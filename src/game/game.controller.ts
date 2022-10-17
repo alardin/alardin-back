@@ -8,15 +8,12 @@ import { RoleGuard } from 'src/common/guards/role.guard';
 import { AgoraInterceptor } from 'src/common/interceptors/agora.interceptor';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Games } from 'src/entities/games.entity';
-import { Users } from 'src/entities/users.entity';
 import { CreateGameDto } from './dto/create-game.dto';
 import { InsertDto } from './dto/insert.dto';
-import { JoinChannelDto } from './dto/join-channel.dto';
 import { RateGameDto, RateResponse } from './dto/rate-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
 import { StartGameDto } from './dto/start-game.response.dto';
 import { GameService } from './game.service';
-import { GameKeywordImages } from './types/game-keyword-images.type';
 
 @ApiTags('game')
 @Controller('api/game')
@@ -59,37 +56,18 @@ export class GameController {
         @ApiResponse({
             type: OnlyStatusResponse
         })
-    // @UseGuards(new RoleGuard(new Reflector()))
-    // @ForRoles(['admin'])
-    @Public()
+    @UseGuards(new RoleGuard(new Reflector()))
+    @ForRoles(['admin'])
     @Post()
     async createNewGame(@Body() body: CreateGameDto) {
         return await this.gameService.createNewGame(body);
     }
 
-    // @UseGuards(new RoleGuard(new Reflector()))
-    // @ForRoles(['admin'])
-    @Public()
+    @UseGuards(new RoleGuard(new Reflector()))
+    @ForRoles(['admin'])
     @Post()
     async insertGameData(@Body('data') data: InsertDto[]) {
         return await this.gameService.insertGameData(data);
-    }
-
-        @ApiOperation({
-            summary: '게임 이미지 데이터 추가'
-        })
-        @ApiBody({
-            type: GameKeywordImages
-        })
-        @ApiResponse({
-            status: 201,
-            type: OnlyStatusResponse
-        })
-    @ForRoles(['admin'])
-    @UseGuards(new RoleGuard(new Reflector()))
-    @Put(':gameId/images')
-    async addGameImages(@User() user: Users, @Param('gameId') gameId: number, @Body() gKI: GameKeywordImages) {
-        return this.gameService.addGameImages(user.id, gameId, gKI);
     }
 
         @ApiOperation({

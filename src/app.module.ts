@@ -23,13 +23,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
 import { MongooseModule } from '@nestjs/mongoose'
 import { AlarmMembers } from './entities/alarm.members.entity';
-import { GameData, GameDataSchema } from './schemas/gameData.schemas';
 import { Alarms } from './entities/alarms.entity';
-import { UserPlayData, UserPlayDataScheme } from './schemas/userPlayData.schemas';
-import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
 import { Mates } from './entities/mates.entity';
-import { AlarmService } from './alarm/alarm.service';
-import { MateService } from './mate/mate.service';
 import { MateRequestRecords } from './entities/mate-request.records.entity';
 import { Users } from './entities/users.entity';
 import { Games } from './entities/games.entity';
@@ -51,11 +46,6 @@ dotenv.config();
         synchronize: false,
         timezone: 'UTC'
     }),
-    MongooseModule.forFeature([
-      { name: GameData.name, schema: GameDataSchema },
-      { name: UserPlayData.name, schema: UserPlayDataScheme },
-      { name: GameMeta.name, schema: GameMetaSchema }
-    ]),
     TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates, MateRequestRecords, Users, Games]),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
