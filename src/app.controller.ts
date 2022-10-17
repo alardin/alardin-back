@@ -11,7 +11,7 @@ export class AppController {
     private readonly appService: AppService
   ) {}
 
-  @Post()
+  @Get()
   async index() {
     return 'Alardin-backend';
   }
