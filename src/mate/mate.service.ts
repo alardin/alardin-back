@@ -182,6 +182,7 @@ export class MateService {
                     }
                 );
                 await this.cacheManager.del(`${me.id}_mates`);
+                await this.cacheManager.del(`${sender.id}_mates`);
                 break;
             case 'REJECT':
                 await this.updateMateRequest(me.id, sender.id, false);
@@ -280,6 +281,7 @@ export class MateService {
             throw new ForbiddenException('Invalid request');
         }
         await this.cacheManager.del(`${myId}_mates`);
+        await this.cacheManager.del(`${mateId}_mates`);
         return "OK";
     }
 

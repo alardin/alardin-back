@@ -263,13 +263,15 @@ export class GameService {
         Alarm_result_id: alarmResult.id,
       });
 
-      await this.userPlayDataModel.insertMany([
+      await this.userPlayDataModel.updateOne(
         {
           User_id: myId,
-          play_data: body.data.data ? body.data.data : {},
-          created_at: new Date()
-        }
-      ]);
+          Game_id: body.Game_id,
+        }, {
+          play_data: body.data.data,
+          updated_at: new Date()
+        }, { upsert: true }
+      );
       await queryRunner.commitTransaction();
     } catch (e) {
       await queryRunner.rollbackTransaction();
@@ -322,7 +324,7 @@ export class GameService {
         },
       });
       const userIds = alarmMemberIds.map((m) => m.User_id);
-      gameData = await this.readyForGame(alarm.id, userIds, alarm.data);
+      gameData = await this.readyForGame(alarm.id, userIds);
     } else {
       await this.cacheManager.set(`alarm-${alarm.id}-game-data`, gameData, { ttl: 60 * 10 });
     }
@@ -343,7 +345,7 @@ export class GameService {
       .getOne();
   }
 
-  async readyForGame(alarmId: number, userIds: number[], data?: object) {
+  async readyForGame(alarmId: number, userIds: number[]) {
     const { Game_id } = await this.alarmsRepository.findOne({
       where: { id: alarmId },
       select: {
@@ -356,7 +358,7 @@ export class GameService {
         gameDataForAlarm = await this.prepareGame1(Game_id, userIds);
         break;
       case 2:
-        const dataForGame = await this.gameDataModel
+        const [ dataForGame ] = await this.gameDataModel
           .find(
             {
               Game_id,
@@ -364,13 +366,9 @@ export class GameService {
             { data: true },
           )
           .exec();
-        const titles = dataForGame.map((d) => d.data['title']);
-        if (!titles.includes(data['title'])) {
-          throw new BadRequestException('Invalid Title');
-        }
-        gameDataForAlarm = await this.prepareGame2(
+        gameDataForAlarm = await this.prepareTextGame(
           Game_id,
-          data['title'],
+          dataForGame.data['title'],
           userIds,
         );
         case 3:
@@ -411,7 +409,7 @@ export class GameService {
     return dataForGame;
   }
 
-  private async prepareGame2(gameId: number, title: string, userIds: number[]) {
+  private async prepareTextGame(gameId: number, title: string, userIds: number[]) {
     let dataForGame = [];
     const { data } = await this.gameDataModel
       .findOne(
@@ -424,11 +422,11 @@ export class GameService {
     for await (let User_id of userIds) {
       const { play_data } = await this.userPlayDataModel
         .findOne({
-          User_id,
+          $and: [ { User_id }, { Game_id: gameId } ]
         })
         .exec();
-      const next_read: number = play_data['next_read'][title]
-        ? play_data['next_read'][title]
+      const next_read: number = play_data['next_read']
+        ? play_data['next_read']
         : 1;
       const contents = data['paragraphs'].filter(
         (p) => p.paragraph_idx == next_read,
