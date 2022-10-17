@@ -78,8 +78,8 @@ export class MateController {
             description: '성공 시 메세지 ID 리턴',
         })
     @Post('kakao')
-    async sendMateRequestFromKakao(@User() user, @Query('targetUserKakaoId') targetUserId: number) {
-        return await this.mateService.sendMateRequestFromKakao(user, targetUserId);
+    async sendMateRequestFromKakao(@User() user, @Query('receiverKakaoId') receiverKakaoId: number) {
+        return await this.mateService.sendMateRequestFromKakao(user, receiverKakaoId);
     }
 
         @ApiOperation({

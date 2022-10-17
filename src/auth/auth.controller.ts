@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorator';
 import { NotLoggedInGuard } from 'src/common/guards/not-logged-in.guard';
 import { AppTokens } from 'src/users/dto/app-tokens.dto';
@@ -8,6 +8,7 @@ import { AuthDto } from 'src/users/dto/auth.dto';
 import { AuthService } from './auth.service';
 import { AppleLoginDto } from './dto/apple-login.dto';
 
+@ApiTags('auth')
 @Controller('api/auth')
 export class AuthController {
     constructor(

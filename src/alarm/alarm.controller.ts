@@ -32,21 +32,23 @@ export class AlarmController {
         })
     @Post()
     async createNewAlarm(@User() user, @Body() body: CreateAlarmDto) {
+        await this.alarmService.clearAlarmsCache(user.id);
         return await this.alarmService.createNewAlarm(user.id, body);
     }
 
         @ApiOperation({
             summary: '알람 수정',
-            description: 'developing'
         })
     @Put(':alarmId')
     async editAlarm(@User() user, @Param('alarmId') alarmId: number, @Body() data: QueryDeepPartialEntity<Alarms>) {
+        await this.alarmService.clearAlarmsCache(user.id);
+        await this.alarmService.deleteMembersCache(user.id, alarmId);
         return await this.alarmService.editAlarm(user, alarmId, data);
     }
 
         @ApiOperation({
             summary: '메이트 알람 참가',
-            description: '알람 참여 가능 여부 검증(메이트 관계, 최대 인원 수), 알람 멤법에 추가'
+            description: '알람 참여 가능 여부 검증(메이트 관계, 최대 인원 수), 알람 멤버에 추가'
         })
         @ApiBody({
             type: JoinAlarmDto
@@ -57,6 +59,8 @@ export class AlarmController {
         })
     @Post('join')
     async joinAlarm(@User() user, @Body() { alarmId }: JoinAlarmDto) {
+        await this.alarmService.clearAlarmsCache(user.id);
+        await this.alarmService.deleteMembersCache(user.id, alarmId);
         return await this.alarmService.joinAlarm(user, alarmId);
     }
 
@@ -70,7 +74,9 @@ export class AlarmController {
         })
     @Delete(':alarmId')
     async deleteAlarm(@User() user, @Param('alarmId') alarmId: number) {
-        return await this.alarmService.deleteAlarm(user, alarmId); 
+        await this.alarmService.clearAlarmsCache(user.id);
+        return await this.alarmService.deleteAlarm(user, alarmId);
+
     }
 
         @ApiOperation({

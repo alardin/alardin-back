@@ -3,14 +3,12 @@ import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiT
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Users } from 'src/entities/users.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
-import { AuthDto } from './dto/auth.dto';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { UsersService } from './users.service';
 import { LoggedInGuard } from 'src/common/guards/logged-in.guard';
 import { User } from 'src/common/decorators/user.decorator';
 import { RefreshTokenGuard } from 'src/common/guards/refresh-token.guard';
 import { AppTokens } from './dto/app-tokens.dto';
-import { NotLoggedInGuard } from 'src/common/guards/not-logged-in.guard';
 import { Public } from 'src/common/decorators/public.decorator';
 import { OthersProfileDto } from './dto/others.profile.dto';
 import { UserAlarmsDto } from './dto/user-alarms.dto';

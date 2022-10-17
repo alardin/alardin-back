@@ -284,11 +284,6 @@ export class MateService {
     }
 
     async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
-        // const cached = await this.cacheManager.get<Alarms[]>(`${myId}_mates_alarm_list`);
-        // if (cached && cached.length != 0) {
-        //     this.logger.log('Hit Cache');
-        //     return cached;
-        // }
         
         const mates = await this.getMateList(myId, kakaoAccessToken);
         let alarms = [];
@@ -320,9 +315,7 @@ export class MateService {
                         .where('alarms.expired_at > :now', { now: new Date() })
                         .getMany();
             alarms = [...alarms, ...alarm];
-        }
-        await this.cacheManager.set(`${myId}_mates_alarm_list`, alarms, { ttl: 60 * 60 * 24 });
-        return alarms;  
+        }return alarms;  
     }
 
     async validateMate(myId: number, mateId: number) {
@@ -381,8 +374,6 @@ export class MateService {
             await this.matesRepository.save(newMate);
             await this.cacheManager.del(`${senderId}_mates`);
             await this.cacheManager.del(`${receiverId}_mates`);
-            await this.cacheManager.del(`${senderId}_mates_alarm_list`);
-            await this.cacheManager.del(`${receiverId}_mates_alarm_list`);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
