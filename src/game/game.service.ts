@@ -266,17 +266,19 @@ export class GameService {
         Alarm_result_id: alarmResult.id,
       });
 
+      const savedData = this.sanitizeData(body.Game_id, body.data.data);
       await this.userPlayDataModel.updateOne(
         {
           User_id: myId,
           Game_id: body.Game_id,
         }, {
-          play_data: body.data.data,
+          play_data: savedData,
           updated_at: new Date()
         }, { upsert: true }
       );
       await queryRunner.commitTransaction();
     } catch (e) {
+      console.log(e);
       await queryRunner.rollbackTransaction();
       throw new ForbiddenException();
     } finally {
@@ -306,10 +308,12 @@ export class GameService {
       user.id,
       expiry,
     );
+
     const rtmToken = this.agoraService.generateRtmToken(
       String(user.id),
       expiry,
     );
+
     await this.dataSource
       .createQueryBuilder()
       .update(GameChannel)
@@ -319,6 +323,7 @@ export class GameService {
       .execute();
 
     let gameData = await this.cacheManager.get(`alarm-${alarm.id}-game-data`);
+    
     if (!gameData) {
       const alarmMemberIds = await this.alarmMembersRepository.find({
         where: { Alarm_id: alarm.id },
@@ -445,7 +450,7 @@ export class GameService {
     return dataForGame;
   }
 
-  private async prepareGame3(gameId:number, userIds: number[]) {
+  async prepareGame3(gameId:number, userIds: number[]) {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const [ gameDatas ] = await this.gameDataModel
@@ -484,5 +489,22 @@ export class GameService {
       shuffled[i] = temp;
     }
     return shuffled.slice(min);
+  }
+
+  private sanitizeData(gameId: number, data: object) {
+    const GAME_KEYS = {
+      1: ['is_cleared'],
+      2: ['next_read'],
+      3: ['is_cleared']
+    };
+
+    let returnData = {}
+    for (let key of GAME_KEYS[gameId]) {
+      if (data[key]) {
+        returnData = { key: data[key], ...returnData }
+      }
+    }
+    return returnData;
+
   }
 }

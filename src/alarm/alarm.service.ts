@@ -61,6 +61,7 @@ export class AlarmService {
                 min_player: game.min_player,
                 ...body
             });
+            
 
             await queryRunner.manager.getRepository(AlarmMembers).save({
                 Alarm_id: newAlarm.id,

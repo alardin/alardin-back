@@ -142,10 +142,18 @@ export class AuthService {
             if (userAlreadyExist) {
                 const appTokens =  this.login({ id: userAlreadyExist.id, email: userAlreadyExist.email });
                 const hashedRT = await bcrypt.hash(appTokens.appRefreshToken, 12);
-                await this.updateUser(userAlreadyExist.id, {
-                    device_token: deviceToken,
-                    refresh_token: hashedRT,
-                });
+                if (userAlreadyExist.nickname == '' && data.fullName.givenName && data.fullName.familyName) {
+                    await this.updateUser(userAlreadyExist.id, {
+                        device_token: deviceToken,
+                        refresh_token: hashedRT,
+                        nickname: data.fullName.familyName + data.fullName.givenName
+                    });
+                } else {
+                    await this.updateUser(userAlreadyExist.id, {
+                        device_token: deviceToken,
+                        refresh_token: hashedRT,
+                    });
+                }
                 return appTokens;
             } else {
                 const queryRunner = this.dataSource.createQueryRunner();
@@ -153,7 +161,7 @@ export class AuthService {
                 await queryRunner.startTransaction();
                 try {
                     newUser = await queryRunner.manager.getRepository(Users).save({
-                        nickname: data.fullName.familyName + data.fullName.givenName,
+                        nickname: (!data.fullName.familyName && !data.fullName.givenName) ? '' : data.fullName.familyName + data.fullName.givenName,
                         profile_image_url: process.env.DEFAULT_PROFILE_URL,
                         thumbnail_image_url: process.env.DEFAULT_THUMBNAIL_IMAGE_URL,
                         device_token: deviceToken,
