@@ -206,7 +206,7 @@ export class AlarmService {
     }
 
     async sendMessageToAlarmByHost(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
-        const members = await this.getMembers(myId, alarmId);
+        const members = await this.getMembers(alarmId);
         const membersDeviceTokens = members.filter((m) => m.id !== myId).map(m => m.device_token);
         membersDeviceTokens.length != 0 && (await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data));
         return 'OK';    
@@ -275,7 +275,7 @@ export class AlarmService {
         await this.validateAlarmHost(me.id, alarmId);
         const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
                             .catch(e => { throw new BadRequestException() });
-        const members = await this.getMembers(me.id, alarm.id);
+        const members = await this.getMembers(alarm.id);
         const memberIds = members.map(m => m.id);
         memberIds.filter(mId => mId != me.id).map(async (mId) => { 
                 await this.clearAlarmsCache(mId);
@@ -329,7 +329,7 @@ export class AlarmService {
     }
 
     async deleteMembersCache(myId: number, alarmId: number) {
-        let members = await this.getMembers(myId, alarmId);
+        let members = await this.getMembers(alarmId);
         const memberIds = members.map(m => m.id);
         memberIds.filter(mId => mId != myId).map(async (mId) => { 
                 await this.clearAlarmsCache(mId);
@@ -341,13 +341,12 @@ export class AlarmService {
         await this.cacheManager.del(`${myId}_joined_alarms`);
     }
 
-    private async getMembers(myId: number, alarmId: number): Promise<Users[]> {
+    private async getMembers(alarmId: number): Promise<Users[]> {
         let members:Users[] = [];
         try {
             const alarm = await this.alarmsRepository.findOne({
                 where: {
-                    id: alarmId,
-                    Host_id: myId
+                    id: alarmId
                 },
                 select: {
                     id: true,
