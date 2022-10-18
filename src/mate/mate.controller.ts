@@ -25,7 +25,7 @@ export class MateController {
         })
     @Get()
     async getMateList(@User() user) {
-        if (user.kakao_access_token) {
+        if (user.kakao_id) {
             return await this.mateService.getMateListWithKakao(user.id, user.kakao_access_token);
         } else {
             return await this.mateService.getMateList(user.id);
