@@ -130,7 +130,7 @@ export class MateController {
             summary: '요청 취소',
         })
     @Delete('request')
-    async cancelRequest(@User() user, @Body('receiverId') receiverId: number) {
+    async cancelRequest(@User() user, @Query('receiverId') receiverId: number) {
         return await this.mateService.cancelRequest(user, receiverId);
     }
 
