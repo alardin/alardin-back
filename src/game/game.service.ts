@@ -4,6 +4,8 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
+  LoggerService,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -60,6 +62,7 @@ export class GameService {
     private userPlayDataModel: Model<UserPlayDataDocument>,
     @InjectModel(GameMeta.name) private gameMetaModel: Model<GameMeta>,
     private dataSource: DataSource,
+    @Inject(Logger) private readonly logger: LoggerService
   ) {}
 
   private readonly AWS_S3_STATIC_IMAGE_URL =
@@ -325,8 +328,10 @@ export class GameService {
       });
       const userIds = alarmMemberIds.map((m) => m.User_id);
       gameData = await this.readyForGame(alarm.id, userIds);
-    } else {
       await this.cacheManager.set(`alarm-${alarm.id}-game-data`, gameData, { ttl: 60 * 10 });
+    } else {
+      this.logger.log('Hit Game Cache!')
+      this.logger.log(gameData);
     }
 
     return {
