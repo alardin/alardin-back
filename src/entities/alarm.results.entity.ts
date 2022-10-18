@@ -60,6 +60,10 @@ export class AlarmResults {
   @Column('datetime', { name: 'end_time' })
   end_time: Date;
 
+  @ApiProperty({
+    name: 'is_cleared',
+    example: true,
+  })
   @IsBoolean()
   @IsNotEmpty()
   @Column('boolean', { name: 'is_cleared', default: false })
