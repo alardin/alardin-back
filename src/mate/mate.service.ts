@@ -13,9 +13,13 @@ import { FindOptionsSelect, FindOptionsWhere, ILike, Repository } from 'typeorm'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 
-type TMateList = {
+type TMateListKakao = {
     mates: Users[];
     kakaoFriends: KakaoFriend[];
+}
+
+type TMateList = {
+    mates: Users[];
 }
 
 
@@ -38,39 +42,10 @@ export class MateService {
     ) {
     }
 
-    async getMateList(myId: number, kakaoAccessToken: string):Promise<TMateList> {
+    async getMateList(myId: number):Promise<TMateList> {
 
-        const receivedMates = await this.matesRepository.createQueryBuilder('m')
-                                    .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
-                                    .innerJoin('m.Sender', 's')
-                                    .select([
-                                        'm.id',
-                                        's.id',
-                                        's.nickname',
-                                        's.thumbnail_image_url',
-                                        's.kakao_id'
-                                    ])
-                                    .getMany();
-
-        const sendedMates = await this.matesRepository.createQueryBuilder('m')
-                                    .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
-                                    .innerJoin('m.Receiver', 'r')
-                                    .select([
-                                        'm.id',
-                                        's.id',
-                                        'r.id',
-                                        'r.nickname',
-                                        'r.thumbnail_image_url',
-                                        'r.kakao_id'
-                                    ])
-                                    .getMany();
-                                    
-        const usersOfMateIReceived = receivedMates.map(m => m.Sender);
-        const usersOfMateISended = sendedMates.map(m => m.Receiver);
-
-        const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
-        const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
-        const mateIds = mateFinished.map(m => m.id);
+        const mates = await this.getMates(myId);
+        const mateIds = mates.map(m => m.id);
         const joinedAlarms = await this.usersService.getUsersJoinedAlarm(myId);
         const hostedAlarms = await this.usersService.getUsersHostedAlarm(myId);
         const myAlarms = [...joinedAlarms, ...hostedAlarms];
@@ -82,11 +57,34 @@ export class MateService {
             // mateFinished에 추가
         }
         await this.cacheManager.set(`${myId}_mates`, {
-            mates: mateFinished,
+            mates,
+        }, { ttl: 60 * 60 * 24 });
+        return {
+            mates
+        };
+    }
+
+    async getMateListWithKakao(myId: number, kakaoAccessToken: string):Promise<TMateListKakao> {
+
+        const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
+        const mates = await this.getMates(myId);
+        const mateIds = mates.map(m => m.id);
+        const joinedAlarms = await this.usersService.getUsersJoinedAlarm(myId);
+        const hostedAlarms = await this.usersService.getUsersHostedAlarm(myId);
+        const myAlarms = [...joinedAlarms, ...hostedAlarms];
+        for await (let mId of mateIds) {
+            let alarmCount = 0;
+            for await (let alarm of myAlarms) {
+                alarmCount = Number(alarm.Members.map(m => m.id).includes(mId));
+            }
+            // mateFinished에 추가
+        }
+        await this.cacheManager.set(`${myId}_mates`, {
+            mates,
             kakaoFriends: friends  
         }, { ttl: 60 * 60 * 24 });
         return {
-            mates: mateFinished,
+            mates: mates,
             kakaoFriends: friends  
         };
     }
@@ -285,9 +283,9 @@ export class MateService {
         return "OK";
     }
 
-    async getAlarmsofMate(myId: number, kakaoAccessToken: string) {
+    async getAlarmsofMate(myId: number, kakaoAccessToken?: string) {
         
-        const mates = await this.getMateList(myId, kakaoAccessToken);
+        const mates = kakaoAccessToken ? await this.getMateListWithKakao(myId, kakaoAccessToken) : await this.getMateList(myId);
         let alarms = [];
         for await (let m of mates.mates) {
             const validMate = await this.validateMate(myId, m.id);
@@ -355,6 +353,36 @@ export class MateService {
                                     .getMany();
         const usersOfMateIReceived = receivedMates.map(m => m.Sender.id);
         const usersOfMateISended = sendedMates.map(m => m.Receiver.id);
+        const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
+        return mateFinished;
+    }
+
+    private async getMates(myId: number) {
+        const receivedMates = await this.matesRepository.createQueryBuilder('m')
+                                    .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
+                                    .innerJoin('m.Sender', 's')
+                                    .select([
+                                        'm.id',
+                                        's.id',
+                                        's.nickname',
+                                        's.thumbnail_image_url',
+                                        's.kakao_id'
+                                    ])
+                                    .getMany();
+        const sendedMates = await this.matesRepository.createQueryBuilder('m')
+                                    .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
+                                    .innerJoin('m.Receiver', 'r')
+                                    .select([
+                                        'm.id',
+                                        's.id',
+                                        'r.id',
+                                        'r.nickname',
+                                        'r.thumbnail_image_url',
+                                        'r.kakao_id'
+                                    ])
+                                    .getMany();
+        const usersOfMateIReceived = receivedMates.map(m => m.Sender);
+        const usersOfMateISended = sendedMates.map(m => m.Receiver);
         const mateFinished = [ ...usersOfMateIReceived, ...usersOfMateISended];
         return mateFinished;
     }
