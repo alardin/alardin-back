@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GameController } from './game.controller';
 import { SingleModule } from './single/single.module';
@@ -26,7 +26,7 @@ import { GameMeta, GameMetaSchema } from 'src/schemas/gameMeta.schemas';
       { name: UserPlayData.name, schema: UserPlayDataScheme }
     ]),
   ],
-  providers: [GameService],
+  providers: [GameService, Logger],
   controllers: [GameController],
   exports: [GameService]
 })
