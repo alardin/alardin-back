@@ -206,6 +206,36 @@ export class AlarmService {
         
     }
 
+    async quitAlarm(myId: number, alarmId: number) {
+        const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }})
+                            .catch(e => { throw new ForbiddenException() });
+        
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            await this.alarmMembersRepository.createQueryBuilder()
+                    .delete()
+                    .from(AlarmMembers)
+                    .where('User_id = :myId', { myId })
+                    .andWhere('Alarm_id = :alarmId', { alarmId })
+                    .execute();
+            await this.alarmsRepository.createQueryBuilder('alarms')
+                .update(Alarms)
+                .set({ member_count: () => 'member_count - 1' })
+                .where('id = :id', { id: alarm.id })
+                .execute();
+            await queryRunner.commitTransaction();
+        } catch(e) {
+            await queryRunner.rollbackTransaction();
+            throw new BadRequestException('Invalid request')
+        } finally {
+            await queryRunner.release();
+        }
+
+        return "OK";
+    }
+
     async sendMessageToAlarmByHost(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
         const members = await this.getMembers(alarmId);
         const membersDeviceTokens = members.filter((m) => m.id !== myId).map(m => m.device_token);
@@ -236,7 +266,6 @@ export class AlarmService {
         memberDTokens.length != 0 && (await this.pushNotiService.sendMulticast(memberDTokens, title, body, data));
         return 'OK'; 
     }
-
     // alarm 조회할 권한
     async getAlarm(myId: number, alarmId: number) {
         const alarm = await this.getAlarmById(alarmId);

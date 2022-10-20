@@ -62,6 +62,17 @@ export class AlarmController {
         return await this.alarmService.joinAlarm(user, alarmId);
     }
 
+        @ApiOperation({
+            summary: '알람방 나가기'
+        })
+        @ApiBody({
+            type: JoinAlarmDto
+        })
+    @Post('quit')
+    async quitAlarm(@User() user, @Body('alarmId') alarmId:number) {
+        return await this.alarmService.quitAlarm(user.id, alarmId);
+    }
+
 
         @ApiOperation({
             summary: '알람 삭제',

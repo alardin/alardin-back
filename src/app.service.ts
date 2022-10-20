@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AlarmMembers } from './entities/alarm.members.entity';
@@ -38,20 +38,6 @@ export class AppService {
     ) {
     }
     async test() {
-        const res = await this.gameService.saveGame(2, {
-            "Alarm_id": 51,
-            "Game_id": 2,
-            "data": {
-              "data": {
-                "next_read": 2
-              },
-              "play_time": 12,
-              "trial": 0
-            },
-            "end_time": new Date(),
-            "is_cleared": true,
-            "start_time": new Date()
-          });
-        return res; 
+        
     }
 }
