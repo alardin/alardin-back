@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as admin from 'firebase-admin';
-import { MessagingPayload, MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
+import { MessagingPayload, MulticastMessage, TopicMessage } from 'firebase-admin/lib/messaging/messaging-api';
 import { Mates } from 'src/entities/mates.entity';
 import { Notifications } from 'src/entities/notifications.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -13,11 +13,9 @@ export class PushNotificationService {
     constructor(
         @InjectRepository(Notifications)
         private readonly notificationsRepository: Repository<Notifications>,
-        @InjectRepository(Mates)
-        private readonly matesRepository: Repository<Mates>,
     ) {
     }
-    private connection = admin.initializeApp({
+    connection = admin.initializeApp({
         credential: admin.credential.applicationDefault()
     });
 
@@ -59,15 +57,24 @@ export class PushNotificationService {
         return 'OK';
     }
     async sendPushToTopic(topic: string, title: string, body: string, data?: { [key: string]: string }) {
-        const message: MessagingPayload = {
+        const message: TopicMessage = {
             data: data ? data : {},
             notification: {
                 title,
-                body
-            }
-        };
+                body,
+            },
+            android: {
+                priority: 'high'
+            },
+            apns:{
+                "headers":{
+                  "apns-priority": "10"
+                }
+            },
+            topic
+        }
         try {
-            const messageId = await this.connection.messaging().sendToTopic(topic, message);
+            const messageId = await this.connection.messaging().send(message);
             return messageId;
         } catch(e) {
             throw new UnauthorizedException('FCM error');

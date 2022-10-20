@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AlarmMembers } from './entities/alarm.members.entity';
@@ -13,31 +13,16 @@ import { UsersService } from './users/users.service';
 import { Users } from './entities/users.entity';
 import { Cache } from 'cache-manager';
 import { GameService } from './game/game.service';
-
+import { MessagingPayload } from 'firebase-admin/lib/messaging/messaging-api';
+import * as admin from 'firebase-admin';
+import { PushNotificationService } from './push-notification/push-notification.service';
 @Injectable()
 export class AppService {
     constructor(
-        @InjectRepository(Games)
-        private readonly gamesRepository: Repository<Games>,
-        @InjectRepository(AlarmMembers)
-        private readonly alarmMembersRepository: Repository<AlarmMembers>,
-        @InjectRepository(Users)
-        private readonly usersRepository: Repository<Users>,
-        @InjectRepository(Mates)
-        private readonly matesRepository: Repository<Mates>,
-        @InjectRepository(MateRequestRecords)
-        private readonly mateReqRepository: Repository<MateRequestRecords>,
-        @InjectRepository(Alarms)
-        private readonly alarmsRepository: Repository<Alarms>,
-        private readonly kakaoService: KakaoService,
-        private readonly mateService: MateService,
-        private readonly usersService: UsersService,
-        private readonly alarmService: AlarmService,
-        private readonly gameService: GameService,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+        private readonly pushNotiService: PushNotificationService
     ) {
+        
     }
     async test() {
-        
     }
 }

@@ -26,7 +26,6 @@ export class PushNotificationController {
     @UseGuards(new RoleGuard(new Reflector()))
     @Post('topic')
     async sendPushNotificationByAdmin(
-        @User() user,
         @Body() { topic, data, title, body }: SendTopicDto
     ) {
         return await this.pushNotificationService.sendPushToTopic(topic, title, body, data);
