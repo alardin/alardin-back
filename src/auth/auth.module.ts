@@ -6,6 +6,7 @@ import { Assets } from 'src/entities/assets.entity';
 import { Users } from 'src/entities/users.entity';
 import { KakaoModule } from 'src/external/kakao/kakao.module';
 import { KakaoService } from 'src/external/kakao/kakao.service';
+import { PushNotificationModule } from 'src/push-notification/push-notification.module';
 import { UsersModule } from 'src/users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -16,6 +17,7 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
   imports: [
     PassportModule,
     KakaoModule,
+    PushNotificationModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET
     }),

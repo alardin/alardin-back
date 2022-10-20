@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as admin from 'firebase-admin';
-import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
+import { MessagingPayload, MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
 import { Mates } from 'src/entities/mates.entity';
 import { Notifications } from 'src/entities/notifications.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -46,9 +46,32 @@ export class PushNotificationService {
             throw new UnauthorizedException();
         }
     }
-    // sendPushByAdmin(user.id, user.device_token, title, body, data);
-    async sendPushByAdmin(title: string, body: string, data?: { [key: string]: string }) {
-        // all users
+
+    async subscribeToTopic(tokens: string[], topic: string) {
+        await this.connection.messaging().subscribeToTopic(tokens, topic)
+                .catch(e => { throw new UnauthorizedException('FCM error'); });
+        return 'OK';
+    }
+
+    async unsubscribeToTopic(tokens: string[], topic: string) {
+        await this.connection.messaging().unsubscribeFromTopic(tokens, topic)
+                .catch(e => { throw new UnauthorizedException('FCM error'); });
+        return 'OK';
+    }
+    async sendPushToTopic(topic: string, title: string, body: string, data?: { [key: string]: string }) {
+        const message: MessagingPayload = {
+            data: data ? data : {},
+            notification: {
+                title,
+                body
+            }
+        };
+        try {
+            const messageId = await this.connection.messaging().sendToTopic(topic, message);
+            return messageId;
+        } catch(e) {
+            throw new UnauthorizedException('FCM error');
+        }
     }
 
     async sendMulticast(tokens: string[], title: string, body: string, data?: { [key: string]: string }) {

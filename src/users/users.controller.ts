@@ -12,12 +12,14 @@ import { AppTokens } from './dto/app-tokens.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { OthersProfileDto } from './dto/others.profile.dto';
 import { UserAlarmsDto } from './dto/user-alarms.dto';
+import { PushNotificationService } from 'src/push-notification/push-notification.service';
 
 @ApiTags('users')
 @Controller('api/users')
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
+        private readonly pushNotiService: PushNotificationService
     ) {}
     
         @ApiResponse({
@@ -39,6 +41,7 @@ export class UsersController {
     @Delete()
     async deleteUser(@Req() req, @User() user) {
         req.logout();
+        await this.pushNotiService.subscribeToTopic([user.device_token], 'all');
         return await this.usersService.deleteUser(user.id);
     }
 
@@ -46,6 +49,7 @@ export class UsersController {
     @Post('logout')
     async logout(@Req() req, @User() user: Users) {
         req.logout();
+        await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
         this.usersService.destroyToken(user.id);
         // appAccessToken 파기, kakaoAT, kakaoRT 파기
     }

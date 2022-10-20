@@ -14,6 +14,7 @@ import { AuthDto } from 'src/users/dto/auth.dto';
 import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
 import { KakaoService } from 'src/external/kakao/kakao.service';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { PushNotificationService } from 'src/push-notification/push-notification.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
         @InjectRepository(Users) 
         private readonly usersRepository: Repository<Users>,
         private readonly kakaoService: KakaoService,
+        private readonly pushNotiService: PushNotificationService,
         private dataSource: DataSource
     ) {}
 
@@ -82,6 +84,7 @@ export class AuthService {
                     kakao_access_token: tokens.accessToken,
                     kakao_refresh_token: tokens.refreshToken
                 });
+                await this.pushNotiService.subscribeToTopic([userAlreadyExist.device_token], 'all');
                 return appTokens;
             } else {
                 const queryRunner = this.dataSource.createQueryRunner();
@@ -120,6 +123,7 @@ export class AuthService {
                 } finally {
                     await queryRunner.release();
                     const appTokens =  this.login({ id: newUser.id, email: newUser.email });
+                    await this.pushNotiService.subscribeToTopic([newUser.device_token], 'all');
                     await this.updateUser(newUser.id, {
                         refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
                     });
@@ -154,6 +158,7 @@ export class AuthService {
                         refresh_token: hashedRT,
                     });
                 }
+                await this.pushNotiService.subscribeToTopic([userAlreadyExist.device_token], 'all');
                 return appTokens;
             } else {
                 const queryRunner = this.dataSource.createQueryRunner();
@@ -190,6 +195,7 @@ export class AuthService {
                     await this.updateUser(newUser.id, {
                         refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
                     });
+                    await this.pushNotiService.subscribeToTopic([userAlreadyExist.device_token], 'all');
                     return appTokens;
                 }
             }
