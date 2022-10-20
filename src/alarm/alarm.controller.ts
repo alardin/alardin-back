@@ -70,6 +70,8 @@ export class AlarmController {
         })
     @Post('quit')
     async quitAlarm(@User() user, @Body('alarmId') alarmId:number) {
+        await this.alarmService.clearAlarmsCache(user.id);
+        await this.alarmService.deleteMembersCache(user.id, alarmId);
         return await this.alarmService.quitAlarm(user.id, alarmId);
     }
 
