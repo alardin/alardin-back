@@ -3,8 +3,8 @@ import { IsNotEmpty, IsObject, IsString } from "class-validator";
 
 export class SendPushDto {
     @ApiProperty({
-        name: '<any key>',
-        example: '<any value>'
+        name: 'data',
+        example: { 'any key': 'any value' }
     })
     @IsObject()
     data?: { [key:string]: string };

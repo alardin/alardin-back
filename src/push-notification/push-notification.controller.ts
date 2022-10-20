@@ -20,7 +20,7 @@ export class PushNotificationController {
         description: 'notification 타입 알림 전송'
     })
     @ApiBody({
-        type: SendPushDto, 
+        type: SendTopicDto, 
     })
     @ForRoles(['admin'])
     @UseGuards(new RoleGuard(new Reflector()))
