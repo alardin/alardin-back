@@ -28,7 +28,6 @@ import { Mates } from './entities/mates.entity';
 import { MateRequestRecords } from './entities/mate-request.records.entity';
 import { Users } from './entities/users.entity';
 import { Games } from './entities/games.entity';
-import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
 dotenv.config();
 
 @Module({
@@ -56,9 +55,6 @@ dotenv.config();
       port: +process.env.REDIS_PORT
     }),
     MongooseModule.forRoot(`mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`),
-    MongooseModule.forFeature([
-      { name: GameMeta.name, schema: GameMetaSchema },
-    ]),
     MateModule,
     GameModule, 
     AlarmModule,
