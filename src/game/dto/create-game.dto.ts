@@ -20,4 +20,12 @@ export class CreateGameDto extends PickType(Games, ['name', 'category', 'price',
     @IsString({ each: true })
     keys: string[];
 
+    @ApiProperty({
+        name: 'data_keys',
+        example: ['is_cleared']
+    })
+    @IsArray()
+    @IsString({ each: true })
+    data_keys: string[];
+
 }

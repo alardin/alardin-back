@@ -14,6 +14,9 @@ export class GameMeta {
     @Prop({ required: true })
     keys: string[];
 
+    @Prop({ required: true })
+    data_keys: string[];
+    
     @Prop({ required: true, default: [] })
     screenshot_urls: string[];
 }

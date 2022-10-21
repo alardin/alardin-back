@@ -16,13 +16,19 @@ import { GameService } from './game/game.service';
 import { MessagingPayload } from 'firebase-admin/lib/messaging/messaging-api';
 import * as admin from 'firebase-admin';
 import { PushNotificationService } from './push-notification/push-notification.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { GameMeta, GameMetaDocument } from './schemas/gameMeta.schemas';
+import { Model } from 'mongoose';
 @Injectable()
 export class AppService {
     constructor(
-        private readonly pushNotiService: PushNotificationService
+        private readonly pushNotiService: PushNotificationService,
+        @InjectModel(GameMeta.name) private readonly gameMetasModel: Model<GameMetaDocument>
     ) {
         
     }
     async test() {
+        const { data_keys } = await this.gameMetasModel.findOne({ Game_id: 1}).exec();
+        return data_keys;
     }
 }

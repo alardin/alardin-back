@@ -93,7 +93,7 @@ export class GameService {
   }
 
   async createNewGame(body: CreateGameDto) {
-    const { screenshot_urls, keys, name, ...bodyWithoutMeta } = body;
+    const { screenshot_urls, keys, name, data_keys, ...bodyWithoutMeta } = body;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -105,7 +105,8 @@ export class GameService {
       const newGameMeta = new this.gameMetaModel({
         Game_id: newGame.id,
         name,
-        keys: keys,
+        keys,
+        data_keys,
         screenshot_urls: screenshot_urls,
       });
       await newGameMeta.save();
@@ -266,7 +267,7 @@ export class GameService {
         Alarm_result_id: alarmResult.id,
       });
 
-      const savedData = this.sanitizeData(body.Game_id, body.data.data);
+      const savedData = await this.sanitizeData(body.Game_id, body.data.data);
       await this.userPlayDataModel.updateOne(
         {
           User_id: myId,
@@ -491,15 +492,21 @@ export class GameService {
     return shuffled.slice(min);
   }
 
-  private sanitizeData(gameId: number, data: object) {
-    const GAME_KEYS = {
-      1: ['is_cleared'],
-      2: ['next_read'],
-      3: ['is_cleared']
-    };
-
+  private async sanitizeData(gameId: number, data: object) {
+    // const GAME_KEYS = {
+    //   1: ['is_cleared'],
+    //   2: ['next_read'],
+    //   3: ['is_cleared']
+    // };
+    let GAME_KEYS: string[];
+    try {
+      const { data_keys } = await this.gameMetaModel.findOne({ Game_id: gameId }).exec();
+      GAME_KEYS = data_keys
+    } catch(e) {
+      throw new BadRequestException('Invalid Request');
+    }
     let returnData = {}
-    for (let key of GAME_KEYS[gameId]) {
+    for (let key of GAME_KEYS) {
       if (data[key]) {
         returnData = { key: data[key], ...returnData }
       }
