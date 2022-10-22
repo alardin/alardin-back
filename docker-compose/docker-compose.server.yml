@@ -56,7 +56,7 @@ services:
       - 6379:6379
     volumes:
       - redis:/data
-      - /home/ec2-user/firebase/service-account.json:/home/ec2-user/firebase/service-account.json
+      - /home/ec2-user/firebase/service-account.json:/home/node/firebase/service-account.json
 volumes:
   redis:
     driver: local
