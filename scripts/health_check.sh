@@ -19,5 +19,5 @@ do
         aws sns publish --topic-arn $SNS_HEALTHCHECK_FAIL_ARN --message "DEAD"
         exit 1
     fi
-    sleep 10
+    sleep 5
 done
