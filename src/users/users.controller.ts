@@ -43,6 +43,7 @@ export class UsersController {
         await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
         req.logout(user, err => {
             if(err) {
+                console.log(err)
                 throw new UnauthorizedException('Invalid request');
             }
         });
