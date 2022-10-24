@@ -38,12 +38,11 @@ export class UsersController {
         @ApiOperation({
             summary: '회원 탈퇴'
         })
+    @UseGuards(LoggedInGuard)    
     @Delete()
-    async deleteUser(@Req() req, @User() user) {
-        await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
-        req.logout(user, err => {
+    async deleteUser(@Req() req, @User() user: Users) {
+        await req.logout(user, err => {
             if(err) {
-                console.log(err)
                 throw new UnauthorizedException('Invalid request');
             }
         });
@@ -53,7 +52,6 @@ export class UsersController {
     @UseGuards(LoggedInGuard)
     @Post('logout')
     async logout(@Req() req, @User() user: Users) {
-        await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
         req.logout(user, err => {
             if(err) {
                 throw new UnauthorizedException('Invalid request');
