@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Users } from 'src/entities/users.entity';
@@ -48,7 +48,11 @@ export class UsersController {
     @UseGuards(LoggedInGuard)
     @Post('logout')
     async logout(@Req() req, @User() user: Users) {
-        req.logout();
+        req.logout(user, err => {
+            if(err) {
+                throw new UnauthorizedException('Invalid request');
+            }
+        });
         await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
         this.usersService.destroyToken(user.id);
         // appAccessToken 파기, kakaoAT, kakaoRT 파기

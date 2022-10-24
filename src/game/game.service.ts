@@ -12,6 +12,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
+import { AlarmService } from 'src/alarm/alarm.service';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
@@ -43,6 +44,7 @@ type GameDetail = {
 @Injectable()
 export class GameService {
   constructor(
+    private readonly alarmService: AlarmService,
     @InjectRepository(Games)
     private readonly gamesRepoistory: Repository<Games>,
     @InjectRepository(GamePurchaseRecords)
@@ -340,6 +342,8 @@ export class GameService {
       this.logger.log(gameData);
     }
 
+    await this.alarmService.clearAlarmsCache(myId);
+
     return {
       rtcToken,
       rtmToken,
@@ -416,7 +420,7 @@ export class GameService {
         answerIndex,
       };
     });
-
+    
     return dataForGame;
   }
 
