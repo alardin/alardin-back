@@ -18,7 +18,6 @@ import { CreateAlarmDto } from './dto/create-alarm.dto';
 export class AlarmService {
     constructor(
         private readonly mateService: MateService,
-        private readonly gameService: GameService,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @InjectRepository(AlarmMembers)
