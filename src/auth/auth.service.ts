@@ -186,6 +186,7 @@ export class AuthService {
                             .where('id = :id', { id: newUser.id })
                             .execute();
                     await queryRunner.commitTransaction();
+                    
                 } catch (e) {
                     await queryRunner.rollbackTransaction();
                     throw new ForbiddenException('Invalid request');
@@ -195,7 +196,7 @@ export class AuthService {
                     await this.updateUser(newUser.id, {
                         refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
                     });
-                    await this.pushNotiService.subscribeToTopic([userAlreadyExist.device_token], 'all');
+                    await this.pushNotiService.subscribeToTopic([newUser.device_token], 'all');
                     return appTokens;
                 }
             }
