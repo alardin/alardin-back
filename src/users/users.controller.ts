@@ -40,7 +40,11 @@ export class UsersController {
         })
     @Delete()
     async deleteUser(@Req() req, @User() user) {
-        req.logout();
+        req.logout(user, err => {
+            if(err) {
+                throw new UnauthorizedException('Invalid request');
+            }
+        });
         await this.pushNotiService.subscribeToTopic([user.device_token], 'all');
         return await this.usersService.deleteUser(user.id);
     }
