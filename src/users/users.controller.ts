@@ -40,25 +40,25 @@ export class UsersController {
         })
     @Delete()
     async deleteUser(@Req() req, @User() user) {
+        await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
         req.logout(user, err => {
             if(err) {
                 throw new UnauthorizedException('Invalid request');
             }
         });
-        await this.pushNotiService.subscribeToTopic([user.device_token], 'all');
         return await this.usersService.deleteUser(user.id);
     }
 
     @UseGuards(LoggedInGuard)
     @Post('logout')
     async logout(@Req() req, @User() user: Users) {
+        await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
         req.logout(user, err => {
             if(err) {
                 throw new UnauthorizedException('Invalid request');
             }
         });
-        await this.pushNotiService.unsubscribeToTopic([user.device_token], 'all');
-        this.usersService.destroyToken(user.id);
+        return await this.usersService.destroyToken(user.id);
         // appAccessToken 파기, kakaoAT, kakaoRT 파기
     }
         @ApiOperation({
