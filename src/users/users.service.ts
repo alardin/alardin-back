@@ -90,7 +90,6 @@ export class UsersService {
     }
     async refreshKakaoToken(userId: number) {
         const { kakao_refresh_token } = await this.getUser(userId);
-        console.log('kakao', kakao_refresh_token)
         const { accessToken, refreshToken } = await this.kakaoService.refreshKakaoTokens(kakao_refresh_token);
         await this.updateUser(userId, { 
             kakao_access_token: accessToken,

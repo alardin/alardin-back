@@ -52,11 +52,6 @@ export class UsersController {
     @UseGuards(LoggedInGuard)
     @Post('logout')
     async logout(@Req() req, @User() user: Users) {
-        req.logout(user, err => {
-            if(err) {
-                throw new UnauthorizedException('Invalid request');
-            }
-        });
         return await this.usersService.destroyToken(user.id);
         // appAccessToken 파기, kakaoAT, kakaoRT 파기
     }

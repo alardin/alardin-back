@@ -84,7 +84,6 @@ export class AuthService {
                     kakao_access_token: tokens.accessToken,
                     kakao_refresh_token: tokens.refreshToken
                 });
-                await this.pushNotiService.subscribeToTopic([userAlreadyExist.device_token], 'all');
                 return appTokens;
             } else {
                 const queryRunner = this.dataSource.createQueryRunner();
@@ -123,7 +122,6 @@ export class AuthService {
                 } finally {
                     await queryRunner.release();
                     const appTokens =  this.login({ id: newUser.id, email: newUser.email });
-                    await this.pushNotiService.subscribeToTopic([newUser.device_token], 'all');
                     await this.updateUser(newUser.id, {
                         refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
                     });
@@ -158,7 +156,6 @@ export class AuthService {
                         refresh_token: hashedRT,
                     });
                 }
-                await this.pushNotiService.subscribeToTopic([userAlreadyExist.device_token], 'all');
                 return appTokens;
             } else {
                 const queryRunner = this.dataSource.createQueryRunner();
@@ -196,7 +193,6 @@ export class AuthService {
                     await this.updateUser(newUser.id, {
                         refresh_token: await bcrypt.hash(appTokens.appRefreshToken, 12)
                     });
-                    await this.pushNotiService.subscribeToTopic([newUser.device_token], 'all');
                     return appTokens;
                 }
             }

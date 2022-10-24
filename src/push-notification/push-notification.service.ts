@@ -44,18 +44,6 @@ export class PushNotificationService {
             throw new UnauthorizedException();
         }
     }
-
-    async subscribeToTopic(tokens: string[], topic: string) {
-        await this.connection.messaging().subscribeToTopic(tokens, topic)
-                .catch(e => { throw new UnauthorizedException('FCM error'); });
-        return 'OK';
-    }
-
-    async unsubscribeToTopic(tokens: string[], topic: string) {
-        await this.connection.messaging().unsubscribeFromTopic(tokens, topic)
-                .catch(e => { throw new UnauthorizedException('FCM error'); });
-        return 'OK';
-    }
     async sendPushToTopic(topic: string, title: string, body: string, data?: { [key: string]: string }) {
         const message: TopicMessage = {
             data: data ? data : {},
