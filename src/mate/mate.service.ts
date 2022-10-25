@@ -249,7 +249,7 @@ export class MateService {
     async cancelRequest(me: Users, receiverId: number) {
         try {
             await this.mateReqRepository.createQueryBuilder()
-                .delete()
+                .softDelete()
                 .from(MateRequestRecords)
                 .where('Sender_id = :myId', { myId: me.id })
                 .andWhere('Receiver_id = :receiverId', { receiverId })
