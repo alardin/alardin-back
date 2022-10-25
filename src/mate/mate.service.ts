@@ -198,7 +198,7 @@ export class MateService {
             searchedUsers = await this.usersRepository.find({
                 where: {
                     is_private: false,
-                    nickname: ILike(keyword)
+                    nickname: ILike(`%${keyword}%`)
                 },
                 select: {
                     id: true,
@@ -411,7 +411,7 @@ export class MateService {
         if (mate) {
             return null;
         }
-        
+
         const newMate = new Mates();
         newMate.Sender_id = senderId, newMate.Receiver_id = receiverId;
         try {
