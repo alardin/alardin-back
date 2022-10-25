@@ -196,7 +196,7 @@ export class MateService {
             searchedUsers = await this.usersRepository.find({
                 where: {
                     is_private: false,
-                    nickname: ILike(`%${keyword}%`)
+                    nickname: ILike(keyword)
                 },
                 select: {
                     id: true,
@@ -237,8 +237,8 @@ export class MateService {
                 Sender: true
             }
         });
-        const requestISent = requests.map(({ sended_at, Receiver }) => ({sended_at, ...Receiver}));
-        const responseIReceived = responses.map(({ sended_at, Sender }) => ({sended_at, ...Sender})); 
+        const requestISent = requests.map(({ sended_at, Receiver }) => ({ sended_at, ...Receiver }));
+        const responseIReceived = responses.map(({ sended_at, Sender }) => ({ sended_at, ...Sender })); 
         return {
             requestISent,
             responseIReceived
@@ -413,6 +413,12 @@ export class MateService {
             await this.mateReqRepository.createQueryBuilder('mr')
                             .update()
                             .set(toBeUpdated)
+                            .where('Sender_id = :senderId', { senderId })
+                            .andWhere('Receiver_id = :receiverId', { receiverId })
+                            .execute();
+            await this.mateReqRepository.createQueryBuilder()
+                            .softDelete()
+                            .from(MateRequestRecords)
                             .where('Sender_id = :senderId', { senderId })
                             .andWhere('Receiver_id = :receiverId', { receiverId })
                             .execute();
