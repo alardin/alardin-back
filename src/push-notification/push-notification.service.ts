@@ -32,7 +32,8 @@ export class PushNotificationService {
                     },
                     apns:{
                         "headers":{
-                          "apns-priority": "10"
+                          "apns-priority": "10",
+                          "apns-push-type": "alert"
                         },
                         payload: {
                             aps: {
@@ -61,7 +62,8 @@ export class PushNotificationService {
             },
             apns:{
                 "headers":{
-                  "apns-priority": "10"
+                  "apns-priority": "10",
+                  "apns-push-type": "alert"
                 },
                 payload: {
                     aps: {
@@ -91,7 +93,8 @@ export class PushNotificationService {
             },
             apns:{
                 "headers":{
-                  "apns-priority": "10"
+                  "apns-priority": "10",
+                  "apns-push-type": "alert"
                 },
                 payload: {
                     aps: {
