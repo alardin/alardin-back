@@ -1,10 +1,14 @@
 const { Client } = require("@notionhq/client")
 const notion = new Client({ auth: process.env.NOTION_KEY })
-const databaseId = process.env.NOTION_SERVER_DB_ID;
 const userId = process.env.USER_ID;
 
-async function updateNotion(message) {
-  
+async function updateNotion(type, message) {
+    let databaseId;
+    if (type == 'GAME') {
+        databaseId = process.env.NOTION_GAME_DB_ID;
+    } else if (type == 'SERVER') {
+        databaseId = process.env.NOTION_SERVER_DB_ID;
+    }
     const now = new Date(Date.now() + ( 1000 * 60 * 60 * 9 ));
     let years = now.getFullYear();
     let months = now.getMonth()+1;
@@ -71,6 +75,6 @@ async function updateNotion(message) {
 
 exports.handler = async (event, context, callback) => {
     const snsReceived = event.Records[0].Sns;
-    const message = snsReceived.Message;
-    await updateNotion(message);
+    const [type, message] = snsReceived.Message.split(' ');
+    await updateNotion(type, message);
 }  
