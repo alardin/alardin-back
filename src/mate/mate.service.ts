@@ -88,9 +88,11 @@ export class MateService {
     }
 
     async sendMateRequest(me: Users, receiverId: number) {
-        if (!receiverId) {
+        const mateReqNotProcessed = await this.mateReqRepository.findOne({ where: { Sender_id: me.id, Receiver_id: receiverId, is_accepted: 0, is_rejected: 0 }});
+        if (mateReqNotProcessed) {
             return null;
         }
+
         const receiver = await this.usersRepository.findOneOrFail({ where: { id: receiverId }})
                                 .catch(_ => { throw new NotFoundException() });
         const newMateReq = new MateRequestRecords()
@@ -393,6 +395,23 @@ export class MateService {
     }
 
     private async saveMate(senderId: number, receiverId: number) {
+        const mate = await this.matesRepository.findOne({
+            where: [
+                {
+                    Sender_id: senderId,
+                    Receiver_id: receiverId
+                },
+                {
+                    Sender_id: receiverId,
+                    Receiver_id: senderId
+                }
+            ]
+        });
+
+        if (mate) {
+            return null;
+        }
+        
         const newMate = new Mates();
         newMate.Sender_id = senderId, newMate.Receiver_id = receiverId;
         try {
@@ -400,6 +419,7 @@ export class MateService {
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
+        return 'OK';
     }
 
     private async updateMateRequest(senderId: number, receiverId: number, accept: boolean) {
