@@ -95,11 +95,9 @@ export class MateService {
 
         const receiver = await this.usersRepository.findOneOrFail({ where: { id: receiverId }})
                                 .catch(_ => { throw new NotFoundException() });
-        const newMateReq = new MateRequestRecords()
-        newMateReq.Sender_id = me.id;
-        newMateReq.Receiver_id = receiver.id;
-        newMateReq.is_accepted = 0, newMateReq.is_rejected = 0;
-        await this.mateReqRepository.save(newMateReq);
+        await this.mateReqRepository.query(
+            `INSERT INTO mate_request_records(Sender_id, Receiver_id, is_accepted, is_rejected) VALUES(${me.id}, ${receiver.id}, 0, 0)`
+        );
         await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
             `${me.nickname}님의 메이트를 요청`, 
             `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`, 
@@ -129,12 +127,9 @@ export class MateService {
         }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
                                 .catch(_ => { throw new NotFoundException() });
-        const newMateReq = new MateRequestRecords()
-        newMateReq.Sender_id = me.id;
-        newMateReq.Receiver_id = receiver.id;
-        newMateReq.is_accepted = 0, newMateReq.is_rejected = 0;
-        await this.mateReqRepository.save(newMateReq);
-
+        await this.mateReqRepository.query(
+            `INSERT INTO mate_request_records(Sender_id, Receiver_id, is_accepted, is_rejected) VALUES(${me.id}, ${receiver.id}, 0, 0)`
+        );
         await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
             `${me.nickname}님의 메이트를 요청`, 
             `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`, 

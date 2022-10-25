@@ -63,7 +63,7 @@ export class KakaoService {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
-            })
+            });
             return elements;
         } catch(e) {
             return [];
