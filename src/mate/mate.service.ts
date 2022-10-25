@@ -216,7 +216,7 @@ export class MateService {
     }
 
     async getMateRequestList(me: Users) {
-        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: 1, is_rejected: 1 };
+        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: 0, is_rejected: 0 };
         let userOption: FindOptionsSelect<Users> = { id: true, nickname: true, thumbnail_image_url: true };
         const requests = await this.mateReqRepository.find({
             select: {
