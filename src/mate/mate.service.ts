@@ -441,12 +441,7 @@ export class MateService {
                             .where('Sender_id = :senderId', { senderId })
                             .andWhere('Receiver_id = :receiverId', { receiverId })
                             .execute();
-            await this.mateReqRepository.createQueryBuilder()
-                            .softDelete()
-                            .from(MateRequestRecords)
-                            .where('Sender_id = :senderId', { senderId })
-                            .andWhere('Receiver_id = :receiverId', { receiverId })
-                            .execute();
+            
         } catch (error) {
             throw new ForbiddenException('Invalid request');
         }
