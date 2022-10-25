@@ -54,16 +54,20 @@ export class KakaoService {
     }
 
     async getKakaoFriends(accessToken: string): Promise<KakaoFriend[]> {
-        const {
-            data: {
-                elements
-            }
-        } = await axios.get(this.kakaoFriendsUrl, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        }).catch(e => { throw new UnauthorizedException() });
-        return elements;
+        try {
+            const {
+                data: {
+                    elements
+                }
+            } = await axios.get(this.kakaoFriendsUrl, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            })
+            return elements;
+        } catch(e) {
+            return [];
+        }
     }
     
     async refreshKakaoTokens(refreshToken: string) {
