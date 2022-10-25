@@ -168,7 +168,7 @@ export class MateService {
 
         switch(response) {
             case 'ACCEPT':
-                await this.updateMateRequest(me.id, sender.id, true);
+                await this.updateMateRequest(sender.id, me.id, true);
                 await this.saveMate(sender.id, me.id);
                 await this.pushNotiService.sendPush(sender.id, sender.device_token, 
                     `${me.nickname}님과 메이트 수락`, 
