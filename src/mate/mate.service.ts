@@ -56,9 +56,7 @@ export class MateService {
             }
             // mateFinished에 추가
         }
-        await this.cacheManager.set(`${myId}_mates`, {
-            mates,
-        }, { ttl: 60 * 60 * 24 });
+        
         return {
             mates
         };
@@ -179,8 +177,6 @@ export class MateService {
                         }),
                     }
                 );
-                await this.cacheManager.del(`${me.id}_mates`);
-                await this.cacheManager.del(`${sender.id}_mates`);
                 break;
             case 'REJECT':
                 await this.updateMateRequest(me.id, sender.id, false);
@@ -278,8 +274,6 @@ export class MateService {
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
-        await this.cacheManager.del(`${myId}_mates`);
-        await this.cacheManager.del(`${mateId}_mates`);
         return "OK";
     }
 
@@ -402,8 +396,6 @@ export class MateService {
         newMate.Sender_id = senderId, newMate.Receiver_id = receiverId;
         try {
             await this.matesRepository.save(newMate);
-            await this.cacheManager.del(`${senderId}_mates`);
-            await this.cacheManager.del(`${receiverId}_mates`);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
