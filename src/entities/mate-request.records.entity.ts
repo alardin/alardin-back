@@ -4,10 +4,10 @@ import { Users } from "./users.entity";
 @Entity({ schema: 'alardin' })
 export class MateRequestRecords {
 
-    @Column('boolean', { name: 'is_accepted' })
+    @Column('bool', { name: 'is_accepted' })
     is_accepted: boolean;
 
-    @Column('boolean', { name: 'is_rejected' })
+    @Column('bool', { name: 'is_rejected' })
     is_rejected: boolean;
 
     @CreateDateColumn({ name: 'sended_at' })

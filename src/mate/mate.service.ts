@@ -156,7 +156,8 @@ export class MateService {
         const mateReq = await this.mateReqRepository.findOneOrFail({ where: { Sender_id: senderId, Receiver_id: me.id }})
             .catch(_ => { throw new ForbiddenException() });
 
-        const sender = await this.getUserByUserId(mateReq.Sender_id);
+        const sender = await this.usersRepository.findOneOrFail({ where: { id: mateReq.Sender_id }})
+                            .catch(e => { throw new ForbiddenException('invalid request') });
 
         switch(response) {
             case 'ACCEPT':
