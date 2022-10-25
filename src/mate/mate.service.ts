@@ -96,7 +96,7 @@ export class MateService {
         const newMateReq = new MateRequestRecords()
         newMateReq.Sender_id = me.id;
         newMateReq.Receiver_id = receiver.id;
-        newMateReq.is_accepted = false, newMateReq.is_rejected = false;
+        newMateReq.is_accepted = 0, newMateReq.is_rejected = 0;
         await this.mateReqRepository.save(newMateReq);
 
         await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
@@ -126,7 +126,7 @@ export class MateService {
         const newMateReq = new MateRequestRecords()
         newMateReq.Sender_id = me.id;
         newMateReq.Receiver_id = receiver.id;
-        newMateReq.is_accepted = false, newMateReq.is_rejected = false;
+        newMateReq.is_accepted = 0, newMateReq.is_rejected = 0;
         await this.mateReqRepository.save(newMateReq);
 
         await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
@@ -209,7 +209,7 @@ export class MateService {
     }
 
     async getMateRequestList(me: Users) {
-        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: false, is_rejected: false };
+        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: 1, is_rejected: 1 };
         let userOption: FindOptionsSelect<Users> = { id: true, nickname: true, thumbnail_image_url: true };
         const requests = await this.mateReqRepository.find({
             select: {
@@ -405,9 +405,9 @@ export class MateService {
     private async updateMateRequest(senderId: number, receiverId: number, accept: boolean) {
         let toBeUpdated: QueryDeepPartialEntity<MateRequestRecords>;
         if (accept) {
-            toBeUpdated = { is_accepted: true }
+            toBeUpdated = { is_accepted: 1 }
         } else {
-            toBeUpdated = { is_rejected: true }
+            toBeUpdated = { is_rejected: 1 }
         }
         try {
             await this.mateReqRepository.createQueryBuilder('mr')

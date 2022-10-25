@@ -13,21 +13,5 @@ export class AppService {
         
     }
     async test() {
-        let whereOption: FindOptionsWhere<MateRequestRecords> = { is_accepted: false, is_rejected: false };
-        let userOption: FindOptionsSelect<Users> = { id: true, nickname: true, thumbnail_image_url: true };
-        const res = await this.mateReqRepository.find({
-            select: {
-                Receiver: userOption,
-                sended_at: true,
-            },
-            where: {
-                Sender_id: 2,
-                ...whereOption
-            },
-            relations: {
-                Receiver: true
-            }
-        });
-        return res;
     }
 }

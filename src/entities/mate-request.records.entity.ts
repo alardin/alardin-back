@@ -5,10 +5,10 @@ import { Users } from "./users.entity";
 export class MateRequestRecords {
 
     @Column('bool', { name: 'is_accepted' })
-    is_accepted: boolean;
+    is_accepted: number;
 
     @Column('bool', { name: 'is_rejected' })
-    is_rejected: boolean;
+    is_rejected: number;
 
     @CreateDateColumn({ name: 'sended_at' })
     sended_at: Date;
