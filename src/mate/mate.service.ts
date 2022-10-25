@@ -120,6 +120,11 @@ export class MateService {
     }
 
     async sendMateRequestFromKakao(me: Users, receiverKakaoId: number) {
+        const mateReqNotProcessed = await this.mateReqRepository.findOne({ where: { Sender_id: me.id, Receiver: { kakao_id: receiverKakaoId }, is_accepted: 0, is_rejected: 0 }});
+        if (mateReqNotProcessed) {
+            return null;
+        }
+
         if (!receiverKakaoId) {
             return null;
         }
