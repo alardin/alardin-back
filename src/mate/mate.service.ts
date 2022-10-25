@@ -100,17 +100,6 @@ export class MateService {
         newMateReq.Receiver_id = receiver.id;
         newMateReq.is_accepted = 0, newMateReq.is_rejected = 0;
         await this.mateReqRepository.save(newMateReq);
-        await this.mateReqRepository.createQueryBuilder('mr')
-                .insert()
-                .into(MateRequestRecords)
-                .values([
-                    {
-                        Sender_id: me.id,
-                        Receiver_id: receiver.id,
-                        is_accepted: 0, is_rejected: 0
-                    }
-                ])
-                .execute();
         await this.pushNotiService.sendPush(receiver.id, receiver.device_token, 
             `${me.nickname}님의 메이트를 요청`, 
             `${me.nickname}님께서 회원님과의 메이트를 요청하셨습니다.`, 
@@ -265,7 +254,7 @@ export class MateService {
     async cancelRequest(me: Users, receiverId: number) {
         try {
             await this.mateReqRepository.createQueryBuilder()
-                .softDelete()
+                .delete()
                 .from(MateRequestRecords)
                 .where('Sender_id = :myId', { myId: me.id })
                 .andWhere('Receiver_id = :receiverId', { receiverId })
