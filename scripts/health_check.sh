@@ -12,11 +12,11 @@ do
 
     if [ ${RESPONSE_CODE} -eq 200 ]; then
         echo "[+] Server is successfully running"
-        aws sns publish --topic-arn $SNS_HEALTHCHECK_SUCCESS_ARN --message "ALIVE"
+        aws sns publish --topic-arn $SNS_HEALTHCHECK_SUCCESS_ARN --message "SERVER ALIVE"
         exit 0
     elif [ ${RETRY_COUNT} -eq 10 ]; then
         echo "[-] Health check failed."
-        aws sns publish --topic-arn $SNS_HEALTHCHECK_FAIL_ARN --message "DEAD"
+        aws sns publish --topic-arn $SNS_HEALTHCHECK_FAIL_ARN --message "SERVER DEAD"
         exit 1
     fi
     sleep 5

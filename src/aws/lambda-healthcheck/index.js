@@ -1,9 +1,8 @@
 const { Client } = require("@notionhq/client")
 const notion = new Client({ auth: process.env.NOTION_KEY })
 const userId = process.env.USER_ID;
-
+let databaseId;
 async function updateNotion(type, message) {
-    let databaseId;
     if (type == 'GAME') {
         databaseId = process.env.NOTION_GAME_DB_ID;
     } else if (type == 'SERVER') {
@@ -76,5 +75,6 @@ async function updateNotion(type, message) {
 exports.handler = async (event, context, callback) => {
     const snsReceived = event.Records[0].Sns;
     const [type, message] = snsReceived.Message.split(' ');
+    console.log('type: ', type, 'message:', message)
     await updateNotion(type, message);
 }  
