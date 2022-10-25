@@ -33,6 +33,11 @@ export class PushNotificationService {
                     apns:{
                         "headers":{
                           "apns-priority": "10"
+                        },
+                        payload: {
+                            aps: {
+                                contentAvailable: true
+                            }
                         }
                     },
                     token: deviceToken
@@ -57,6 +62,11 @@ export class PushNotificationService {
             apns:{
                 "headers":{
                   "apns-priority": "10"
+                },
+                payload: {
+                    aps: {
+                        contentAvailable: true
+                    }
                 }
             },
             topic
@@ -82,6 +92,11 @@ export class PushNotificationService {
             apns:{
                 "headers":{
                   "apns-priority": "10"
+                },
+                payload: {
+                    aps: {
+                        contentAvailable: true
+                    }
                 }
             },
             tokens
