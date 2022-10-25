@@ -4,6 +4,9 @@ import { Users } from "./users.entity";
 @Entity({ schema: 'alardin' })
 export class MateRequestRecords {
 
+    @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
+    id: number;
+
     @Column('bool', { name: 'is_accepted' })
     is_accepted: number;
 
@@ -16,7 +19,7 @@ export class MateRequestRecords {
     @DeleteDateColumn()
     deleted_at: Date | null;
 
-    @Column({ name: 'Sender_id', primary: true })
+    @Column({ name: 'Sender_id', nullable: true })
     Sender_id: number;
 
     @Column({ name: 'Receiver_id', nullable: true })
