@@ -36,7 +36,7 @@ async function bootstrap() {
   .addTag('')
   .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  process.env.NODE_ENV == 'DEV' && SwaggerModule.setup('api', app, document);
 
   await app.listen(port, '0.0.0.0',  async () => {
     console.log(`[*] listening on ${port}`);
