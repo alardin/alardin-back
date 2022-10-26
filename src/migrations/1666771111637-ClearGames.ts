@@ -13,6 +13,9 @@ export class ClearGames1666769955920 implements MigrationInterface {
             `DELETE FROM alarm_results`
         );
         await queryRunner.query(
+            `DELETE FROM game_purchase_records`
+        );
+        await queryRunner.query(
             `DELETE FROM games`
         );
         await queryRunner.query(
