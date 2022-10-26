@@ -23,11 +23,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
 import { MongooseModule } from '@nestjs/mongoose'
 import { AlarmMembers } from './entities/alarm.members.entity';
+import { GameData, GameDataSchema } from './schemas/gameData.schemas';
 import { Alarms } from './entities/alarms.entity';
+import { UserPlayData, UserPlayDataScheme } from './schemas/userPlayData.schemas';
+import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
 import { Mates } from './entities/mates.entity';
-import { MateRequestRecords } from './entities/mate-request.records.entity';
-import { Users } from './entities/users.entity';
-import { Games } from './entities/games.entity';
+import { AlarmService } from './alarm/alarm.service';
+import { MateService } from './mate/mate.service';
 dotenv.config();
 
 @Module({
@@ -43,10 +45,14 @@ dotenv.config();
         entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
         migrations: ['../src/migrations/*.ts'],
         logging: true,
-        synchronize: false,
-        timezone: 'UTC'
+        synchronize: false
     }),
-    TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates, MateRequestRecords, Users, Games]),
+    MongooseModule.forFeature([
+      { name: GameData.name, schema: GameDataSchema },
+      { name: UserPlayData.name, schema: UserPlayDataScheme },
+      { name: GameMeta.name, schema: GameMetaSchema }
+    ]),
+    TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates]),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
@@ -54,12 +60,16 @@ dotenv.config();
       host: process.env.REDIS_HOST,
       port: +process.env.REDIS_PORT
     }),
-    MongooseModule.forRoot(`mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`),
-    MateModule,
+    MongooseModule.forRoot(
+      process.env.NODE_ENV == 'DEV' ? `mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`
+      : `mongodb+srv://alardin:${encodeURIComponent(process.env.MONGODB_PASSWORD)}@${process.env.MONGODB_HOST}/?retryWrites=true&w=majority`
+    ),
+    MateModule, 
     GameModule, 
     AlarmModule,
     AgoraModule, 
-    AssetsModule, PushNotificationModule, KakaoModule, AgoraModule, AwsModule, UsersModule, AuthModule],
+    AssetsModule, 
+    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_FILTER,
