@@ -28,7 +28,7 @@ export class Games {
 
     @ApiProperty({
         name: 'category',
-        example: 'image'
+        example: 'image | text'
     })
     @IsNotEmpty()
     @IsMatchWithRegex(/image|text/)
