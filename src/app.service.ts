@@ -7,8 +7,6 @@ import { Users } from "./entities/users.entity";
 @Injectable()
 export class AppService {
     constructor(
-        @InjectRepository(MateRequestRecords)
-        private readonly mateReqRepository: Repository<MateRequestRecords>
     ) {
         
     }
