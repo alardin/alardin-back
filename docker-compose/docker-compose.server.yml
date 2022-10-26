@@ -21,6 +21,7 @@ services:
     container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     volumes:
       - .:/usr/src/app
+      - /home/ec2-user/firebase:/home/node/firebase
     env_file:
       - ../.env
     network_mode: host
