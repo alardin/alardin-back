@@ -34,10 +34,10 @@ export class AppController {
   }
 
 
-  @Public()
-  @Post('insert-data')
-  async insertData(@Body('data') data: InsertDto[]) {
-    return await this.appService.insert(data);
+  // @Public()
+  // @Post('insert-data')
+  // async insertData(@Body('data') data: InsertDto[]) {
+  //   return await this.appService.insert(data);
     
-  }
+  // }
 }

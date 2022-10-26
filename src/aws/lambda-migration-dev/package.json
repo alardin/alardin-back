@@ -1,0 +1,9 @@
+{
+  "name": "alardin-back-notion",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@notionhq/client": "^1.0.4"
+  }
+}

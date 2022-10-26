@@ -40,10 +40,9 @@ export class AlarmService {
         private readonly pushNotiService: PushNotificationService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
         private readonly schedulerRegistry: SchedulerRegistry,
-        private readonly logger: Logger,
         @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>
     ) {
-        this.logger = new Logger(AlarmService.name);
+        
     }
 
     async createNewAlarm(myId: number, body: CreateAlarmDto) {
@@ -80,29 +79,30 @@ export class AlarmService {
             });
 
             const newChannel = await queryRunner.manager.getRepository(GameChannel).save({
+                id: newAlarm.id,
                 name: String(newAlarm.id),
                 Alarm_id: newAlarm.id,
                 player_count: 0,
             });
             // Not keyword, image
             // Data1, Data2
-            const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
-            const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
+            // const { randomKeywordId, selectedGPIs: images1, keyword: keyword1 } = await this.gameService.getImagesForGame(myId, body.Game_id);
+            // const { selectedGPIs: images2, keyword: keyword2 } = await this.gameService.getImagesForGame(myId, body.Game_id, randomKeywordId);
             
-            for await (let img of images1) {
-                await queryRunner.manager.getRepository(GameUsedImages).save({
-                    Game_channel_id: newChannel.id,
-                    keyword: keyword1,
-                    Game_play_image_id: img.id
-                });
-            }
-            for await (let img of images2) {
-                await queryRunner.manager.getRepository(GameUsedImages).save({
-                    Game_channel_id: newChannel.id,
-                    keyword: keyword2,
-                    Game_play_image_id: img.id
-                });
-            }
+            // for await (let img of images1) {
+            //     await queryRunner.manager.getRepository(GameUsedImages).save({
+            //         Game_channel_id: newChannel.id,
+            //         keyword: keyword1,
+            //         Game_play_image_id: img.id
+            //     });
+            // }
+            // for await (let img of images2) {
+            //     await queryRunner.manager.getRepository(GameUsedImages).save({
+            //         Game_channel_id: newChannel.id,
+            //         keyword: keyword2,
+            //         Game_play_image_id: img.id
+            //     });
+            // }
 
             await queryRunner.manager.getRepository(Alarms).createQueryBuilder()
                         .update()
@@ -114,7 +114,7 @@ export class AlarmService {
             const month = new Date().getMonth();
             const year = new Date().getFullYear();
             
-            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, hour - 9, minute, -30);
+            const Before30secondsThanAlarm = new Date(year, month, hour >= 9 ? date : date + 1, process.env.NODE_ENV == 'dev' ? hour : hour - 9, minute, -30);
             const job = new CronJob(Before30secondsThanAlarm, async () => {
                 const alarmMemberIds = await this.alarmMembersRepository.find({
                     where: { Alarm_id: newAlarm.id },
@@ -126,10 +126,10 @@ export class AlarmService {
                 let gameDataForAlarm;
                 switch(newAlarm.Game_id) {
                     case 1:
-                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds);
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds);
                         break
                     case 2:
-                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.Game_id, userIds, body.data);
+                        gameDataForAlarm = await this.gameService.readyForGame(newAlarm.id, userIds, body.data);
                         break
                     default:
                         throw new BadRequestException('Invalid Game_id')
@@ -152,9 +152,7 @@ export class AlarmService {
         if (!newAlarm) {
             return null;
         }
-        await this.cacheManager.del(`${myId}_hosted_alarms`);
-        await this.cacheManager.del(`${myId}_joined_alarms`);
-        await this.deleteMatesCache(myId);
+        await this.clearAlarmsCache(myId);
         return newAlarm.id;
     }
 
@@ -180,16 +178,36 @@ export class AlarmService {
     
     async joinAlarm(me: Users, alarmId: number) {
         const alarm = await this.getAlarmById(alarmId);
+        const alarmMemberIds = await this.alarmMembersRepository.find({
+            where: { Alarm_id: alarm.id },
+            select: {
+                User_id: true
+            }
+        });
+        const userIds = alarmMemberIds.map(m => m.User_id).filter(id => id != me.id);
         const queryRunner = this.dataSource.createQueryRunner();
+        let validFlag = false;
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
             if (alarm.is_private) {
+                // member list 중 한명이라도 mate이면 valid
                 const validMate = await this.mateService.validateMate(me.id, alarm.Host_id);
                 if (!validMate) {
                     throw new ForbiddenException();
                 }
+            } else {
+                for await (let uId of userIds) {
+                    const isValid = await this.mateService.validateMate(me.id, uId);
+                    if (isValid) {
+                        validFlag = true;
+                        break;
+                    } 
+                }
             }
+            if (!validFlag) {
+                throw new ForbiddenException('Not Allowed to join');
+            } 
             if (alarm.member_count >= alarm.max_member) {
                 throw new ForbiddenException();
             }
@@ -210,18 +228,17 @@ export class AlarmService {
         } finally {
             await queryRunner.release();
         }
-        await this.cacheManager.del(`${me.id}_hosted_alarms`);
-        await this.cacheManager.del(`${me.id}_joined_alarms`);
-        await this.deleteMatesCache(me.id);
+        await this.clearAlarmsCache(me.id);
+        // await this.deleteMembersCache(me.id, alarm.id);
         return 'OK';
         
     }
 
-    async sendMessageToAlarm(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
+    async sendMessageToAlarmByHost(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
         const { Members: members } = await this.alarmsRepository.findOne({
             where: {
-                id: 29,
-                Host_id: 2
+                id: alarmId,
+                Host_id: myId
             },
             select: {
                 id: true,
@@ -239,12 +256,41 @@ export class AlarmService {
         if (!members) {
             throw new ForbiddenException();
         }
-        const membersDeviceTokens = members.map(m => m.device_token);
+        const membersDeviceTokens = members.filter((m) => m.id !== myId).map(m => m.device_token);
         await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
-        return 'OK';
+        return 'OK';    
         
-        
-        
+    }
+
+    async sendMessageToAlarmByMember(myId: number, alarmId: number, title: string, body: string, data?: { [key:string]: string }) {
+        const { Members: members } = await this.alarmsRepository.findOne({
+            where: {
+                id: alarmId
+            },
+            select: {
+                id: true,
+                Host_id: true,
+                Game_id: true,
+                Members: {
+                    id: true,
+                    device_token: true
+                }
+            },
+            relations: {
+                Members: true
+            }
+        });
+        if (!members) {
+            throw new ForbiddenException('Not allowed to send message');
+        }
+        const memberIds = members.filter((m) => m.id !== myId).map(m => m.id);
+        const membersDeviceTokens = members.map(m => m.device_token);
+        if(!memberIds.includes(myId)) {
+            throw new ForbiddenException('Not allowed to send message');
+        }
+
+        await this.pushNotiService.sendMulticast(membersDeviceTokens, title, body, data);
+        return 'OK'; 
     }
 
     // alarm 조회할 권한
@@ -285,17 +331,18 @@ export class AlarmService {
     async deleteAlarm(myId: number, alarmId: number) {
         await this.validateAlarmHost(myId, alarmId);
         try {
+            const alarm = await this.alarmsRepository.findOneOrFail({ where: { id: alarmId }});
+            await this.sendMessageToAlarmByHost(myId, alarmId, '알람방 삭제', `방장이 ${alarm.time} 알람을 삭제했습니다`, {});
             await this.alarmsRepository.createQueryBuilder()
                 .softDelete()
                 .from(Alarms)
                 .where('id = :id', { id: alarmId })
                 .execute();
+            // await this.clearAlarmsCache(myId);
+            // await this.deleteMembersCache(myId, alarmId);
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
-        await this.cacheManager.del(`${myId}_hosted_alarms`);
-        await this.cacheManager.del(`${myId}_joined_alarms`);
-        await this.deleteMatesCache(myId);
         return "OK";
     }
 
@@ -316,5 +363,35 @@ export class AlarmService {
     async deleteMatesCache(myId: number) {
         const mateIds = await this.mateService.getMateIds(myId);
         mateIds.map(async (mId) => await this.cacheManager.del(`${mId}_mates_alarm_list`));
+    }
+
+    async deleteMembersCache(myId: number, alarmId: number) {
+        const { Members: members } = await this.alarmsRepository.findOne({
+            where: {
+                id: alarmId
+            },
+            select: {
+                Members: {
+                    id: true,
+                }
+            },
+            relations: {
+                Members: true
+            }
+        });
+        if (!members) {
+            throw new ForbiddenException();
+        }
+        const memberIds = members.map(m => m.id);
+        memberIds.map(async (mId) => { 
+            if (mId != myId) {
+                await this.clearAlarmsCache(mId);
+            }
+        });
+    }
+    async clearAlarmsCache(myId: number) {
+        await this.cacheManager.del(`${myId}_hosted_alarms`);
+        await this.cacheManager.del(`${myId}_joined_alarms`);
+        await this.deleteMatesCache(myId);
     }
 }

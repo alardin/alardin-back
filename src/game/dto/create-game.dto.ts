@@ -8,7 +8,7 @@ export class CreateGameDto extends PickType(Games, ['name', 'category', 'price',
         example: ['https://nestjs.com/img/logo-small.svg', 'https://nestjs.com/img/logo-small.svg']
     })
     @IsArray()
-    @IsUrl({ each: true })
+    @IsString({ each: true })
     @IsNotEmpty()
     screenshot_urls: string[];
 
@@ -24,7 +24,7 @@ export class CreateGameDto extends PickType(Games, ['name', 'category', 'price',
         example: ['keyword', 'images']
     })
     @IsArray()
-    @IsString()
+    @IsString({ each: true })
     keys: string[];
 
 }

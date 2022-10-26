@@ -86,9 +86,14 @@ export class AlarmController {
         return await this.alarmService.getAlarm(user.id, alarmId);
     }
 
-    @Post('message/:alarmId')
-    async sendMessageToAlarm(@User() user, @Param('alarmId') alarmId: number, @Body() sendMessageDto: SendPushDto) {
-        return await this.alarmService.sendMessageToAlarm(user.id, alarmId, sendMessageDto.title, sendMessageDto.body, sendMessageDto.data);
+    @Post('message/host/:alarmId')
+    async sendMessageToAlarmByHost(@User() user, @Param('alarmId') alarmId: number, @Body() sendMessageDto: SendPushDto) {
+        return await this.alarmService.sendMessageToAlarmByHost(user.id, alarmId, sendMessageDto.title, sendMessageDto.body, sendMessageDto.data);
+    }
+
+    @Post('message/member/:alarmId')
+    async sendMessageToAlarmByMember(@User() user, @Param('alarmId') alarmId: number, @Body() sendMessageDto: SendPushDto) {
+        return await this.alarmService.sendMessageToAlarmByMember(user.id, alarmId, sendMessageDto.title, sendMessageDto.body, sendMessageDto.data);
     }
 
 }

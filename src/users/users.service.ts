@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, LoggerService, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessAndRefreshToken } from 'src/auth/auth';
 import { AuthService } from 'src/auth/auth.service';
@@ -45,7 +45,8 @@ export class UsersService {
         private readonly alarmResultsRepository: Repository<AlarmResults>,
         @InjectRepository(Mates)
         private readonly matesRepository: Repository<Mates>,
-        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+        @Inject(Logger) private readonly logger: LoggerService,
     ) {}
         private readonly adminCandidate = process.env.ADMIN_EMAILS.split(' ');
     async auth(tokens: AuthDto): Promise<AccessAndRefreshToken> {
@@ -200,50 +201,12 @@ export class UsersService {
     
     async getUsersHostedAlarm(myId: number): Promise<Alarms[]> {
 
-        const cached = await this.cacheManager.get<Alarms[]>(`${myId}_hosted_alarms`);
-        if (cached) {
-            return cached;
-        }
-        const hostedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
-        .innerJoin('alarms.Host', 'h', 'h.id = :myId', { myId })
-        .innerJoin('alarms.Game', 'game')
-        .innerJoin('alarms.Members', 'members')
-        .select([
-            'alarms.id',
-            'alarms.time',
-            'alarms.is_repeated',
-            'alarms.is_private',
-            'alarms.music_volume',
-            'alarms.max_member',
-            'alarms.created_at', 
-            'game.id', 
-            'game.name',
-            'game.thumbnail_url',
-            'members.id', 
-            'members.nickname',
-            'members.thumbnail_image_url'
-        ])
-        .getMany();
-        if (hostedAlarms.length != 0) {
-            await this.cacheManager.set(`${myId}_hosted_alarms`, hostedAlarms, { ttl: 60 * 60 * 24 });
-        }
-        return hostedAlarms;
-    }
-
-    async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
-
-        const cached = await this.cacheManager.get<Alarms[]>(`${myId}_joined_alarms`);
-        if (cached) {
-            return cached;
-        }
-        const joinedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
-                .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId })
-                .select([
-                    'alarms.id',
-                ])
-                .getMany();
-        const joinedAlarmsIds = joinedAlarms.map(m => m.id);
-        const returnJoinedAlarms = await this.alarmsRepository.find({
+        // const cached = await this.cacheManager.get<Alarms[]>(`${myId}_hosted_alarms`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
+        let hostedAlarms = await this.alarmsRepository.find({
             select: {
                 id: true,
                 name: true,
@@ -253,10 +216,17 @@ export class UsersService {
                 music_name: true,
                 max_member: true,
                 created_at: true,
+                Host_id: true,
+                Game_id: true,
                 Game: {
                     id: true,
                     name: true,
                     thumbnail_url: true
+                },
+                Host: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true
                 },
                 Members: {
                     id: true,
@@ -265,25 +235,90 @@ export class UsersService {
                 }
             },
             where: {
-                id: In(joinedAlarmsIds)
+                Host_id: myId
             },
             relations: {
                 Game: true,
-                Members: true
+                Members: true,
+                Host: true
             }
         });
-        if (returnJoinedAlarms.length != 0) {
-            await this.cacheManager.set(`${myId}_joined_alarms`, returnJoinedAlarms, { ttl: 60 * 60 * 24 });
-        }
+        hostedAlarms = hostedAlarms.map(({ Host, ...withOutHost}) => {
+            withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
+            withOutHost.Members = [Host, ...withOutHost.Members];
+            return {...withOutHost, Host};
+        });
+        await this.cacheManager.set(`${myId}_hosted_alarms`, hostedAlarms, { ttl: 60 * 60 * 24 });
+        return hostedAlarms;
+    }
+
+    async getUsersJoinedAlarm(myId: number): Promise<Alarms[]> {
+
+        // const cached = await this.cacheManager.get<Alarms[]>(`${myId}_joined_alarms`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
+        const joinedAlarms = await this.alarmsRepository.createQueryBuilder('alarms')
+                .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId })
+                .select([
+                    'alarms.id',
+                ])
+                .getMany();
+        const joinedAlarmsIds = joinedAlarms.map(m => m.id);
+        let returnJoinedAlarms = await this.alarmsRepository.find({
+            select: {
+                id: true,
+                name: true,
+                time: true,
+                is_repeated: true,
+                is_private: true,
+                music_name: true,
+                max_member: true,
+                created_at: true,
+                Host_id: true,
+                Game_id: true,
+                Game: {
+                    id: true,
+                    name: true,
+                    thumbnail_url: true
+                },
+                Host: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true
+                },
+                Members: {
+                    id: true,
+                    nickname: true,
+                    thumbnail_image_url: true,
+                }
+            },
+            where: {
+                id: In(joinedAlarmsIds),
+            },
+            relations: {
+                Game: true,
+                Members: true,
+                Host: true
+            }
+        });
+        returnJoinedAlarms = returnJoinedAlarms.map(({ Host, ...withOutHost}) => {
+            withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
+            withOutHost.Members = [Host, ...withOutHost.Members];
+            return {...withOutHost, Host};
+        });
+        await this.cacheManager.set(`${myId}_joined_alarms`, returnJoinedAlarms, { ttl: 60 * 60 * 24 });
         return returnJoinedAlarms;
     }
     
     async getUserHistoryByAlarm(myId: number) {
 
-        const cached = await this.cacheManager.get(`${myId}_records_by_alarm`);
-        if (cached) {
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<AlarmPlayRecords[]>(`${myId}_records_by_alarm`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         const recordsByAlarm = await this.alarmPlayRecordsRepository.find({
             where: {
                 User_id: myId,
@@ -336,10 +371,11 @@ export class UsersService {
     }
     
     async getUserHistoryByCount(myId: number) {
-        const cached = await this.cacheManager.get(`${myId}_records_by_count`);
-        if (cached) {
-            return cached;
-        }
+        // const cached = await this.cacheManager.get<MatePlayHistory[]>(`${myId}_records_by_count`);
+        // if (cached && cached.length != 0) {
+        //     this.logger.log('Hit Cache');
+        //     return cached;
+        // }
         const SendedMates = await this.matesRepository.createQueryBuilder('m')
                     .select([
                         'Receiver_id as id',

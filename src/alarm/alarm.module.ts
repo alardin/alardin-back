@@ -20,6 +20,7 @@ import { AlarmService } from './alarm.service';
     TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, GameUsedImages, Users, Games, Mates]),
     MongooseModule.forFeature([{ name: GameData.name, schema: GameDataSchema }])],
   controllers: [AlarmController],
-  providers: [AlarmService, Logger]
+  providers: [AlarmService, Logger],
+  exports: [AlarmService]
 })
 export class AlarmModule {}

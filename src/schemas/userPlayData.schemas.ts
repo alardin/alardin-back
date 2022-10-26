@@ -5,9 +5,13 @@ export type UserPlayDataDocument = UserPlayData & Document;
 @Schema()
 export class UserPlayData {
     
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true })
     User_id: Number;
 
+
+    @Prop({ required: true })
+    Game_id: Number;
+    
     @Prop({ type: Object, required: true })
     play_data: Object;
 }

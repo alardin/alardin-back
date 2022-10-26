@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
@@ -53,5 +53,9 @@ export class AuthService {
                 secret: process.env.JWT_SECRET
             })
         };
+    }
+
+    async appleAuth() {
+        
     }
 }
