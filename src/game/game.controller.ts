@@ -63,9 +63,19 @@ export class GameController {
         return await this.gameService.createNewGame(body);
     }
 
+        @ApiOperation({
+            summary: '게임 데이터 추가',
+            description: '데이터 확정되면 추가'
+        })
+        @ApiBody({
+            type: [InsertDto]
+        })
+        @ApiResponse({
+            type: OnlyStatusResponse
+        })
     @UseGuards(new RoleGuard(new Reflector()))
     @ForRoles(['admin'])
-    @Post()
+    @Post('data')
     async insertGameData(@Body('data') data: InsertDto[]) {
         return await this.gameService.insertGameData(data);
     }

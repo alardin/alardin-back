@@ -10,8 +10,6 @@ export class InsertDto {
     @IsNotEmpty()
     name: string;
 
-
-
     @ApiProperty({
         name: 'data',
         example: {
