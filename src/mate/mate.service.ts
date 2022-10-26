@@ -181,7 +181,7 @@ export class MateService {
                 );
                 break;
             case 'REJECT':
-                await this.updateMateRequest(me.id, sender.id, false);
+                await this.updateMateRequest(sender.id, me.id, false);
                 break;
             default:
                 break;
