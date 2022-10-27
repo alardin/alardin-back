@@ -17,13 +17,13 @@ services:
       - 3000:3000
 
   api-prod:
+    env_file:
+        - ../.env
     image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
     container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     volumes:
       - .:/usr/src/app
       - /home/ec2-user/firebase:/home/node/firebase
-    env_file:
-      - ../.env
     network_mode: host
     ports:
       - 3000:3000
