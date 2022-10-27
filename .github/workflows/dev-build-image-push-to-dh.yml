@@ -13,8 +13,6 @@ on:
 jobs:
   push-to-ecr:
     runs-on: ubuntu-latest
-    env:
-      S3_BUCKET_NAME: "alardin-back-deploy"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -39,10 +37,12 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
   deploy-on-ec2:
+    env:
+      S3_BUCKET_NAME: "alardin-back-deploy"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Make .zip file
         run: mv appspec.dev.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
         shell: bash
