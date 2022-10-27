@@ -42,7 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        name: Make .zip file
+      
+      - name: Make .zip file
         run: mv appspec.dev.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
         shell: bash
 
