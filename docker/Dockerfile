@@ -46,6 +46,8 @@ COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 COPY --chown=node:node --from=build /usr/src/app/firebase /usr/src/app/firebase
 
+RUN echo 1
+
 RUN cat /usr/src/app/firebase/service-account.json
 
 ENV GOOGLE_APPLICATION_CREDENTIALS /usr/src/app/firebase/service-account.json
