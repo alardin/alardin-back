@@ -44,11 +44,13 @@ FROM node:16-alpine As production
 
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
-COPY --chown=node:node --from=build /usr/src/app/firebase /usr/src/app/firebase
+COPY --chown=node:node --from=build /usr/src/app/firebase/service-account.json /usr/src/app/firebase/service-account.json
 
 RUN echo 1
 
-RUN cat /usr/src/app/firebase/service-account.json
+RUN ls /usr/src/app -l
+
+RUN ls /usr/src/app/firebase -l
 
 ENV GOOGLE_APPLICATION_CREDENTIALS /usr/src/app/firebase/service-account.json
 
