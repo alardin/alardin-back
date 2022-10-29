@@ -15,8 +15,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: test
         env:
-          KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        run: echo "$KEY";
+          KEY: ${{ secrets.FIREBASE_ACCOUNT }}
+        run: echo "$KEY" > file.txt && cat file.txt
         shell: bash
 
     
