@@ -13,9 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+      - env:
       - name: test
-        run: echo ${{ secrets.AWS_ACCESS_KEY_ID }}
+        env:
+          KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        run: echo $KEY;
         shell: bash
 
     
