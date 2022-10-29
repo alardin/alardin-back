@@ -53,6 +53,7 @@ jobs:
           FIREBASE_ACCOUNT: ${{ secrets.FIREBASE_ACCOUNT }}
         run: echo "$FIREBASE_ACCOUNT" > ./firebase/service-account.json
         shell: bash
+
       - name: Make .zip file
         run: mv appspec.dev.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
         shell: bash
