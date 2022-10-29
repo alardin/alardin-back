@@ -16,7 +16,7 @@ jobs:
       - name: test
         env:
           KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        run: echo $KEY;
+        run: echo "$KEY";
         shell: bash
 
     
