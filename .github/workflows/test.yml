@@ -21,7 +21,7 @@ jobs:
       - name: Add Firebase file
         env:
           KEY: ${{ secrets.FIREBASE_ACCOUNT }}
-        run: echo "$KEY > ./firebase/service-account.json
+        run: echo "$KEY" > ./firebase/service-account.json
         shell: bash
 
 
