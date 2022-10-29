@@ -26,7 +26,7 @@ COPY --chown=node:node package*.json ./
 
 # To use Nest cli which is a dev dependency, Copy node_modules from the development stage.
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
-COPY --chown=node:node . .
+COPY --chown=node:node ./ ./
 
 RUN npm run build
 
