@@ -34,12 +34,14 @@ services:
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
   api-test:
-    image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
-    container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     depends_on:
       - redis
+    image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
+    container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     env_file:
       - ../.env
+    volumes:
+      - .:/usr/src/app
     network_mode: host
     ports:
       - 3000:3000
