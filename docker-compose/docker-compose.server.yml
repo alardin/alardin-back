@@ -39,9 +39,9 @@ services:
     env_file:
       - ../.env
     network_mode: host
-    # volumes:
+    volumes:
       # - .:/usr/src/app
-    #   - /home/ec2-user/firebase:/usr/src/app/firebase
+      - /home/ec2-user/firebase:/usr/src/app/firebase
     ports:
       - 3000:3000
     logging:
