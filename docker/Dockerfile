@@ -26,7 +26,7 @@ COPY --chown=node:node package*.json ./
 
 # To use Nest cli which is a dev dependency, Copy node_modules from the development stage.
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
-COPY  --chown=node:node . .
+COPY --chown=node:node . .
 
 RUN npm run build
 
@@ -46,7 +46,7 @@ WORKDIR /usr/src/app
 
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
-COPY  --chown=node:node --from=build /usr/src/app/firebase/service-account.json ./firebase/service-account.json
+COPY --chown=node:node --from=build /usr/src/app/firebase/service-account.json ./firebase/service-account.json
 
 ENV GOOGLE_APPLICATION_CREDENTIALS /usr/src/app/firebase/service-account.json
 
