@@ -325,24 +325,14 @@ export class GameService {
       .andWhere('name = :name', { name: String(alarm.id) })
       .execute();
 
-    let gameData = await this.cacheManager.get(`alarm-${alarm.id}-game-data`);
-    
-    if (!gameData) {
-      const alarmMemberIds = await this.alarmMembersRepository.find({
-        where: { Alarm_id: alarm.id },
-        select: {
-          User_id: true,
-        },
-      });
-      const userIds = alarmMemberIds.map((m) => m.User_id);
-      gameData = await this.readyForGame(alarm.id, userIds);
-      await this.cacheManager.set(`alarm-${alarm.id}-game-data`, gameData, { ttl: 60 * 10 });
-    } else {
-      this.logger.log('Hit Game Cache!')
-      this.logger.log(gameData);
-    }
-
-    await this.alarmService.clearAlarmsCache(myId);
+    const alarmMemberIds = await this.alarmMembersRepository.find({
+      where: { Alarm_id: alarm.id },
+      select: {
+        User_id: true,
+      },
+    });
+    const userIds = alarmMemberIds.map((m) => m.User_id);
+    const gameData = await this.readyForGame(alarm.id, userIds);
 
     return {
       rtcToken,

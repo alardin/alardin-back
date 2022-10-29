@@ -57,7 +57,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.6.4",
     "mysql2": "^2.3.3",
-    "nest-winston": "^1.7.0",
+    "nest-winston": "^1.8.0",
     "node-schedule": "^2.1.0",
     "passport-jwt": "^4.0.0",
     "pm2": "^5.2.0",
@@ -67,7 +67,8 @@
     "socket.io": "^4.5.1",
     "typeorm": "^0.3.7",
     "uuid": "^8.3.2",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
