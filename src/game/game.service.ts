@@ -128,7 +128,7 @@ export class GameService {
                 name: d.name
             }).exec();
             if (!game) {
-                throw new BadRequestException('Invalid Game_id');
+                throw new BadRequestException('Invalid name');
             }
             if ( !Object.keys(d.data).every((k) => game.keys.includes(k)) || !game.keys.every((k) => Object.keys(d.data).includes(k))) {
                 throw new BadRequestException('Invalid keys');

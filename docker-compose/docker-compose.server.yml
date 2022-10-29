@@ -10,7 +10,7 @@ services:
     volumes:
       - .:/usr/src/app
     env_file:
-      - ../.env
+      - ../.dev.env
     environment:
       - DB_HOST=host.docker.internal
     ports:
@@ -34,10 +34,12 @@ services:
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
   api-test:
+    build: 
+      dockerfile: docker/Dockerfile
+      context: ../
+      target: production
     depends_on:
       - redis
-    image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
-    container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     volumes:
       - .:/usr/src/app
       - /home/ec2-user/firebase:/home/node/firebase

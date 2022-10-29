@@ -18,6 +18,7 @@ import { InvalidTokenException } from 'src/common/exceptions/invalid-token.excep
 import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Mates } from 'src/entities/mates.entity';
 import { Cache } from 'cache-manager';
+import { MateService } from 'src/mate/mate.service';
 
 type MatePlayHistory = {
     id: number;
@@ -34,6 +35,7 @@ export class UsersService {
     constructor(
         private readonly kakaoService: KakaoService,
         private readonly authService: AuthService,
+        private readonly mateService: MateService,
         private dataSource: DataSource,
         @InjectRepository(Users)
         private readonly usersRepository: Repository<Users>,
@@ -60,6 +62,17 @@ export class UsersService {
             kakao_access_token: null,
             kakao_refresh_token: null
         });
+    }
+
+    async deleteMates(me: Users) {
+        try {
+            const mateIds = await this.mateService.getMateIds(me.id);
+            mateIds.map(async (mId) => await this.mateService.removeMate(me.id, mId));
+        } catch(e) {
+            throw new ForbiddenException('Error: Deleting Mates');
+        }
+        return 'OK';
+        //removeMate
     }
 
     async deleteUser(userId: number) {

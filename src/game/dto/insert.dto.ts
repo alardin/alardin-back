@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsObject, IsString } from "class-validator";
 
 export class InsertDto {
+
     @ApiProperty({
         name: 'name',
         example: '좋아한다는 착각'

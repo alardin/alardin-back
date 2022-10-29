@@ -34,7 +34,6 @@ export class MateService {
         private readonly usersRepository: Repository<Users>,
         @InjectRepository(MateRequestRecords)
         private readonly mateReqRepository: Repository<MateRequestRecords>,
-        private readonly usersService: UsersService,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -45,18 +44,7 @@ export class MateService {
     async getMateList(myId: number):Promise<TMateList> {
 
         const mates = await this.getMates(myId);
-        const mateIds = mates.map(m => m.id);
-        const joinedAlarms = await this.usersService.getUsersJoinedAlarm(myId);
-        const hostedAlarms = await this.usersService.getUsersHostedAlarm(myId);
-        const myAlarms = [...joinedAlarms, ...hostedAlarms];
-        for await (let mId of mateIds) {
-            let alarmCount = 0;
-            for await (let alarm of myAlarms) {
-                alarmCount = Number(alarm.Members.map(m => m.id).includes(mId));
-            }
-            // mateFinished에 추가
-        }
-        
+
         return {
             mates
         };
@@ -66,17 +54,6 @@ export class MateService {
 
         const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
         const mates = await this.getMates(myId);
-        const mateIds = mates.map(m => m.id);
-        const joinedAlarms = await this.usersService.getUsersJoinedAlarm(myId);
-        const hostedAlarms = await this.usersService.getUsersHostedAlarm(myId);
-        const myAlarms = [...joinedAlarms, ...hostedAlarms];
-        for await (let mId of mateIds) {
-            let alarmCount = 0;
-            for await (let alarm of myAlarms) {
-                alarmCount = Number(alarm.Members.map(m => m.id).includes(mId));
-            }
-            // mateFinished에 추가
-        }
         await this.cacheManager.set(`${myId}_mates`, {
             mates,
             kakaoFriends: friends  

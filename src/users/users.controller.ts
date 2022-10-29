@@ -41,6 +41,7 @@ export class UsersController {
     @UseGuards(LoggedInGuard)    
     @Delete()
     async deleteUser(@User() user: Users) {
+        await this.usersService.deleteMates(user);
         await this.usersService.destroyToken(user.id);
         return await this.usersService.deleteUser(user.id);
     }
