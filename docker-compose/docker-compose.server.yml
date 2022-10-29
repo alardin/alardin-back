@@ -34,22 +34,20 @@ services:
         awslogs-region: "ap-northeast-2"
         awslogs-stream: "backend-nestjs"
   api-test:
-    build: 
-      dockerfile: docker/Dockerfile
-      context: ../
-      target: production
+    image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
+    container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     depends_on:
       - redis
     env_file:
       - ../.env
     ports:
       - 3000:3000
-    # logging:
-    #   driver: awslogs
-    #   options:
-    #     awslogs-group: "alardin-back-dev"
-    #     awslogs-region: "ap-northeast-2"
-    #     awslogs-stream: "backend-nestjs"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: "alardin-back-dev"
+        awslogs-region: "ap-northeast-2"
+        awslogs-stream: "backend-nestjs"
   redis: # Name of container
     image: redis
     ports:
