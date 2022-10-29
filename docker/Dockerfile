@@ -42,9 +42,11 @@ USER node
 
 FROM node:16-alpine As production
 
+WORKDIR /usr/src/app
+
+COPY --chown=node:node ./firebase ./firebase
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
-COPY --chown=node:node --from=development /usr/src/app/firebase /usr/src/app/firebase
 
 ENV GOOGLE_APPLICATION_CREDENTIALS /usr/src/app/firebase/service-account.json
 
