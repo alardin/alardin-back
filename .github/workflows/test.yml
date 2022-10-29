@@ -1,0 +1,21 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Develop deploy to EC2 and Dockerhub
+# This is a basic workflow to help you get started with Actions
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: [ "feature/ecs-test" ]
+
+jobs: 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: test
+        run: echo ${{ secrets.AWS_ACCESS_KEY_ID }}
+        shell: bash
+
+    
