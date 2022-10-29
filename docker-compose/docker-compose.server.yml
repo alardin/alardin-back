@@ -40,6 +40,8 @@ services:
       target: production
     env_file:
       - ../.env
+    volumes:
+      - .:/usr/src/app
     network_mode: host
     ports:
       - 3000:3000
