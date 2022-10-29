@@ -42,15 +42,14 @@ services:
       - redis
     env_file:
       - ../.env
-    network_mode: host
     ports:
       - 3000:3000
-    logging:
-      driver: awslogs
-      options:
-        awslogs-group: "alardin-back-dev"
-        awslogs-region: "ap-northeast-2"
-        awslogs-stream: "backend-nestjs"
+    # logging:
+    #   driver: awslogs
+    #   options:
+    #     awslogs-group: "alardin-back-dev"
+    #     awslogs-region: "ap-northeast-2"
+    #     awslogs-stream: "backend-nestjs"
   redis: # Name of container
     image: redis
     ports:
