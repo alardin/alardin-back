@@ -34,8 +34,10 @@ services:
   api-test:
     depends_on:
       - redis
-    image: ${DOCKER_REGISTRY}/${DOCKER_APP_NAME}:${IMAGE_TAG}
-    container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
+    build: 
+      dockerfile: docker/Dockerfile
+      context: ..
+      target: production
     env_file:
       - ../.env
     network_mode: host
