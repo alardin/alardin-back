@@ -20,6 +20,5 @@ then
     docker rmi "$images"
 fi
 
-docker-compose -f docker-compose/docker-compose.server.yml pull api-test && \
-    docker-compose -f docker-compose/docker-compose.server.yml up -d api-test
+docker-compose -f docker-compose/docker-compose.server.yml up -d api-test
 # docker-compose -f docker-compose/docker-compose.server.yml up -d --build api-prod
