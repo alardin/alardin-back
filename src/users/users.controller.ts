@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Query, Req, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Users } from 'src/entities/users.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
@@ -143,6 +143,21 @@ export class UsersController {
         return await this.usersService.editUserProfile(user.id, body);
     }
 
+        @ApiOperation({
+            summary: '프로필 사진 업로드(업데이트)'
+        })
+        @ApiConsumes('multipart/form-data')
+        @ApiBody({
+            schema: {
+                type: 'object',
+                properties: {
+                    'profile_image': {
+                        type: 'string',
+                        format: 'binary',
+                    },
+                },
+            },
+        })
     @UseInterceptors(FileInterceptor('profile_image'))
     @Post('profile-image')
     async updateProfileImage(
