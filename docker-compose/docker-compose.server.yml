@@ -4,11 +4,9 @@ services:
   api-dev:
     build: 
       dockerfile: docker/Dockerfile
-      context: ../
+      context: ..
       target: development
     command: npm run start:dev
-    volumes:
-      - .:/usr/src/app
     env_file:
       - ../.dev.env
     environment:
@@ -40,8 +38,6 @@ services:
     container_name: ${DOCKER_APP_NAME}-${IMAGE_TAG}
     env_file:
       - ../.env
-    volumes:
-      - .:/usr/src/app
     network_mode: host
     ports:
       - 3000:3000
