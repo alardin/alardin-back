@@ -360,9 +360,12 @@ export class GameService {
     let gameDataForAlarm;
     switch (Game_id) {
       case 1:
-        gameDataForAlarm = await this.prepareGame1(Game_id, userIds);
+        gameDataForAlarm = await this.prepareGamePicoke(Game_id, userIds);
         break;
       case 2:
+        gameDataForAlarm = await this.prepareGameDeleteRow(1, userIds);
+        break;
+      case 3:
         const [ dataForGame ] = await this.gameDataModel
           .find(
             {
@@ -371,21 +374,19 @@ export class GameService {
             { data: true },
           )
           .exec();
-        gameDataForAlarm = await this.prepareTextGame(
+        gameDataForAlarm = await this.prepareGameFindCarol(
           Game_id,
           dataForGame.data['title'],
           userIds,
         );
-        case 3:
-          gameDataForAlarm = await this.prepareGame3(1, userIds);
-          break;
+        break;
       default:
         throw new BadRequestException('Invalid GameId');
     }
     return gameDataForAlarm;
   }
 
-  async prepareGame1(gameId: number, userIds: number[]) {
+  async prepareGamePicoke(gameId: number, userIds: number[]) {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const gameDatas = await this.gameDataModel
@@ -414,7 +415,7 @@ export class GameService {
     return dataForGame;
   }
 
-  private async prepareTextGame(gameId: number, title: string, userIds: number[]) {
+  private async prepareGameFindCarol(gameId: number, title: string, userIds: number[]) {
     let dataForGame = [];
     const { data } = await this.gameDataModel
       .findOne(
@@ -445,7 +446,7 @@ export class GameService {
     return dataForGame;
   }
 
-  async prepareGame3(gameId:number, userIds: number[]) {
+  async prepareGameDeleteRow(gameId:number, userIds: number[]) {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const [ gameDatas ] = await this.gameDataModel
