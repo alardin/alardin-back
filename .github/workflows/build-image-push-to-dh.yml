@@ -15,34 +15,6 @@ on:
     types:
       - completed
 jobs:
-  push-to-ecr:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-  
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
-  
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push docker image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: alardin-back
-          IMAGE_TAG: latest
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
-#
-
   deploy-on-ecs:
     needs: push-to-ecr
     runs-on: ubuntu-latest
@@ -91,7 +63,6 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
 
-    
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -100,36 +71,10 @@ jobs:
         container-name: $ECS_CONTAINER_NAME
         image: ${{ steps.build-image.outputs.image }}
 
-    
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
-        # task-definition: task-definition.json
         task-definition: ${{ steps.task-def.outputs.task-definition }}
         service: $ECS_SERVICE_NAME
         cluster: $ECS_CLUSTER_NAME
         wait-for-service-stability: true
-  # deploy-on-ec2:
-  #   if:  ${{ github.event.workflow_run.conclusion == 'success' }}
-  #   runs-on: ubuntu-latest
-
-  #   env:
-  #     S3_BUCKET_NAME: "alardin-back-deploy"
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Make .zip file
-  #       run: mv appspec.deploy.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
-  #       shell: bash
-
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ap-northeast-2
-
-  #     - name: Upload to S3
-  #       run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/deploy/$GITHUB_SHA.zip
-
-  #     - name: Code Deploy
-  #       run: aws deploy create-deployment --application-name alardin-back --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name alardin-back-deploy --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=deploy/$GITHUB_SHA.zip

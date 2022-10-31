@@ -51,4 +51,6 @@ ENV GOOGLE_APPLICATION_CREDENTIALS /usr/src/app/firebase/service-account.json
 
 EXPOSE 3000
 
+RUN ls -al /usr/src/app
+
 CMD [ "node", "dist/main.js" ]
