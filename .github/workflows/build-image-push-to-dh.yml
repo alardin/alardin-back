@@ -40,10 +40,6 @@ jobs:
       run: echo "$DOCUMENTDB_CA" > ./rds-combined-ca-bundle.pem
       shell: bash
 
-    - name: Appspec.yml 
-      run: mv appspec.deploy.yml appspec.yaml
-      shell: bash
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
