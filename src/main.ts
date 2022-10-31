@@ -10,12 +10,13 @@ import * as winston from 'winston';
 async function bootstrap() {
   const port = +process.env.PORT || 3030;
   console.log(process.env.NODE_ENV)
-  console.log(process.env.MONGODB_HOST)
+  console.log(process.env.PORT)
+  console.log(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:27017/${process.env.MONGODB_DB}?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false` )
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({
       transports: [
         new winston.transports.Console({
-                    level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
+                    level: process.env.NODE_ENV === 'PROD' ? 'info' : 'silly',
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.prettyPrint(),
