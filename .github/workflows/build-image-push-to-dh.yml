@@ -22,7 +22,7 @@ jobs:
       ECS_CLUSTER_NAME: EcsAlardinBackendCluter
       ECR_REPOSITORY_NAME: alardin-back
       ECS_CONTAINER_NAME: ecs-alardin-backend-container
-      ECS_SERVICE_NAME: ECSAlardinBackendService
+      ECS_SERVICE_NAME: EcsAlardinBackendService
       TASK_DEFINITION_NAME: ECSAlardinBackendTD
 
     steps:
