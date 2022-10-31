@@ -38,3 +38,4 @@ kakao_refresh.py
 *.env
 api_test.py
 *.sql
+push.sh

@@ -52,6 +52,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }} 
   
   deploy-on-ec2:
+    needs: push-to-dockerhub
     env:
       S3_BUCKET_NAME: "alardin-back-deploy"
     runs-on: ubuntu-latest
