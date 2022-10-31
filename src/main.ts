@@ -11,6 +11,7 @@ async function bootstrap() {
   const port = +process.env.PORT || 3030;
   console.log(`mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:27017/${process.env.MONGODB_DB}?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`);
   console.log(process.env.NODE_ENV)
+  console.log(process.env.PORT)
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({
       transports: [
