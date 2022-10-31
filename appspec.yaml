@@ -3,7 +3,7 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: "arn:aws:ecs:ap-northeast-2:985013825538:task-definition/EcsAlardinBackendTD:1"
+        TaskDefinition: "arn:aws:ecs:ap-northeast-2:985013825538:task-definition/EcsAlardinBackendTD"
         LoadBalancerInfo:
           ContainerName: "ecs-alardin-backend-container"
           ContainerPort: 3000
