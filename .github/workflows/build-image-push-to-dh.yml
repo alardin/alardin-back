@@ -16,7 +16,6 @@ on:
       - completed
 jobs:
   deploy-on-ecs:
-    needs: push-to-ecr
     runs-on: ubuntu-latest
     env:
       AWS_REGION: ap-northeast-2
