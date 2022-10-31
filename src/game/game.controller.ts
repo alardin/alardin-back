@@ -76,7 +76,7 @@ export class GameController {
     @UseGuards(new RoleGuard(new Reflector()))
     @ForRoles(['admin'])
     @Post('data')
-    async insertGameData(@Body('data') data: InsertDto[]) {
+    async insertGameData( @Body('data') data: InsertDto[]) {
         return await this.gameService.insertGameData(data);
     }
 

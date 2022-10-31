@@ -35,7 +35,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 kakao_refresh.py
-.env
-/firebase
+*.env
 api_test.py
 *.sql
+push.sh

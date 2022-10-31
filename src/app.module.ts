@@ -21,15 +21,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
-import { MongooseModule } from '@nestjs/mongoose'
-import { AlarmMembers } from './entities/alarm.members.entity';
+import { MongooseModule } from '@nestjs/mongoose';
 import { GameData, GameDataSchema } from './schemas/gameData.schemas';
-import { Alarms } from './entities/alarms.entity';
 import { UserPlayData, UserPlayDataScheme } from './schemas/userPlayData.schemas';
 import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
-import { Mates } from './entities/mates.entity';
-import { AlarmService } from './alarm/alarm.service';
-import { MateService } from './mate/mate.service';
+
 dotenv.config();
 
 @Module({
@@ -52,7 +48,6 @@ dotenv.config();
       { name: UserPlayData.name, schema: UserPlayDataScheme },
       { name: GameMeta.name, schema: GameMetaSchema }
     ]),
-    TypeOrmModule.forFeature([AlarmMembers, Alarms, Mates]),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
@@ -62,7 +57,7 @@ dotenv.config();
     }),
     MongooseModule.forRoot(
       process.env.NODE_ENV == 'DEV' ? `mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`
-      : `mongodb+srv://alardin:${encodeURIComponent(process.env.MONGODB_PASSWORD)}@${process.env.MONGODB_HOST}/?retryWrites=true&w=majority`
+      : `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:27017/${process.env.MONGODB_DB}?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`
     ),
     MateModule, 
     GameModule, 

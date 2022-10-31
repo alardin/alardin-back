@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Query, Req, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Users } from 'src/entities/users.entity';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
@@ -13,6 +13,7 @@ import { Public } from 'src/common/decorators/public.decorator';
 import { OthersProfileDto } from './dto/others.profile.dto';
 import { UserAlarmsDto } from './dto/user-alarms.dto';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('users')
 @Controller('api/users')
@@ -41,6 +42,7 @@ export class UsersController {
     @UseGuards(LoggedInGuard)    
     @Delete()
     async deleteUser(@User() user: Users) {
+        await this.usersService.deleteMates(user);
         await this.usersService.destroyToken(user.id);
         return await this.usersService.deleteUser(user.id);
     }
@@ -139,6 +141,35 @@ export class UsersController {
     @Post('edit')
     async editProfile(@Body() body: EditProfileDto, @User() user) {
         return await this.usersService.editUserProfile(user.id, body);
+    }
+
+        @ApiOperation({
+            summary: '프로필 사진 업로드(업데이트)'
+        })
+        @ApiConsumes('multipart/form-data')
+        @ApiBody({
+            schema: {
+                type: 'object',
+                properties: {
+                    'profile_image': {
+                        type: 'string',
+                        format: 'binary',
+                    },
+                },
+            },
+        })
+    @UseInterceptors(FileInterceptor('profile_image'))
+    @Post('profile-image')
+    async updateProfileImage(
+        @User() user, 
+        @UploadedFile(
+            new ParseFilePipe({
+                validators: [
+                    new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+                ]
+            })
+        ) file: Express.Multer.File) {
+            return await this.usersService.updateProfileImage(user.id, file);
     }
     
         @ApiOperation({

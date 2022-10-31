@@ -6,7 +6,7 @@ FROM node:16-alpine As development
 
 WORKDIR /usr/src/app
 
-COPY --chown=node:node package*.json .
+COPY --chown=node:node package*.json ./
 
 RUN npm ci
 
@@ -22,11 +22,11 @@ FROM node:16-alpine As build
 
 WORKDIR /usr/src/app
 
-COPY --chown=node:node .package*.json .
+COPY --chown=node:node package*.json ./
 
 # To use Nest cli which is a dev dependency, Copy node_modules from the development stage.
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
-COPY  --chown=node:node . .
+COPY --chown=node:node ./ ./
 
 RUN npm run build
 
@@ -44,6 +44,14 @@ FROM node:16-alpine As production
 
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+COPY --chown=node:node --from=build /usr/src/app/firebase/service-account.json /usr/src/app/firebase/service-account.json
+COPY --chown=node:node --from=build /usr/src/app/rds-combined-ca-bundle.pem /usr/src/app/rds-combined-ca-bundle.pem
+
+ENV GOOGLE_APPLICATION_CREDENTIALS /usr/src/app/firebase/service-account.json
+
+EXPOSE 3000
+
+RUN ls -al /usr/src/app
 
 EXPOSE 3000
 

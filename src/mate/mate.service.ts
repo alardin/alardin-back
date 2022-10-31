@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, LoggerService, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, LoggerService, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { Alarms } from 'src/entities/alarms.entity';
@@ -8,7 +8,6 @@ import { Users } from 'src/entities/users.entity';
 import { KakaoService } from 'src/external/kakao/kakao.service';
 import { KakaoFriend } from 'src/external/kakao/kakao.types';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
-import { UsersService } from 'src/users/users.service';
 import { FindOptionsSelect, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
@@ -34,7 +33,6 @@ export class MateService {
         private readonly usersRepository: Repository<Users>,
         @InjectRepository(MateRequestRecords)
         private readonly mateReqRepository: Repository<MateRequestRecords>,
-        private readonly usersService: UsersService,
         @InjectRepository(Alarms)
         private readonly alarmsRepository: Repository<Alarms>,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -45,18 +43,7 @@ export class MateService {
     async getMateList(myId: number):Promise<TMateList> {
 
         const mates = await this.getMates(myId);
-        const mateIds = mates.map(m => m.id);
-        const joinedAlarms = await this.usersService.getUsersJoinedAlarm(myId);
-        const hostedAlarms = await this.usersService.getUsersHostedAlarm(myId);
-        const myAlarms = [...joinedAlarms, ...hostedAlarms];
-        for await (let mId of mateIds) {
-            let alarmCount = 0;
-            for await (let alarm of myAlarms) {
-                alarmCount = Number(alarm.Members.map(m => m.id).includes(mId));
-            }
-            // mateFinished에 추가
-        }
-        
+
         return {
             mates
         };
@@ -66,17 +53,6 @@ export class MateService {
 
         const friends = await this.kakaoService.getKakaoFriends(kakaoAccessToken);
         const mates = await this.getMates(myId);
-        const mateIds = mates.map(m => m.id);
-        const joinedAlarms = await this.usersService.getUsersJoinedAlarm(myId);
-        const hostedAlarms = await this.usersService.getUsersHostedAlarm(myId);
-        const myAlarms = [...joinedAlarms, ...hostedAlarms];
-        for await (let mId of mateIds) {
-            let alarmCount = 0;
-            for await (let alarm of myAlarms) {
-                alarmCount = Number(alarm.Members.map(m => m.id).includes(mId));
-            }
-            // mateFinished에 추가
-        }
         await this.cacheManager.set(`${myId}_mates`, {
             mates,
             kakaoFriends: friends  
@@ -94,7 +70,7 @@ export class MateService {
         }
 
         const receiver = await this.usersRepository.findOneOrFail({ where: { id: receiverId }})
-                                .catch(_ => { throw new NotFoundException() });
+                                .catch(_ => { throw new ForbiddenException('Invalid id') });
         await this.mateReqRepository.query(
             `INSERT INTO mate_request_records(Sender_id, Receiver_id, is_accepted, is_rejected) VALUES(${me.id}, ${receiver.id}, 0, 0)`
         );
@@ -126,7 +102,7 @@ export class MateService {
             return null;
         }
         const receiver = await this.usersRepository.findOneOrFail({ where: { kakao_id: receiverKakaoId }})
-                                .catch(_ => { throw new NotFoundException() });
+                                .catch(_ => { throw new ForbiddenException('Invalid id') });
         await this.mateReqRepository.query(
             `INSERT INTO mate_request_records(Sender_id, Receiver_id, is_accepted, is_rejected) VALUES(${me.id}, ${receiver.id}, 0, 0)`
         );

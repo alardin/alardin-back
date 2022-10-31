@@ -11,7 +11,7 @@ const dataSource = new DataSource({
     database: process.env.DB_DATABASE,
     entities: ['dist/**/**/*.entity{.ts,.js}'],
     migrations: ['src/migrations/*.ts'],
-    logging: true,
+    logging: process.env.NODE_ENV === 'DEV' ? true : false,
     synchronize: false
 });
 

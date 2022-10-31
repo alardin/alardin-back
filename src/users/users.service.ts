@@ -1,23 +1,24 @@
-import { CACHE_MANAGER, ForbiddenException, forwardRef, Inject, Injectable, Logger, LoggerService, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, ForbiddenException, Inject, Injectable, Logger, LoggerService, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessAndRefreshToken } from 'src/auth/auth';
 import { AuthService } from 'src/auth/auth.service';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
 import { Alarms } from 'src/entities/alarms.entity';
-import { Assets } from 'src/entities/assets.entity';
 import { Users } from 'src/entities/users.entity';
-import { KakaoAccountUsed } from 'src/external/kakao/kakao.types';
 import { KakaoService } from 'src/external/kakao/kakao.service';
-import { DataSource, In, LessThan, LessThanOrEqual, MoreThan, Not, Repository } from 'typeorm';
+import { DataSource, In, MoreThan, Not, Repository } from 'typeorm';
 import { AuthDto } from './dto/auth.dto';
 import { EditProfileDto } from './dto/edit-profile.dto';
 import { OthersProfileDto } from './dto/others.profile.dto';
 import * as bcrypt from 'bcryptjs';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 import { AlarmResults } from 'src/entities/alarm.results.entity';
 import { Mates } from 'src/entities/mates.entity';
 import { Cache } from 'cache-manager';
+import { MateService } from 'src/mate/mate.service';
+import * as AWS from 'aws-sdk';
+import md5 from 'crypto-js/md5';
+import path from 'path';
 
 type MatePlayHistory = {
     id: number;
@@ -34,6 +35,7 @@ export class UsersService {
     constructor(
         private readonly kakaoService: KakaoService,
         private readonly authService: AuthService,
+        private readonly mateService: MateService,
         private dataSource: DataSource,
         @InjectRepository(Users)
         private readonly usersRepository: Repository<Users>,
@@ -60,6 +62,17 @@ export class UsersService {
             kakao_access_token: null,
             kakao_refresh_token: null
         });
+    }
+
+    async deleteMates(me: Users) {
+        try {
+            const mateIds = await this.mateService.getMateIds(me.id);
+            mateIds.map(async (mId) => await this.mateService.removeMate(me.id, mId));
+        } catch(e) {
+            throw new ForbiddenException('Error: Deleting Mates');
+        }
+        return 'OK';
+        //removeMate
     }
 
     async deleteUser(userId: number) {
@@ -387,10 +400,9 @@ export class UsersService {
 
     async updateUser(userId: number, condition: QueryDeepPartialEntity<Users>, keyNeededCheck?: string[]): Promise<string> {
         const user = await this.getUser(userId);
-        
         if (keyNeededCheck) {
             keyNeededCheck.forEach(key => {
-                if (!user[key]) {
+                if (user[key] === undefined) {
                     throw new ForbiddenException('Invalid request');
                 }
             })
@@ -406,6 +418,33 @@ export class UsersService {
         } catch(e) {
             throw new ForbiddenException('Invalid request');
         }
+    }
+
+    async updateProfileImage(userId: number, file: Express.Multer.File) {
+        AWS.config.update({
+            credentials: {
+                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                secretAccessKey: process.env.AWS_SECRET_KEY
+            },
+            region: 'ap-northeast-2'
+        });
+        const user = await this.getUser(userId);
+        const ext = path.extname(file.originalname);
+        const profileImageKey = `profiles/${Date.now()}-${md5(String(user.id) + process.env.SALT).toString()}${ext}`;
+        try {
+            await new AWS.S3().putObject({
+                Key: profileImageKey,
+                Bucket: process.env.AWS_S3_STATIC_BUCKET,
+                Body: file.buffer
+            }).promise();
+            await this.updateUser(userId, { 
+                profile_image_url: `${process.env.AWS_S3_STATIC_BUCKET_URL}/${profileImageKey}`,
+                thumbnail_image_url: `${process.env.AWS_S3_STATIC_BUCKET_URL}/${profileImageKey}`
+            }, ['profile_image_url', 'thumbnail_image_url']);
+        } catch(e) {
+            throw new BadRequestException('Error: profileImage');
+        }
+        return 'OK';
     }
 
     private async updateUsersRefreshToken(userId: number, refreshToken: string) {

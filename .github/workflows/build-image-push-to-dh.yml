@@ -15,57 +15,66 @@ on:
     types:
       - completed
 jobs:
-  push-to-dockerhub:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  deploy-on-ecs:
+    needs: push-to-ecr
     runs-on: ubuntu-latest
-    
+    env:
+      AWS_REGION: ap-northeast-2
+      ECS_CLUSTER_NAME: EcsAlardinBackendCluter
+      ECR_REPOSITORY_NAME: alardin-back
+      ECS_CONTAINER_NAME: alardin-back-container
+      ECS_SERVICE_NAME: ECSAlardinBackendService
+      TASK_DEFINITION_NAME: ECSAlardinBackendTD
+
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Login to Dockerhub
-      uses: docker/login-action@v1
+
+    - name: Write to Firebase account file
+      env:
+        FIREBASE_ACCOUNT: ${{ secrets.FIREBASE_ACCOUNT }}
+      run: echo "$FIREBASE_ACCOUNT" > ./firebase/service-account.json
+      shell: bash
+
+    - name: Write to DocumentDB CA
+      env:
+        DOCUMENTDB_CA: ${{ secrets.DOCUMENTDB_CA }}
+      run: echo "$DOCUMENTDB_CA" > ./rds-combined-ca-bundle.pem
+      shell: bash
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push docker image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: alardin-back
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        images: ${{ secrets.DOCKERHUB_USERNAME }}/alardin-back
-        tags: |
-          type=sha
-        
-    - name: Build and push Docker image to Dockerhub
-      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        task-definition: task-definition.json
+        container-name: $ECS_CONTAINER_NAME
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
-        context: .
-        file: docker/Dockerfile
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/alardin-back:latest
-        labels: ${{ steps.meta.outputs.labels }} 
-#
-  deploy-on-ec2:
-    if:  ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-
-    env:
-      S3_BUCKET_NAME: "alardin-back-deploy"
-    steps:
-      - uses: actions/checkout@v3
-      - name: Make .zip file
-        run: mv appspec.deploy.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
-        shell: bash
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
-
-      - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ env.S3_BUCKET_NAME }}/deploy/$GITHUB_SHA.zip
-
-      - name: Code Deploy
-        run: aws deploy create-deployment --application-name alardin-back --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name alardin-back-deploy --s3-location bucket=${{ env.S3_BUCKET_NAME }},bundleType=zip,key=deploy/$GITHUB_SHA.zip
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: $ECS_SERVICE_NAME
+        cluster: $ECS_CLUSTER_NAME
+        wait-for-service-stability: true

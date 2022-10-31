@@ -1,6 +1,7 @@
 # This is a basic workflow to help you get started with Actions
 
 name: Develop deploy to EC2 and Dockerhub
+# This is a basic workflow to help you get started with Actions
 
 # Controls when the workflow will run
 on:
@@ -12,9 +13,14 @@ on:
 jobs:
   push-to-dockerhub:
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v3
+
+    - name: Firebase
+      env:
+        FIREBASE_ACCOUNT: ${{ secrets.FIREBASE_ACCOUNT }}
+      run: echo "$FIREBASE_ACCOUNT" > ./firebase/service-account.json
+      shell: bash
     
     - name: Login to Dockerhub
       uses: docker/login-action@v1
@@ -38,14 +44,21 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/alardin-back:latest
         labels: ${{ steps.meta.outputs.labels }} 
-#
+  
   deploy-on-ec2:
-    runs-on: ubuntu-latest
-
+    needs: push-to-dockerhub
     env:
       S3_BUCKET_NAME: "alardin-back-deploy"
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Add Firebase file
+        env:
+          FIREBASE_ACCOUNT: ${{ secrets.FIREBASE_ACCOUNT }}
+        run: echo "$FIREBASE_ACCOUNT" > ./firebase/service-account.json
+        shell: bash
+
       - name: Make .zip file
         run: mv appspec.dev.yml appspec.yml && zip -r ./$GITHUB_SHA.zip ./
         shell: bash
