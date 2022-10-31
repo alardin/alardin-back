@@ -57,7 +57,7 @@ dotenv.config();
     }),
     MongooseModule.forRoot(
       process.env.NODE_ENV == 'DEV' ? `mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`
-      : `mongodb+srv://alardin:${encodeURIComponent(process.env.MONGODB_PASSWORD)}@${process.env.MONGODB_HOST}/?retryWrites=true&w=majority`
+      : `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@sample-cluster.node.us-east-1.docdb.amazonaws.com:27017/${process.env.MONGODB_DB}?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`
     ),
     MateModule, 
     GameModule, 
