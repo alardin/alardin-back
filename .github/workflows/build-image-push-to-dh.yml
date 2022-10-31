@@ -41,7 +41,7 @@ jobs:
       shell: bash
 
     - name: Appspec.yml 
-      run: mv appspec.deploy.yml appspec.yml
+      run: mv appspec.deploy.yml appspec.yaml
       shell: bash
 
     - name: Configure AWS Credentials
