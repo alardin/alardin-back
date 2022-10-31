@@ -43,7 +43,7 @@ async function bootstrap() {
   console.log(process.env.MONGODB_HOST)
 
   await app.listen(port, '0.0.0.0',  async () => {
-    console.log(`[*] listening on ${port}`);
+    console.log(`[*] listening on ${port}!`);
   });
 }
 // test
