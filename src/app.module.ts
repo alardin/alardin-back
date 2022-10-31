@@ -43,11 +43,6 @@ dotenv.config();
         logging: true,
         synchronize: false
     }),
-    MongooseModule.forFeature([
-      { name: GameData.name, schema: GameDataSchema },
-      { name: UserPlayData.name, schema: UserPlayDataScheme },
-      { name: GameMeta.name, schema: GameMetaSchema }
-    ]),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
