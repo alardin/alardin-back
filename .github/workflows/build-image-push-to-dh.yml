@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Deploy to EC2 and Dockerhub
+name: Deploy to ECS
 
 # Controls when the workflow will run
 on:
@@ -21,7 +21,7 @@ jobs:
       AWS_REGION: ap-northeast-2
       ECS_CLUSTER_NAME: EcsAlardinBackendCluter
       ECR_REPOSITORY_NAME: alardin-back
-      ECS_CONTAINER_NAME: alardin-back-container
+      ECS_CONTAINER_NAME: ecs-alardin-backend-container
       ECS_SERVICE_NAME: ECSAlardinBackendService
       TASK_DEFINITION_NAME: ECSAlardinBackendTD
 
