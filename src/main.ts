@@ -9,8 +9,6 @@ import * as winston from 'winston';
 
 async function bootstrap() {
   const port = +process.env.PORT || 3030;
-  console.log(process.env.NODE_ENV)
-  console.log(process.env.PORT)
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({
       transports: [
