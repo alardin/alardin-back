@@ -17,15 +17,15 @@ async function uploadToNotionDB(event, status, time) {
                     }
                 }]
             },
-            Tags: status === "SUCCESS" ? {
+            Tags: {
                 type: 'multi_select',
                 multi_select: [
                     {
-                        name: status === status,
-                        color: status === 'green'
+                        name: status,
+                        color: status === 'SUCCESS' ? 'green' : 'gray'
                     }
                 ]
-            } : {},
+            },
             Message: {
                 type: 'rich_text',
                 rich_text: [
@@ -76,18 +76,4 @@ exports.handler = async (event, context, callback) => {
     console.log(`[*] event here`)
     console.log(event);
 
-    // if (subject.indexOf('CodeDeploy notification') == -1) {
-    //     const status = subject.indexOf("SUCCEEDED")  == -1 ? subject : "SUCCESS";
-    //     let spentTime = '';
-    //     if (status === "SUCCESS") {
-    //         const message = snsReceived.Message;
-    //         const lifecycleEvents = JSON.parse(JSON.parse(message).lifecycleEvents);
-    //         const appStartEvent = lifecycleEvents.filter(e => e.LifecycleEvent == 'ApplicationStart');
-    //         const totalSeconds = (new Date(appStartEvent[0].EndTime) - new Date(appStartEvent[0].StartTime)) / 1000;
-    //         const spentMinutes = Math.floor(totalSeconds / 60);
-    //         const spentSeconds = totalSeconds % 60;
-    //         spentTime = `${spentMinutes < 10 ? '0'+spentMinutes : spentMinutes}:${spentSeconds < 10 ? '0'+spentSeconds : spentSeconds}`
-    //     }
-    //     await uploadToNotionDB(new Date(new Date(timestamp).getTime() + (1000 * 60 * 60 * 9)), status, spentTime);
-    // }
 }  

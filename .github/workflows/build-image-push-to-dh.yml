@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Deploy to ECS.
+name: Deploy to ECS
 
 # Controls when the workflow will run
 on:
@@ -32,12 +32,6 @@ jobs:
       env:
         FIREBASE_ACCOUNT: ${{ secrets.FIREBASE_ACCOUNT }}
       run: echo "$FIREBASE_ACCOUNT" > ./firebase/service-account.json
-      shell: bash
-
-    - name: Write to DocumentDB CA
-      env:
-        DOCUMENTDB_CA: ${{ secrets.DOCUMENTDB_CA }}
-      run: echo "$DOCUMENTDB_CA" > ./rds-combined-ca-bundle.pem
       shell: bash
 
     - name: Configure AWS Credentials
