@@ -80,9 +80,6 @@ exports.handler = async (event, context, callback) => {
     }
     console.log(`[*] event here`)
     console.log(event);
-    // const snsReceived = event.Records[0].Sns;
-    // const timestamp = snsReceived.Timestamp;
-    // const subject = snsReceived.Subject;
 
     // if (subject.indexOf('CodeDeploy notification') == -1) {
     //     const status = subject.indexOf("SUCCEEDED")  == -1 ? subject : "SUCCESS";
