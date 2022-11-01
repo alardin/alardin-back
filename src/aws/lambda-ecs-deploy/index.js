@@ -1,18 +1,10 @@
 const { Client } = require("@notionhq/client")
 const notion = new Client({ auth: process.env.NOTION_KEY })
-const databaseId = process.env.NOTION_DATABASE_ID;
+const databaseId = process.env.NOTION_ECS_DB_ID;
 const userId = process.env.USER_ID;
 
-async function uploadToNotionDB(timestamp, status, spentTime) {
+async function uploadToNotionDB(event, status, time) {
     console.log('[*] Update to Notion')
-    let years = timestamp.getFullYear();
-    let months = timestamp.getMonth()+1;
-    let date = timestamp.getDate();
-    let hours = timestamp.getHours();
-    let minutes = timestamp.getMinutes();
-    months = months <= 9 ? `0${months}` : months;
-    minutes = minutes < 10 ? `0${minutes}` : minutes;
-    hours = hours < 10 ?  `0${hours}` : hours;
     await notion.pages.create({
         parent: { database_id: databaseId },
         properties: {
@@ -21,40 +13,30 @@ async function uploadToNotionDB(timestamp, status, spentTime) {
                 title: [{
                     type: 'text',
                     text: {
-                        content: `deploy_${months}/${date}/${years} ${hours}:${minutes}`
+                        content: `ecs_${time}`
                     }
                 }]
             },
-            Tags: {
+            Tags: status === "SUCCESS" ? {
                 type: 'multi_select',
                 multi_select: [
                     {
-                        name: status === "SUCCESS" ? status : "FAIL",
-                        color: status === "SUCCESS" ? 'green' : 'red'
+                        name: status === status,
+                        color: status === 'green'
                     }
                 ]
-            },
-            Subject: {
+            } : {},
+            Message: {
                 type: 'rich_text',
                 rich_text: [
                     {
                         text: {
-                            content: status
+                            content: event
                         },
                     }
                 ]
             },
-            Spent_time: {
-                type: 'rich_text',
-                rich_text: [
-                    {
-                        text: {
-                            content: spentTime
-                        }
-                    }
-                ]
-            },
-            Mention: {
+            Mention: status == 'SUCCESS' ? {
                 type: 'rich_text',
                 rich_text: [
                     {
@@ -68,8 +50,7 @@ async function uploadToNotionDB(timestamp, status, spentTime) {
                         }
                     }
                 ]
-            }
-        
+            } : {}
         }
     });
 }
@@ -78,6 +59,20 @@ exports.handler = async (event, context, callback) => {
     if (event['source'] != 'aws.ecs') {
         return null;
     }
+    const time = event['time'];
+    switch(event['detail-type']) {
+        case 'ECS Deployment State Change':
+            await uploadToNotionDB(event['detail']['eventName'], event['detail']['lastStatus'], time)
+            break;
+        case 'ECS Service Action':
+            if (event['detail']['serviceName'] == 'SERVICE_STEADY_STATE') {
+                await uploadToNotionDB(event['detail']['eventName'], 'SUCCESS', time);
+                break
+            }
+        default:
+            break;
+    }
+
     console.log(`[*] event here`)
     console.log(event);
 
