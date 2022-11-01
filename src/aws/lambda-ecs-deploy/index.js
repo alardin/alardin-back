@@ -3,8 +3,9 @@ const notion = new Client({ auth: process.env.NOTION_KEY })
 const databaseId = process.env.NOTION_ECS_DB_ID;
 const userId = process.env.USER_ID;
 
-async function uploadToNotionDB(event, status, time) {
+async function uploadToNotionDB(event, status, time, color='gray') {
     console.log('[*] Update to Notion')
+    console.log(status)
     await notion.pages.create({
         parent: { database_id: databaseId },
         properties: {
@@ -22,7 +23,7 @@ async function uploadToNotionDB(event, status, time) {
                 multi_select: [
                     {
                         name: status,
-                        color: status === 'SUCCESS' ? 'green' : 'gray'
+                        color: color
                     }
                 ]
             },
@@ -35,22 +36,7 @@ async function uploadToNotionDB(event, status, time) {
                         },
                     }
                 ]
-            },
-            Mention: status == 'SUCCESS' ? {
-                type: 'rich_text',
-                rich_text: [
-                    {
-                        mention: {
-                            user: {
-                                id: userId,
-                                person: {
-                                    email: process.env.EMAIL
-                                }
-                            }
-                        }
-                    }
-                ]
-            } : {}
+            }
         }
     });
 }
@@ -62,13 +48,19 @@ exports.handler = async (event, context, callback) => {
     const time = event['time'];
     switch(event['detail-type']) {
         case 'ECS Deployment State Change':
-            await uploadToNotionDB(event['detail']['eventName'], event['detail']['lastStatus'], time)
+            if (event['detail']['eventType'] === 'ERROR') {
+                await uploadToNotionDB(event['detail']['reason'], event['detail']['eventName'], time, 'red')
+            } else if (event['detail']['eventName'] === 'SERVICE_DEPLOYMENT_COMPLETED') {
+                await uploadToNotionDB(event['detail']['eventName'], 'COMPLETED', time, 'blue')
+            }
             break;
         case 'ECS Service Action':
             if (event['detail']['serviceName'] == 'SERVICE_STEADY_STATE') {
-                await uploadToNotionDB(event['detail']['eventName'], 'SUCCESS', time);
-                break
+                await uploadToNotionDB(event['detail']['eventName'], 'SUCCESS', time, 'green');
+            } else if (event['detail']['eventType'] === 'ERROR') {
+                await uploadToNotionDB(event['detail']['reason'], 'ERROR', time, 'red');
             }
+            break;
         default:
             break;
     }
