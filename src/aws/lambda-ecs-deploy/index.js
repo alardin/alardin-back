@@ -55,9 +55,9 @@ exports.handler = async (event, context, callback) => {
             }
             break;
         case 'ECS Service Action':
-            if (event['detail']['serviceName'] == 'SERVICE_STEADY_STATE') {
+            if (event['detail']['eventName'] == 'SERVICE_STEADY_STATE') {
                 await uploadToNotionDB(event['detail']['eventName'], 'SUCCESS', time, 'green');
-            } else if (event['detail']['eventType'] === 'ERROR') {
+            } else if (event['detail']['evqentType'] === 'ERROR') {
                 await uploadToNotionDB(event['detail']['reason'], 'ERROR', time, 'red');
             }
             break;
