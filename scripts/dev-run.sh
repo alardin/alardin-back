@@ -1,8 +1,7 @@
 #!/bin/bash
 
 echo "[*] RUN SERVER by CodeDeploy"
-cd /home/ec2-user/alardin-back-test
-cp /home/ec2-user/.alardin-envs/.dev.env .env
+cd /home/ec2-user/alardin-back-test && cp /home/ec2-user/.alardin-envs/.dev.env .env
 images=`docker images -aq`
 export DH_USERNAME=`aws ssm get-parameters --name DOCKERHUB_USERNAME --query Parameters[0].Value | sed s'/"//g'`
 export DH_USERNAME=`aws ssm get-parameters --name DOCKERHUB_USERNAME --query Parameters[0].Value | sed s'/"//g'`
