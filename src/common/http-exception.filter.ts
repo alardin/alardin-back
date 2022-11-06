@@ -30,8 +30,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
                         type: 'multi_select',
                         multi_select: [
                             {
-                                name:  String(errStatus),
-                                color: 'default'
+                                name:  String(errStatus)
                             }
                         ]
                     },
