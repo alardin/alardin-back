@@ -35,6 +35,7 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { InsertDto } from './dto/insert.dto';
 import { SaveGameDto } from './dto/save-game.dto';
+import { TFindCarolData, TPicokeData } from './types/picoke.types';
 
 type GameDetail = {
   game: Games;
@@ -332,7 +333,13 @@ export class GameService {
       },
     });
     const userIds = alarmMemberIds.map((m) => m.User_id);
-    const gameData = await this.readyForGame(alarm.id, userIds);
+
+    // cache
+    let gameData = await this.cacheManager.get<TPicokeData[] | TFindCarolData[]>(`${alarmId}_game_data`);
+    if (gameData == null) {
+      gameData = await this.readyForGame(alarm.id, userIds);
+      await this.cacheManager.set<TPicokeData[] | TFindCarolData[]>(`${alarmId}_game_data`, gameData, 60 * 10);
+    }
 
     return {
       rtcToken,
@@ -357,7 +364,7 @@ export class GameService {
         Game_id: true,
       },
     });
-    let gameDataForAlarm;
+    let gameDataForAlarm: TPicokeData[] | TFindCarolData[];
     switch (Game_id) {
       case 1:
         gameDataForAlarm = await this.prepareGamePicoke(Game_id, userIds);
@@ -386,7 +393,7 @@ export class GameService {
     return gameDataForAlarm;
   }
 
-  async prepareGamePicoke(gameId: number, userIds: number[]) {
+  async prepareGamePicoke(gameId: number, userIds: number[]): Promise<TPicokeData[]> {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const gameDatas = await this.gameDataModel
@@ -446,7 +453,7 @@ export class GameService {
     return dataForGame;
   }
 
-  async prepareGameDeleteRow(gameId:number, userIds: number[]) {
+  async prepareGameDeleteRow(gameId:number, userIds: number[]): Promise<TPicokeData[]> {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const [ gameDatas ] = await this.gameDataModel
