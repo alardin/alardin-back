@@ -19,6 +19,7 @@ import { MateService } from 'src/mate/mate.service';
 import * as AWS from 'aws-sdk';
 import md5 from 'crypto-js/md5';
 import path from 'path';
+import { AwsService } from 'src/aws/aws.service';
 
 type MatePlayHistory = {
     id: number;
@@ -36,6 +37,7 @@ export class UsersService {
         private readonly kakaoService: KakaoService,
         private readonly authService: AuthService,
         private readonly mateService: MateService,
+        private readonly awsService: AwsService,
         private dataSource: DataSource,
         @InjectRepository(Users)
         private readonly usersRepository: Repository<Users>,
@@ -428,19 +430,17 @@ export class UsersService {
             },
             region: 'ap-northeast-2'
         });
+        const bucket = process.env.AWS_S3_STATIC_BUCKET;
         const user = await this.getUser(userId);
         const ext = path.extname(file.originalname);
         const profileImageKey = `profiles/${Date.now()}-${md5(String(user.id) + process.env.SALT).toString()}${ext}`;
         try {
-            await new AWS.S3().putObject({
-                Key: profileImageKey,
-                Bucket: process.env.AWS_S3_STATIC_BUCKET,
-                Body: file.buffer
-            }).promise();
+            const profileUrl = await this.awsService.uploadToS3(bucket, profileImageKey, file);
             await this.updateUser(userId, { 
                 profile_image_url: `${process.env.AWS_S3_STATIC_BUCKET_URL}/${profileImageKey}`,
                 thumbnail_image_url: `${process.env.AWS_S3_STATIC_BUCKET_URL}/${profileImageKey}`
             }, ['profile_image_url', 'thumbnail_image_url']);
+            return profileUrl;
         } catch(e) {
             throw new BadRequestException('Error: profileImage');
         }

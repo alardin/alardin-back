@@ -1,33 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as S3 from 'aws-sdk/clients/s3';
 @Injectable()
 export class AwsService {
-    #s3 = new S3();
-    async getBucketList() {
-        const bucks = await this.#s3.listBuckets().promise();
-        
-    }
-
-    async getObjectsOfBucket(bucketName: string, key: string) {
-        const bucketParams = {
-            Bucket: bucketName
-        } 
-        const { Contents } = await this.#s3.listObjects(bucketParams).promise();
-    }
-
-    async getObject(bucketName: string, key: string) {
-        const objectParams = {
-            Bucket: bucketName,
-            Key: key
-        }
-        const res = await this.#s3.getObject(objectParams).promise();
-    }
-    async uploadFileToBucket(bucketName: string) {
+    private readonly s3 = new S3();
+    
+    async uploadToS3(bucketName: string, key: string, file: Express.Multer.File) {
         const uploadParams: S3.PutObjectRequest = {
             Bucket: bucketName,
-            Key: 'images/test2',
-            Body: 'test'
+            Key: key,
+            Body: file.buffer
         }
-        const res = await this.#s3.upload(uploadParams).promise();
+        try {
+            const { Location } = await this.s3.upload(uploadParams).promise();
+            return Location;
+        } catch(e) {
+            throw new UnauthorizedException('aws exception');
+        }
     }
 }
