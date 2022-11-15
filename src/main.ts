@@ -13,7 +13,7 @@ async function bootstrap() {
     logger: WinstonModule.createLogger({
       transports: [
         new winston.transports.Console({
-                    level: process.env.NODE_ENV === 'PROD' ? 'info' : 'silly',
+                    level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.prettyPrint(),
@@ -36,7 +36,7 @@ async function bootstrap() {
   .addTag('')
   .build();
   const document = SwaggerModule.createDocument(app, config);
-  if (process.env.NODE_ENV == 'DEV') {
+  if (process.env.NODE_ENV == 'development') {
     SwaggerModule.setup('api', app, document);
   }
 

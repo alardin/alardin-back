@@ -13,7 +13,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
                 auth: process.env.NOTION_KEY
             });
             const databaseId = process.env.NOTION_EXCEPTION_DB_ID;
-            const environment = process.env.NODE_ENV === 'DEV' ? 'DEV' : 'PROD'
+            const environment = process.env.NODE_ENV === 'development' ? 'DEV' : 'PROD'
             await notion.pages.create({
                 parent: { database_id: databaseId },
                 properties: {

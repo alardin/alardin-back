@@ -51,7 +51,7 @@ dotenv.config();
       port: +process.env.REDIS_PORT
     }),
     MongooseModule.forRoot(
-      process.env.NODE_ENV == 'DEV' ? `mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`
+      process.env.NODE_ENV == 'development' ? `mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`
       : `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:27017/${process.env.MONGODB_DB}?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`
     ),
     MateModule, 
