@@ -27,7 +27,7 @@ import { Cache } from 'cache-manager';
 import { MateService } from 'src/mate/mate.service';
 import * as AWS from 'aws-sdk';
 import md5 from 'crypto-js/md5';
-import path from 'path';
+import * as path from 'path';
 import { AwsService } from 'src/aws/aws.service';
 
 type MatePlayHistory = {
