@@ -57,7 +57,7 @@ export class AlarmService {
             newAlarm = await queryRunner.manager.getRepository(Alarms).save({
                 Host_id: myId,
                 member_count: 1,
-                min_player: game.min_player,
+                min_member: game.min_player,
                 ...body
             });
             

@@ -334,7 +334,6 @@ export class GameService {
     });
     const userIds = alarmMemberIds.map((m) => m.User_id);
 
-    // cache
     let gameData = await this.cacheManager.get<TPicokeData[] | TFindCarolData[]>(`${alarmId}_game_data`);
     if (gameData == null) {
       gameData = await this.readyForGame(alarm.id, userIds);
