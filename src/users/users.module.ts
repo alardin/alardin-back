@@ -14,10 +14,22 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
 @Module({
-  imports: [KakaoModule, AuthModule, PushNotificationModule, MateModule, AwsModule,
-    TypeOrmModule.forFeature([Users, Alarms, AlarmPlayRecords, AlarmResults, Mates])],
+  imports: [
+    KakaoModule,
+    AuthModule,
+    PushNotificationModule,
+    MateModule,
+    AwsModule,
+    TypeOrmModule.forFeature([
+      Users,
+      Alarms,
+      AlarmPlayRecords,
+      AlarmResults,
+      Mates,
+    ]),
+  ],
   controllers: [UsersController],
   providers: [UsersService, Logger],
-  exports: [UsersService]
+  exports: [UsersService],
 })
 export class UsersModule {}

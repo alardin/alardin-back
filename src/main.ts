@@ -14,34 +14,36 @@ async function bootstrap() {
     logger: WinstonModule.createLogger({
       transports: [
         new winston.transports.Console({
-                    level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
+          level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.prettyPrint(),
-            winston.format.errors({stack: true})
+            winston.format.errors({ stack: true }),
           ),
         }),
       ],
     }),
   });
   app.use(json({ limit: '10mb' }));
-  app.use(passport.initialize())
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-  }));
+  app.use(passport.initialize());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  );
   app.useGlobalInterceptors(new UndefinedToNullInterceptor());
   const config = new DocumentBuilder()
-  .setTitle('Alardin')
-  .setDescription('Alardin API description')
-  .setVersion('1.0')
-  .addTag('')
-  .build();
+    .setTitle('Alardin')
+    .setDescription('Alardin API description')
+    .setVersion('1.0')
+    .addTag('')
+    .build();
   const document = SwaggerModule.createDocument(app, config);
   if (process.env.NODE_ENV == 'development') {
     SwaggerModule.setup('api', app, document);
   }
 
-  await app.listen(port, '0.0.0.0',  async () => {
+  await app.listen(port, '0.0.0.0', async () => {
     console.log(`[*] listening on ${port}!`);
   });
 }

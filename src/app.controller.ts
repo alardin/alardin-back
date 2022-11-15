@@ -5,9 +5,7 @@ import { Public } from './common/decorators/public.decorator';
 @Public()
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService
-  ) {}
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   async index() {
@@ -18,5 +16,4 @@ export class AppController {
   async test() {
     return await this.appService.test();
   }
-  
 }

@@ -1,4 +1,10 @@
-import { CacheModule, Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  CacheModule,
+  Logger,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MateModule } from './mate/mate.module';
@@ -23,7 +29,10 @@ import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameData, GameDataSchema } from './schemas/gameData.schemas';
-import { UserPlayData, UserPlayDataScheme } from './schemas/userPlayData.schemas';
+import {
+  UserPlayData,
+  UserPlayDataScheme,
+} from './schemas/userPlayData.schemas';
 import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
 
 dotenv.config();
@@ -32,45 +41,58 @@ dotenv.config();
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
-        type: 'mysql',
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        port: +process.env.DB_PORT,
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
-        migrations: ['../src/migrations/*.ts'],
-        logging: true,
-        synchronize: false
+      type: 'mysql',
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      port: +process.env.DB_PORT,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
+      migrations: ['../src/migrations/*.ts'],
+      logging: true,
+      synchronize: false,
     }),
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({
       isGlobal: true,
       store: redisStore,
       host: process.env.REDIS_HOST,
-      port: +process.env.REDIS_PORT
+      port: +process.env.REDIS_PORT,
     }),
     MongooseModule.forRoot(
-      process.env.NODE_ENV == 'development' ? `mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`
-      : `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:27017/${process.env.MONGODB_DB}?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`
+      process.env.NODE_ENV == 'development'
+        ? `mongodb://${process.env.MONGODB_HOST}/${process.env.MONGODB_DB}`
+        : `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:27017/${process.env.MONGODB_DB}?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`,
     ),
-    MateModule, 
-    GameModule, 
+    MateModule,
+    GameModule,
     AlarmModule,
-    AgoraModule, 
-    AssetsModule, 
-    UsersModule, PushNotificationModule, KakaoModule, AgoraModule, AuthModule, AwsModule],
+    AgoraModule,
+    AssetsModule,
+    UsersModule,
+    PushNotificationModule,
+    KakaoModule,
+    AgoraModule,
+    AuthModule,
+    AwsModule,
+  ],
   controllers: [AppController],
-  providers: [AppService, {
-    provide: APP_FILTER,
-    useClass: HttpExceptionFilter
-  }, {
-    provide: APP_GUARD,
-    useClass: JwtAuthGuard
-  }, AwsService, Logger],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    AwsService,
+    Logger,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-      consumer.apply(LoggerMiddleWare).forRoutes('*');
+    consumer.apply(LoggerMiddleWare).forRoutes('*');
   }
 }

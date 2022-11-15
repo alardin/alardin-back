@@ -65,7 +65,7 @@ export class GameService {
     private userPlayDataModel: Model<UserPlayDataDocument>,
     @InjectModel(GameMeta.name) private gameMetaModel: Model<GameMeta>,
     private dataSource: DataSource,
-    @Inject(Logger) private readonly logger: LoggerService
+    @Inject(Logger) private readonly logger: LoggerService,
   ) {}
 
   private readonly AWS_S3_STATIC_IMAGE_URL =
@@ -102,7 +102,7 @@ export class GameService {
     await queryRunner.startTransaction();
     try {
       const newGame = await queryRunner.manager.getRepository(Games).save({
-        name, 
+        name,
         ...bodyWithoutMeta,
       });
       const newGameMeta = new this.gameMetaModel({
@@ -124,24 +124,29 @@ export class GameService {
   }
 
   async insertGameData(data: InsertDto[]) {
-        for await (let d of data) {
-            const game = await this.gameMetaModel.findOne({
-                name: d.name
-            }).exec();
-            if (!game) {
-                throw new BadRequestException('Invalid name');
-            }
-            if ( !Object.keys(d.data).every((k) => game.keys.includes(k)) || !game.keys.every((k) => Object.keys(d.data).includes(k))) {
-                throw new BadRequestException('Invalid keys');
-            }
+    for await (const d of data) {
+      const game = await this.gameMetaModel
+        .findOne({
+          name: d.name,
+        })
+        .exec();
+      if (!game) {
+        throw new BadRequestException('Invalid name');
+      }
+      if (
+        !Object.keys(d.data).every((k) => game.keys.includes(k)) ||
+        !game.keys.every((k) => Object.keys(d.data).includes(k))
+      ) {
+        throw new BadRequestException('Invalid keys');
+      }
 
-            const newGameData = new this.gameDataModel({
-                Game_id: game.Game_id,
-                data: d.data
-            });
-            await newGameData.save();
-        }
-        return 'OK';
+      const newGameData = new this.gameDataModel({
+        Game_id: game.Game_id,
+        data: d.data,
+      });
+      await newGameData.save();
+    }
+    return 'OK';
   }
 
   //transaction
@@ -275,10 +280,12 @@ export class GameService {
         {
           User_id: myId,
           Game_id: body.Game_id,
-        }, {
+        },
+        {
           play_data: savedData,
-          updated_at: new Date()
-        }, { upsert: true }
+          updated_at: new Date(),
+        },
+        { upsert: true },
       );
       await queryRunner.commitTransaction();
     } catch (e) {
@@ -334,10 +341,16 @@ export class GameService {
     });
     const userIds = alarmMemberIds.map((m) => m.User_id);
 
-    let gameData = await this.cacheManager.get<TPicokeData[] | TFindCarolData[]>(`${alarmId}_game_data`);
+    let gameData = await this.cacheManager.get<
+      TPicokeData[] | TFindCarolData[]
+    >(`${alarmId}_game_data`);
     if (gameData == null) {
       gameData = await this.readyForGame(alarm.id, userIds);
-      await this.cacheManager.set<TPicokeData[] | TFindCarolData[]>(`${alarmId}_game_data`, gameData, 60 * 10);
+      await this.cacheManager.set<TPicokeData[] | TFindCarolData[]>(
+        `${alarmId}_game_data`,
+        gameData,
+        60 * 10,
+      );
     }
 
     return {
@@ -372,7 +385,7 @@ export class GameService {
         gameDataForAlarm = await this.prepareGameDeleteRow(1, userIds);
         break;
       case 3:
-        const [ dataForGame ] = await this.gameDataModel
+        const [dataForGame] = await this.gameDataModel
           .find(
             {
               Game_id,
@@ -392,7 +405,10 @@ export class GameService {
     return gameDataForAlarm;
   }
 
-  async prepareGamePicoke(gameId: number, userIds: number[]): Promise<TPicokeData[]> {
+  async prepareGamePicoke(
+    gameId: number,
+    userIds: number[],
+  ): Promise<TPicokeData[]> {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const gameDatas = await this.gameDataModel
@@ -417,11 +433,15 @@ export class GameService {
         answerIndex,
       };
     });
-    
+
     return dataForGame;
   }
 
-  private async prepareGameFindCarol(gameId: number, title: string, userIds: number[]) {
+  private async prepareGameFindCarol(
+    gameId: number,
+    title: string,
+    userIds: number[],
+  ) {
     let dataForGame = [];
     const { data } = await this.gameDataModel
       .findOne(
@@ -431,10 +451,10 @@ export class GameService {
         { data: true },
       )
       .exec();
-    for await (let User_id of userIds) {
+    for await (const User_id of userIds) {
       const { play_data } = await this.userPlayDataModel
         .findOne({
-          $and: [ { User_id }, { Game_id: gameId } ]
+          $and: [{ User_id }, { Game_id: gameId }],
         })
         .exec();
       const next_read: number = play_data['next_read']
@@ -452,10 +472,13 @@ export class GameService {
     return dataForGame;
   }
 
-  async prepareGameDeleteRow(gameId:number, userIds: number[]): Promise<TPicokeData[]> {
+  async prepareGameDeleteRow(
+    gameId: number,
+    userIds: number[],
+  ): Promise<TPicokeData[]> {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    const [ gameDatas ] = await this.gameDataModel
+    const [gameDatas] = await this.gameDataModel
       .aggregate([
         { $match: { Game_id: gameId } },
         { $sample: { size: 1 } },
@@ -479,11 +502,11 @@ export class GameService {
     return dataForGame;
   }
   private getRandomSubarray(arr, size) {
-    var shuffled = arr.slice(0),
-      i = arr.length,
-      min = i - size,
-      temp,
-      index;
+    const shuffled = arr.slice(0);
+    let i = arr.length;
+    const min = i - size;
+    let temp;
+    let index;
     while (i-- > min) {
       index = Math.floor((i + 1) * Math.random());
       temp = shuffled[index];
@@ -501,18 +524,19 @@ export class GameService {
     // };
     let GAME_KEYS: string[];
     try {
-      const { data_keys } = await this.gameMetaModel.findOne({ Game_id: gameId }).exec();
-      GAME_KEYS = data_keys
-    } catch(e) {
+      const { data_keys } = await this.gameMetaModel
+        .findOne({ Game_id: gameId })
+        .exec();
+      GAME_KEYS = data_keys;
+    } catch (e) {
       throw new BadRequestException('Invalid Request');
     }
-    let returnData = {}
-    for (let key of GAME_KEYS) {
+    let returnData = {};
+    for (const key of GAME_KEYS) {
       if (data[key]) {
-        returnData = { key: data[key], ...returnData }
+        returnData = { key: data[key], ...returnData };
       }
     }
     return returnData;
-
   }
 }
