@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   CACHE_MANAGER,
   ForbiddenException,
   Inject,
@@ -26,7 +25,7 @@ import { Mates } from 'src/entities/mates.entity';
 import { Cache } from 'cache-manager';
 import { MateService } from 'src/mate/mate.service';
 import * as AWS from 'aws-sdk';
-import md5 from 'crypto-js/md5';
+import * as md5 from 'crypto-js/md5';
 import * as path from 'path';
 import { AwsService } from 'src/aws/aws.service';
 
@@ -485,7 +484,6 @@ export class UsersService {
     });
     const bucket = process.env.AWS_S3_STATIC_BUCKET;
     const user = await this.getUser(userId);
-    console.log(file);
     const ext = path.extname(file.originalname);
     const profileImageKey = `profiles/${Date.now()}-${md5(
       String(user.id) + process.env.SALT,
