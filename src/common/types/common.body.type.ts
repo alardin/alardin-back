@@ -1,9 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AnyDataDto {
-    @ApiProperty({
-        name: '<any key>',
-        example: '<any value>'
-    })
-    key: string;
+  @ApiProperty({
+    name: '<any key>',
+    example: '<any value>',
+  })
+  key: string;
 }

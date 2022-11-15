@@ -7,6 +7,6 @@ import { KakaoService } from './kakao.service';
   imports: [TypeOrmModule.forFeature([Users])],
   controllers: [],
   providers: [KakaoService],
-  exports: [KakaoService]
+  exports: [KakaoService],
 })
 export class KakaoModule {}

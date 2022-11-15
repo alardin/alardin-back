@@ -14,22 +14,38 @@ import { Alarms } from 'src/entities/alarms.entity';
 import { PushNotificationModule } from 'src/push-notification/push-notification.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameData, GameDataSchema } from 'src/schemas/gameData.schemas';
-import { UserPlayData, UserPlayDataScheme } from 'src/schemas/userPlayData.schemas';
+import {
+  UserPlayData,
+  UserPlayDataScheme,
+} from 'src/schemas/userPlayData.schemas';
 import { GameMeta, GameMetaSchema } from 'src/schemas/gameMeta.schemas';
 import { AlarmService } from 'src/alarm/alarm.service';
 import { AlarmModule } from 'src/alarm/alarm.module';
 
 @Module({
-  imports: [GameModule, PushNotificationModule, SingleModule, AgoraModule, AlarmModule,
-    TypeOrmModule.forFeature([Games, GamePurchaseRecords, Users, Assets, GamesRatings, AlarmMembers, Alarms ]),
+  imports: [
+    GameModule,
+    PushNotificationModule,
+    SingleModule,
+    AgoraModule,
+    AlarmModule,
+    TypeOrmModule.forFeature([
+      Games,
+      GamePurchaseRecords,
+      Users,
+      Assets,
+      GamesRatings,
+      AlarmMembers,
+      Alarms,
+    ]),
     MongooseModule.forFeature([
       { name: GameData.name, schema: GameDataSchema },
       { name: GameMeta.name, schema: GameMetaSchema },
-      { name: UserPlayData.name, schema: UserPlayDataScheme }
+      { name: UserPlayData.name, schema: UserPlayDataScheme },
     ]),
   ],
   providers: [GameService, Logger],
   controllers: [GameController],
-  exports: [GameService]
+  exports: [GameService],
 })
 export class GameModule {}

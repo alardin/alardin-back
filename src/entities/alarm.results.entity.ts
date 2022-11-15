@@ -87,11 +87,11 @@ export class AlarmResults {
   @Column({ name: 'Alarm_id' })
   Alarm_id: number;
 
-  @ManyToOne(() => Games, (games) => games.Alarm_results)
+  @ManyToOne(() => Games, games => games.Alarm_results)
   @JoinColumn([{ name: 'Game_id', referencedColumnName: 'id' }])
   Game: Games;
 
-  @ManyToOne(() => Alarms, (alarms) => alarms.Alarm_results, {
+  @ManyToOne(() => Alarms, alarms => alarms.Alarm_results, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
@@ -100,10 +100,10 @@ export class AlarmResults {
 
   @OneToMany(
     () => AlarmPlayRecords,
-    (alarmPlayRecords) => alarmPlayRecords.Alarm_result,
+    alarmPlayRecords => alarmPlayRecords.Alarm_result,
   )
   Alarm_play_records: AlarmPlayRecords[];
 
-  @ManyToMany(() => Users, (users) => users.Played_alarms)
+  @ManyToMany(() => Users, users => users.Played_alarms)
   Players: Users[];
 }

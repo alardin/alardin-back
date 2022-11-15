@@ -11,25 +11,28 @@ import { PushNotificationService } from './push-notification.service';
 @ApiTags('notification')
 @Controller('api/notification')
 export class PushNotificationController {
-    constructor(
-        private readonly pushNotificationService: PushNotificationService
-    ) {}
+  constructor(
+    private readonly pushNotificationService: PushNotificationService,
+  ) {}
 
-    @ApiOperation({
-        summary: 'push 알림 전송',
-        description: 'notification 타입 알림 전송'
-    })
-    @ApiBody({
-        type: SendTopicDto, 
-    })
-    @ForRoles(['admin'])
-    @UseGuards(new RoleGuard(new Reflector()))
-    @Post('topic')
-    async sendPushNotificationByAdmin(
-        @Body() { topic, data, title, body }: SendTopicDto
-    ) {
-        return await this.pushNotificationService.sendPushToTopic(topic, title, body, data);
-    }
-
-
+  @ApiOperation({
+    summary: 'push 알림 전송',
+    description: 'notification 타입 알림 전송',
+  })
+  @ApiBody({
+    type: SendTopicDto,
+  })
+  @ForRoles(['admin'])
+  @UseGuards(new RoleGuard(new Reflector()))
+  @Post('topic')
+  async sendPushNotificationByAdmin(
+    @Body() { topic, data, title, body }: SendTopicDto,
+  ) {
+    return await this.pushNotificationService.sendPushToTopic(
+      topic,
+      title,
+      body,
+      data,
+    );
+  }
 }

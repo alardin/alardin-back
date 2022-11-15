@@ -11,7 +11,14 @@ describe('AssetsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TypeOrmModule.forFeature([Assets, GamePurchaseRecords, Games, CoinUseRecords])],
+      imports: [
+        TypeOrmModule.forFeature([
+          Assets,
+          GamePurchaseRecords,
+          Games,
+          CoinUseRecords,
+        ]),
+      ],
       providers: [AssetsService],
     }).compile();
 

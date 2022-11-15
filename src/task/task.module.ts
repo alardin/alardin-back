@@ -6,6 +6,6 @@ import { PushNotificationModule } from 'src/push-notification/push-notification.
 @Module({
   imports: [PushNotificationModule],
   providers: [TaskService],
-  controllers: [TaskController]
+  controllers: [TaskController],
 })
 export class TaskModule {}

@@ -57,7 +57,7 @@ export class AlarmService {
             id: body.Game_id,
           },
         })
-        .catch((e) => {
+        .catch(e => {
           throw new ForbiddenException();
         });
       if (body.max_member > game.max_player) {
@@ -160,8 +160,8 @@ export class AlarmService {
       },
     });
     const memberIdsExceptMe = alarmMembers
-      .filter((m) => m.User_id != me.id)
-      .map((m) => m.User_id);
+      .filter(m => m.User_id != me.id)
+      .map(m => m.User_id);
     const queryRunner = this.dataSource.createQueryRunner();
     let validFlag = false;
     await queryRunner.connect();
@@ -231,7 +231,7 @@ export class AlarmService {
   async quitAlarm(myId: number, alarmId: number) {
     const alarm = await this.alarmsRepository
       .findOneOrFail({ where: { id: alarmId } })
-      .catch((e) => {
+      .catch(e => {
         throw new ForbiddenException();
       });
 
@@ -272,8 +272,8 @@ export class AlarmService {
   ) {
     const members = await this.getMembers(alarmId);
     const membersDeviceTokens = members
-      .filter((m) => m.id !== myId)
-      .map((m) => m.device_token);
+      .filter(m => m.id !== myId)
+      .map(m => m.device_token);
     membersDeviceTokens.length != 0 &&
       (await this.pushNotiService.sendMulticast(
         membersDeviceTokens,
@@ -303,13 +303,13 @@ export class AlarmService {
         User: true,
       },
     });
-    const memberIds = alarmMembers.map((m) => m.User_id);
+    const memberIds = alarmMembers.map(m => m.User_id);
     if (!memberIds.includes(myId)) {
       throw new ForbiddenException('Not allowed to send message');
     }
     const memberDTokens = alarmMembers
-      .filter((m) => m.User_id != myId)
-      .map((m) => m.User.device_token);
+      .filter(m => m.User_id != myId)
+      .map(m => m.User.device_token);
 
     memberDTokens.length != 0 &&
       (await this.pushNotiService.sendMulticast(
@@ -364,19 +364,19 @@ export class AlarmService {
     await this.validateAlarmHost(me.id, alarmId);
     const alarm = await this.alarmsRepository
       .findOneOrFail({ where: { id: alarmId } })
-      .catch((e) => {
+      .catch(e => {
         throw new BadRequestException();
       });
     const members = await this.getMembers(alarm.id);
-    const memberIds = members.map((m) => m.id);
+    const memberIds = members.map(m => m.id);
     memberIds
-      .filter((mId) => mId != me.id)
-      .map(async (mId) => {
+      .filter(mId => mId != me.id)
+      .map(async mId => {
         await this.clearAlarmsCache(mId);
       });
     const membersDeviceTokens = members
-      .filter((m) => m.id !== me.id)
-      .map((m) => m.device_token);
+      .filter(m => m.id !== me.id)
+      .map(m => m.device_token);
     try {
       await this.alarmsRepository
         .createQueryBuilder()
@@ -410,7 +410,7 @@ export class AlarmService {
   private async getAlarmById(alarmId: number) {
     return await this.alarmsRepository
       .findOneOrFail({ where: { id: alarmId } })
-      .catch((_) => {
+      .catch(_ => {
         throw new ForbiddenException();
       });
   }
@@ -423,7 +423,7 @@ export class AlarmService {
           id: alarmId,
         },
       })
-      .catch((_) => {
+      .catch(_ => {
         throw new ForbiddenException();
       });
   }
@@ -431,16 +431,16 @@ export class AlarmService {
   async deleteMatesCache(myId: number) {
     const mateIds = await this.mateService.getMateIds(myId);
     mateIds.map(
-      async (mId) => await this.cacheManager.del(`${mId}_mates_alarm_list`),
+      async mId => await this.cacheManager.del(`${mId}_mates_alarm_list`),
     );
   }
 
   async deleteMembersCache(myId: number, alarmId: number) {
     const members = await this.getMembers(alarmId);
-    const memberIds = members.map((m) => m.id);
+    const memberIds = members.map(m => m.id);
     memberIds
-      .filter((mId) => mId != myId)
-      .map(async (mId) => {
+      .filter(mId => mId != myId)
+      .map(async mId => {
         await this.clearAlarmsCache(mId);
       });
   }

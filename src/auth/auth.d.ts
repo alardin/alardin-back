@@ -1,4 +1,4 @@
 export interface AccessAndRefreshToken {
-    appAccessToken: string;
-    appRefreshToken: string;
+  appAccessToken: string;
+  appRefreshToken: string;
 }

@@ -10,9 +10,13 @@ import { Alarms } from 'src/entities/alarms.entity';
 import { KakaoModule } from 'src/external/kakao/kakao.module';
 
 @Module({
-  imports: [PushNotificationModule, KakaoModule, TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms])],
+  imports: [
+    PushNotificationModule,
+    KakaoModule,
+    TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms]),
+  ],
   providers: [MateService, Logger],
   controllers: [MateController],
-  exports: [MateService]
+  exports: [MateService],
 })
 export class MateModule {}

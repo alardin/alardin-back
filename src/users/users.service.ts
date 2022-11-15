@@ -77,7 +77,7 @@ export class UsersService {
   async deleteMates(me: Users) {
     try {
       const mateIds = await this.mateService.getMateIds(me.id);
-      mateIds.map(async (mId) => await this.mateService.removeMate(me.id, mId));
+      mateIds.map(async mId => await this.mateService.removeMate(me.id, mId));
     } catch (e) {
       throw new ForbiddenException('Error: Deleting Mates');
     }
@@ -229,7 +229,7 @@ export class UsersService {
       },
     });
     hostedAlarms = hostedAlarms.map(({ Host, ...withOutHost }) => {
-      withOutHost.Members = withOutHost.Members.filter((m) => m.id != Host.id);
+      withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
       withOutHost.Members = [Host, ...withOutHost.Members];
       return { ...withOutHost, Host };
     });
@@ -252,7 +252,7 @@ export class UsersService {
       .innerJoin('alarms.Members', 'members', 'members.id = :myId', { myId })
       .select(['alarms.id'])
       .getMany();
-    const joinedAlarmsIds = joinedAlarms.map((m) => m.id);
+    const joinedAlarmsIds = joinedAlarms.map(m => m.id);
     let returnJoinedAlarms = await this.alarmsRepository.find({
       select: {
         id: true,
@@ -292,7 +292,7 @@ export class UsersService {
       },
     });
     returnJoinedAlarms = returnJoinedAlarms.map(({ Host, ...withOutHost }) => {
-      withOutHost.Members = withOutHost.Members.filter((m) => m.id != Host.id);
+      withOutHost.Members = withOutHost.Members.filter(m => m.id != Host.id);
       withOutHost.Members = [Host, ...withOutHost.Members];
       return { ...withOutHost, Host };
     });
@@ -454,7 +454,7 @@ export class UsersService {
   ): Promise<string> {
     const user = await this.getUser(userId);
     if (keyNeededCheck) {
-      keyNeededCheck.forEach((key) => {
+      keyNeededCheck.forEach(key => {
         if (user[key] === undefined) {
           throw new InternalServerErrorException('Invalid request');
         }

@@ -1,4 +1,11 @@
-import { Body, Controller, Get, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -12,42 +19,39 @@ import { AppleLoginDto } from './dto/apple-login.dto';
 @ApiTags('auth')
 @Controller('api/auth')
 export class AuthController {
-    constructor(
-        private readonly authService: AuthService,
-    ) {}
+  constructor(private readonly authService: AuthService) {}
 
-        @ApiOperation({
-            summary: '카카오 로그인/회원가입',
-        })
-        @ApiBody({
-            type: AuthDto
-        })
-        @ApiResponse({
-            status: 201,
-            type: AppTokens
-        })
-    @UseGuards(NotLoggedInGuard)
-    @Post('kakao')
-    async kakaoAuth(@Body() tokens: AuthDto) {
-        const appTokens = await this.authService.kakaoAuth(tokens);
-        return appTokens;
-    }
+  @ApiOperation({
+    summary: '카카오 로그인/회원가입',
+  })
+  @ApiBody({
+    type: AuthDto,
+  })
+  @ApiResponse({
+    status: 201,
+    type: AppTokens,
+  })
+  @UseGuards(NotLoggedInGuard)
+  @Post('kakao')
+  async kakaoAuth(@Body() tokens: AuthDto) {
+    const appTokens = await this.authService.kakaoAuth(tokens);
+    return appTokens;
+  }
 
-        @ApiOperation({
-            summary: '애플 로그인/회원가입',
-        })
-        @ApiBody({
-            type: AppleLoginDto
-        })
-        @ApiResponse({
-            status: 201,
-            type: AppTokens
-        })
-    @UseGuards(NotLoggedInGuard)
-    @Post('apple')
-    async appleAuth(@Body() data: AppleLoginDto) {
-        const appTokens = this.authService.appleAuth(data, data.deviceToken);
-        return appTokens;
-    }
-
+  @ApiOperation({
+    summary: '애플 로그인/회원가입',
+  })
+  @ApiBody({
+    type: AppleLoginDto,
+  })
+  @ApiResponse({
+    status: 201,
+    type: AppTokens,
+  })
+  @UseGuards(NotLoggedInGuard)
+  @Post('apple')
+  async appleAuth(@Body() data: AppleLoginDto) {
+    const appTokens = this.authService.appleAuth(data, data.deviceToken);
+    return appTokens;
+  }
 }

@@ -14,10 +14,10 @@ describe('AuthService', () => {
       imports: [
         PassportModule,
         JwtModule.register({
-          secret: process.env.JWT_SECRET
+          secret: process.env.JWT_SECRET,
         }),
-        TypeOrmModule.forFeature([Users])
-      ]
+        TypeOrmModule.forFeature([Users]),
+      ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);

@@ -14,11 +14,23 @@ import { AlarmController } from './alarm.controller';
 import { AlarmService } from './alarm.service';
 
 @Module({
-  imports: [MateModule, PushNotificationModule,
-    TypeOrmModule.forFeature([Alarms, AlarmMembers, GamePurchaseRecords, Users, Games, Mates]),
-    MongooseModule.forFeature([{ name: GameData.name, schema: GameDataSchema }])],
+  imports: [
+    MateModule,
+    PushNotificationModule,
+    TypeOrmModule.forFeature([
+      Alarms,
+      AlarmMembers,
+      GamePurchaseRecords,
+      Users,
+      Games,
+      Mates,
+    ]),
+    MongooseModule.forFeature([
+      { name: GameData.name, schema: GameDataSchema },
+    ]),
+  ],
   controllers: [AlarmController],
   providers: [AlarmService, Logger],
-  exports: [AlarmService]
+  exports: [AlarmService],
 })
 export class AlarmModule {}

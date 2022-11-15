@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as passport from 'passport';
-import { UndefinedToNullInterceptor } from './common/interceptors/undefined-to-null.interceptor';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { json } from 'express';
+import { AppModule } from './app.module';
+import { UndefinedToNullInterceptor } from './common/interceptors/undefined-to-null.interceptor';
 
 async function bootstrap() {
   const port = +process.env.PORT || 3030;
@@ -39,12 +39,12 @@ async function bootstrap() {
     .addTag('')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  if (process.env.NODE_ENV == 'development') {
+  if (process.env.NODE_ENV === 'development') {
     SwaggerModule.setup('api', app, document);
   }
 
   await app.listen(port, '0.0.0.0', async () => {
-    console.log(`[*] listening on ${port}!`);
+    Logger.log(`[*] listening on ${port}!`);
   });
 }
 // test

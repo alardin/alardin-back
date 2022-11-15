@@ -134,8 +134,8 @@ export class GameService {
         throw new BadRequestException('Invalid name');
       }
       if (
-        !Object.keys(d.data).every((k) => game.keys.includes(k)) ||
-        !game.keys.every((k) => Object.keys(d.data).includes(k))
+        !Object.keys(d.data).every(k => game.keys.includes(k)) ||
+        !game.keys.every(k => Object.keys(d.data).includes(k))
       ) {
         throw new BadRequestException('Invalid keys');
       }
@@ -167,13 +167,13 @@ export class GameService {
       const game = await this.getGameById(gameId);
       const user = await this.usersRepository
         .findOneOrFail({ where: { id: myId } })
-        .catch((_) => {
+        .catch(_ => {
           throw new ForbiddenException();
         });
 
       const { coin: usersCoinLeft } = await this.assetsRepositry
         .findOneOrFail({ where: { User_id: user.id } })
-        .catch((_) => {
+        .catch(_ => {
           throw new ForbiddenException();
         });
       if (game.price > usersCoinLeft) {
@@ -213,7 +213,7 @@ export class GameService {
   private async getGameById(gameId: number) {
     return await this.gamesRepoistory
       .findOneOrFail({ where: { id: gameId } })
-      .catch((_) => {
+      .catch(_ => {
         throw new NotFoundException('Game Not Found');
       });
   }
@@ -304,12 +304,12 @@ export class GameService {
     }
     const user = await this.usersRepository
       .findOneOrFail({ where: { id: myId } })
-      .catch((_) => {
+      .catch(_ => {
         throw new ForbiddenException();
       });
     const alarm = await this.alarmsRepository
       .findOneOrFail({ where: { id: alarmId } })
-      .catch((_) => {
+      .catch(_ => {
         throw new ForbiddenException();
       });
     const rtcToken = this.agoraService.generateRtcToken(
@@ -339,7 +339,7 @@ export class GameService {
         User_id: true,
       },
     });
-    const userIds = alarmMemberIds.map((m) => m.User_id);
+    const userIds = alarmMemberIds.map(m => m.User_id);
 
     let gameData = await this.cacheManager.get<
       TPicokeData[] | TFindCarolData[]
@@ -461,7 +461,7 @@ export class GameService {
         ? play_data['next_read']
         : 1;
       const contents = data['paragraphs'].filter(
-        (p) => p.paragraph_idx == next_read,
+        p => p.paragraph_idx == next_read,
       );
       const dataForUser = {
         User_id,
@@ -491,7 +491,7 @@ export class GameService {
       (i: number) =>
         `${this.AWS_S3_STATIC_IMAGE_URL}/${gameDatas['data']['keyword']}/${gameDatas['data']['keyword']}${i}.jpg`,
     );
-    const dataForGame = userIds.map((id) => {
+    const dataForGame = userIds.map(id => {
       return {
         User_id: id,
         keyword: gameDatas['data']['keyword'],

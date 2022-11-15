@@ -19,12 +19,12 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
     KakaoModule,
     PushNotificationModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET
+      secret: process.env.JWT_SECRET,
     }),
-    TypeOrmModule.forFeature([Users, Assets])
+    TypeOrmModule.forFeature([Users, Assets]),
   ],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
-  exports: [AuthService]
+  exports: [AuthService],
 })
 export class AuthModule {}
