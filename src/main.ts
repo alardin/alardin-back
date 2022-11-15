@@ -6,6 +6,7 @@ import * as passport from 'passport';
 import { UndefinedToNullInterceptor } from './common/interceptors/undefined-to-null.interceptor';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import { json } from 'express';
 
 async function bootstrap() {
   const port = +process.env.PORT || 3030;
@@ -23,7 +24,7 @@ async function bootstrap() {
       ],
     }),
   });
-
+  app.use(json({ limit: '10mb' }));
   app.use(passport.initialize())
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
