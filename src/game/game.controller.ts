@@ -18,6 +18,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { userInfo } from 'os';
 import { ForRoles } from 'src/common/decorators/for-roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
@@ -125,6 +126,19 @@ export class GameController {
     @Param('gameId') gameId,
   ) {
     return await this.gameService.rateGame(user.id, gameId, score);
+  }
+
+  @ApiOperation({
+    summary: '게임 준비',
+    description: '게임에 필요한 데이터 redis에 저장함',
+  })
+  @ApiQuery({
+    name: 'alarmId',
+    example: 1,
+  })
+  @Post('ready')
+  async readyForGame(@Query('alarmId') alarmId) {
+    await this.gameService.readyForGame(alarmId);
   }
 
   @ApiOperation({

@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   LoggerService,
   NotFoundException,
@@ -340,18 +341,7 @@ export class GameService {
       },
     });
     const userIds = alarmMemberIds.map(m => m.User_id);
-
-    let gameData = await this.cacheManager.get<
-      TPicokeData[] | TFindCarolData[]
-    >(`${alarmId}_game_data`);
-    if (gameData == null) {
-      gameData = await this.readyForGame(alarm.id, userIds);
-      await this.cacheManager.set<TPicokeData[] | TFindCarolData[]>(
-        `${alarmId}_game_data`,
-        gameData,
-        60 * 10,
-      );
-    }
+    const gameData = await this.getDataForGame(alarm.id);
 
     return {
       rtcToken,
@@ -369,7 +359,34 @@ export class GameService {
       .getOne();
   }
 
-  async readyForGame(alarmId: number, userIds: number[]) {
+  async getDataForGame(alarmId: number) {
+    return this.cacheManager.get<TPicokeData[] | TFindCarolData[]>(
+      `${alarmId}_game_data`,
+    );
+  }
+
+  async readyForGame(alarmId: number) {
+    const alarm = await this.alarmsRepository
+      .findOneOrFail({ where: { id: alarmId } })
+      .catch(_ => {
+        throw new ForbiddenException();
+      });
+    const alarmMemberIds = await this.alarmMembersRepository.find({
+      where: { Alarm_id: alarm.id },
+      select: {
+        User_id: true,
+      },
+    });
+    const userIds = alarmMemberIds.map(m => m.User_id);
+    await this.saveGameDataToCache(alarm.id, userIds);
+    return 'OK';
+  }
+
+  async saveGameDataToCache(alarmId: number, userIds: number[]) {
+    let gameData = await this.getDataForGame(alarmId);
+    if (gameData != null) {
+      return;
+    }
     const { Game_id } = await this.alarmsRepository.findOne({
       where: { id: alarmId },
       select: {
@@ -402,7 +419,16 @@ export class GameService {
       default:
         throw new BadRequestException('Invalid GameId');
     }
-    return gameDataForAlarm;
+    await this.cacheManager
+      .set<TPicokeData[] | TFindCarolData[]>(
+        `${alarmId}_game_data`,
+        gameDataForAlarm,
+        60 * 10,
+      )
+      .catch(e => {
+        throw new InternalServerErrorException('Game ready error');
+      });
+    return;
   }
 
   async prepareGamePicoke(
