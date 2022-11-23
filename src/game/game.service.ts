@@ -348,6 +348,7 @@ export class GameService {
       rtmToken,
       gameData,
       channelName: String(alarm.id),
+      members: userIds.length,
       Game_id: alarm.Game_id,
     };
   }
@@ -379,9 +380,7 @@ export class GameService {
     });
     const userIds = alarmMemberIds.map(m => m.User_id);
     await this.saveGameDataToCache(alarm.id, userIds);
-    return {
-      members: userIds.length,
-    };
+    return 'OK';
   }
 
   async saveGameDataToCache(alarmId: number, userIds: number[]) {
