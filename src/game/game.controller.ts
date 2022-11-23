@@ -138,7 +138,7 @@ export class GameController {
   })
   @Post('ready')
   async readyForGame(@Query('alarmId') alarmId) {
-    return await this.gameService.readyForGame(alarmId);
+    return this.gameService.readyForGame(alarmId);
   }
 
   @ApiOperation({

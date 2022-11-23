@@ -379,7 +379,9 @@ export class GameService {
     });
     const userIds = alarmMemberIds.map(m => m.User_id);
     await this.saveGameDataToCache(alarm.id, userIds);
-    return 'OK';
+    return {
+      members: userIds.length,
+    };
   }
 
   async saveGameDataToCache(alarmId: number, userIds: number[]) {
