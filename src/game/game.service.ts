@@ -416,6 +416,7 @@ export class GameService {
           dataForGame.data['title'],
           userIds,
         );
+        break;
       case 5:
         gameDataForAlarm = await this.prepareGameManyfest(1, userIds);
         break;
