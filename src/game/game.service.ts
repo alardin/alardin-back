@@ -417,7 +417,7 @@ export class GameService {
           userIds,
         );
       case 5:
-        gameDataForAlarm = await this.prepareGameManyfest(Game_id, userIds);
+        gameDataForAlarm = await this.prepareGameManyfest(1, userIds);
         break;
       default:
         throw new BadRequestException('Invalid GameId');
