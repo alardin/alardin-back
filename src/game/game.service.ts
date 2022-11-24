@@ -36,11 +36,7 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { InsertDto } from './dto/insert.dto';
 import { SaveGameDto } from './dto/save-game.dto';
-import {
-  TFindCarolData,
-  TManyFestData,
-  TPicokeData,
-} from './types/picoke.types';
+import { TFindCarolData, TManyFestData, TPicokeData } from './types/game.types';
 
 type GameDetail = {
   game: Games;
