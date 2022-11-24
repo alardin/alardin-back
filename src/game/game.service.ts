@@ -481,13 +481,15 @@ export class GameService {
       )
       .exec();
     for await (const User_id of userIds) {
-      const data = await this.userPlayDataModel
+      const playData = await this.userPlayDataModel
         .findOne({
           $and: [{ User_id }, { Game_id: gameId }],
         })
         .exec();
       const next_read =
-        data && data.play_data['next_read'] ? data.play_data['next_read'] : 1;
+        playData && playData.play_data['next_read']
+          ? playData.play_data['next_read']
+          : 1;
       const contents = data['paragraphs'].filter(
         p => p.paragraph_idx == next_read,
       );
