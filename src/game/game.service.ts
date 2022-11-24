@@ -36,7 +36,11 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { InsertDto } from './dto/insert.dto';
 import { SaveGameDto } from './dto/save-game.dto';
-import { TFindCarolData, TPicokeData } from './types/picoke.types';
+import {
+  TFindCarolData,
+  TManyFestData,
+  TPicokeData,
+} from './types/picoke.types';
 
 type GameDetail = {
   game: Games;
@@ -394,7 +398,7 @@ export class GameService {
         Game_id: true,
       },
     });
-    let gameDataForAlarm: TPicokeData[] | TFindCarolData[];
+    let gameDataForAlarm: TPicokeData[] | TFindCarolData[] | TManyFestData[];
     switch (Game_id) {
       case 1:
         gameDataForAlarm = await this.prepareGamePicoke(Game_id, userIds);
@@ -416,12 +420,14 @@ export class GameService {
           dataForGame.data['title'],
           userIds,
         );
+      case 5:
+        gameDataForAlarm = await this.prepareGameManyfest(Game_id, userIds);
         break;
       default:
         throw new BadRequestException('Invalid GameId');
     }
     await this.cacheManager
-      .set<TPicokeData[] | TFindCarolData[]>(
+      .set<TPicokeData[] | TFindCarolData[] | TManyFestData[]>(
         `${alarmId}_game_data`,
         gameDataForAlarm,
         60 * 10,
@@ -525,6 +531,38 @@ export class GameService {
         answerIndex,
       };
     });
+    return dataForGame;
+  }
+
+  async prepareGameManyfest(
+    gameId: number,
+    userIds: number[],
+  ): Promise<TManyFestData[]> {
+    const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    const gameDatas = await this.gameDataModel
+      .aggregate([
+        { $match: { Game_id: gameId } },
+        { $sample: { size: userIds.length } },
+        { $project: { data: true } },
+      ])
+      .exec();
+
+    const dataForGame = gameDatas.map((d, idx) => {
+      const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
+      const answerIndex = Math.floor(Math.random() * randImgIndices.length);
+      const images: string[] = randImgIndices.map(
+        (i: number) =>
+          `${this.AWS_S3_STATIC_IMAGE_URL}/${d['data']['keyword']}/${d['data']['keyword']}${i}.jpg`,
+      );
+      return {
+        User_id: userIds[idx],
+        images,
+        users: userIds,
+        totalUsers: userIds.length,
+      };
+    });
+
     return dataForGame;
   }
   private getRandomSubarray(arr, size) {
