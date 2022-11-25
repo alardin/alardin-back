@@ -356,6 +356,7 @@ export class AlarmService {
         'members.nickname',
         'members.thumbnail_image_url',
       ])
+      .where('id = :alarmId', { alarmId: alarm.id })
       .getOne();
     return returnedAlarm;
   }
