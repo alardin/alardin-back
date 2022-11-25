@@ -539,25 +539,24 @@ export class GameService {
   ): Promise<TManyFestData[]> {
     const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    const gameDatas = await this.gameDataModel
+    const [gameDatas] = await this.gameDataModel
       .aggregate([
         { $match: { Game_id: gameId } },
-        { $sample: { size: userIds.length } },
+        { $sample: { size: 1 } },
         { $project: { data: true } },
       ])
       .exec();
+    const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
+    const images: string[] = randImgIndices.map(
+      (i: number) =>
+        `${this.AWS_S3_STATIC_IMAGE_URL}/${gameDatas['data']['keyword']}/${gameDatas['data']['keyword']}${i}.jpg`,
+    );
 
-    const dataForGame = gameDatas.map((d, idx) => {
-      const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
-      const answerIndex = Math.floor(Math.random() * randImgIndices.length);
-      const images: string[] = randImgIndices.map(
-        (i: number) =>
-          `${this.AWS_S3_STATIC_IMAGE_URL}/${d['data']['keyword']}/${d['data']['keyword']}${i}.jpg`,
-      );
+    const dataForGame = userIds.map(id => {
       return {
-        User_id: userIds[idx],
-        images,
+        User_id: id,
         users: userIds,
+        images,
         totalUsers: userIds.length,
       };
     });
