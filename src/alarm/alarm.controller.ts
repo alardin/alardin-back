@@ -14,6 +14,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
 import { OnlyStatusResponse } from 'src/common/types/common.responses.type';
 import { Alarms } from 'src/entities/alarms.entity';
@@ -116,6 +117,7 @@ export class AlarmController {
   @ApiResponse({
     type: JoinedAlarmsDto,
   })
+  @Public()
   @Get(':alarmId')
   async getAlarm(@User() user, @Param('alarmId') alarmId) {
     return await this.alarmService.getAlarm(user.id, alarmId);

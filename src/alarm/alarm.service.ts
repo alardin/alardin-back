@@ -328,11 +328,10 @@ export class AlarmService {
         myId,
         alarm.Host_id,
       );
-      if (!validMate) {
+      if (!validMate && alarm.Host_id != myId) {
         throw new ForbiddenException();
       }
     }
-
     const returnedAlarm = await this.alarmsRepository
       .createQueryBuilder('alarms')
       .innerJoinAndSelect('alarms.Host', 'h', 'h.id = :hostId', {
@@ -356,7 +355,7 @@ export class AlarmService {
         'members.nickname',
         'members.thumbnail_image_url',
       ])
-      .where('id = :alarmId', { alarmId: alarm.id })
+      .where('alarms.id = :alarmId', { alarmId: alarm.id })
       .getOne();
     return returnedAlarm;
   }
