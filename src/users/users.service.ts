@@ -46,7 +46,6 @@ export class UsersService {
     private readonly authService: AuthService,
     private readonly mateService: MateService,
     private readonly awsService: AwsService,
-    private dataSource: DataSource,
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
     @InjectRepository(Alarms)

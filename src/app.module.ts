@@ -5,11 +5,10 @@ import {
   Module,
   NestModule,
 } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
-import { ScheduleModule } from '@nestjs/schedule';
 import * as redisStore from 'cache-manager-redis-store';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
@@ -28,42 +27,51 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AwsService } from './aws/aws.service';
 import { AwsModule } from './aws/aws.module';
-import { GameData, GameDataSchema } from './schemas/gameData.schemas';
-import {
-  UserPlayData,
-  UserPlayDataScheme,
-} from './schemas/userPlayData.schemas';
-import { GameMeta, GameMetaSchema } from './schemas/gameMeta.schemas';
+import { AlarmRepository } from './common/repository/alarm.repository';
+import { QueryRunnerProvider } from './db/query-runner/query-runner';
+import { Alarms } from './entities/alarms.entity';
+import { QueryRunnerModule } from './db/query-runner/query-runner.module';
+import { RepositoryModule } from './common/repository/repository.module';
+import { UtilsModule } from './common/utils/utils.module';
 
 dotenv.config();
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      port: +process.env.DB_PORT,
-      host: process.env.DB_HOST,
-      database: process.env.DB_DATABASE,
-      entities: [`${__dirname}/**/**/*.entity{.ts,.js}`],
-      migrations: ['../src/migrations/*.ts'],
-      logging: true,
-      synchronize: false,
-    }),
-    ConfigModule.forRoot({ isGlobal: true }),
-    CacheModule.register({
+    ConfigModule.forRoot({
+      envFilePath: 'envs/.dev.env',
       isGlobal: true,
-      store: redisStore,
-      host: process.env.REDIS_HOST,
-      port: +process.env.REDIS_PORT,
     }),
-    MongooseModule.forRoot(
-      process.env.NODE_ENV == 'development'
-        ? `mongodb://localhost/${process.env.MONGODB_DB}`
-        : `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:27017/${process.env.MONGODB_DB}?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`,
-    ),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        store: redisStore,
+        host: config.get('REDIS_HOST'),
+        port: +config.get('REDIS_PORT'),
+      }),
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        type: 'mysql',
+        username: config.get('DB_USERNAME'),
+        password: config.get('DB_PASSWORD'),
+        port: +config.get('DB_PORT'),
+        host: config.get('DB_HOST'),
+        database: config.get('DB_DATABASE'),
+        entities: [`${__dirname}/**/**/*.entity{.ts,.js}`],
+        migrations: ['../../src/migrations/*.ts'],
+        logging: config.get('NODE_ENV') === 'development',
+        synchronize: false,
+      }),
+    }),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        uri: config.get('MONGODB_URL'),
+      }),
+    }),
     MateModule,
     GameModule,
     AlarmModule,
@@ -75,6 +83,9 @@ dotenv.config();
     AgoraModule,
     AuthModule,
     AwsModule,
+    QueryRunnerModule,
+    RepositoryModule,
+    UtilsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -89,6 +100,8 @@ dotenv.config();
     },
     AwsService,
     Logger,
+    QueryRunnerProvider,
+    AlarmRepository,
   ],
 })
 export class AppModule implements NestModule {

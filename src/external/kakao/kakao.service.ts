@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
-import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
+import { InvalidTokenException } from 'src/common/exceptions/exceptions';
 import { Users } from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
 import { KakaoAccount, KakaoAccountUsed, KakaoFriend } from './kakao.types';

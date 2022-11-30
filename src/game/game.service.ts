@@ -1,30 +1,25 @@
 import {
   BadRequestException,
-  CACHE_MANAGER,
   ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   LoggerService,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
-import { AlarmService } from 'src/alarm/alarm.service';
+import { AlarmRepository } from 'src/common/repository/alarm.repository';
+import { NotAllowedRequestException } from 'src/common/exceptions/exceptions';
+import { QueryRunnerProvider } from 'src/db/query-runner/query-runner';
 import { AlarmMembers } from 'src/entities/alarm.members.entity';
 import { AlarmPlayRecords } from 'src/entities/alarm.play.records.entity';
-import { AlarmResults } from 'src/entities/alarm.results.entity';
-import { Alarms } from 'src/entities/alarms.entity';
 import { Assets } from 'src/entities/assets.entity';
 import { CoinUseRecords } from 'src/entities/coin.use.records.entity';
 import { GameChannel } from 'src/entities/game.channel.entity';
 import { GamePurchaseRecords } from 'src/entities/game.purchase.records.entity';
 import { Games } from 'src/entities/games.entity';
-import { GamesRatings } from 'src/entities/games.ratings.entity';
-import { Users } from 'src/entities/users.entity';
 import { AgoraService } from 'src/external/agora/agora.service';
 import { GameData, GameDataDocument } from 'src/schemas/gameData.schemas';
 import { GameMeta } from 'src/schemas/gameMeta.schemas';
@@ -32,11 +27,14 @@ import {
   UserPlayData,
   UserPlayDataDocument,
 } from 'src/schemas/userPlayData.schemas';
+import { UserRepository } from 'src/common/repository/users.repository';
 import { DataSource, Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { InsertDto } from './dto/insert.dto';
 import { SaveGameDto } from './dto/save-game.dto';
-import { TFindCarolData, TManyFestData, TPicokeData } from './types/game.types';
+import { GameRepository } from '../common/repository/game.repository';
+import { GameUtils } from '../common/utils/game.utils';
+import { AlarmUtils } from 'src/common/utils/alarm.utils';
 
 type GameDetail = {
   game: Games;
@@ -46,20 +44,16 @@ type GameDetail = {
 @Injectable()
 export class GameService {
   constructor(
-    private readonly alarmService: AlarmService,
-    @InjectRepository(Games)
-    private readonly gamesRepoistory: Repository<Games>,
-    @InjectRepository(GamePurchaseRecords)
-    private readonly gamePurRepository: Repository<GamePurchaseRecords>,
-    @InjectRepository(Users)
-    private readonly usersRepository: Repository<Users>,
+    private readonly gameUtils: GameUtils,
+    private readonly gameRepoistory: GameRepository,
+    private readonly userRepository: UserRepository,
+    private readonly alarmRepository: AlarmRepository,
+    private readonly queryRunnerProvider: QueryRunnerProvider,
+    private readonly alarmUtils: AlarmUtils,
     @InjectRepository(Assets)
     private readonly assetsRepositry: Repository<Assets>,
-    @InjectRepository(Alarms)
-    private readonly alarmsRepository: Repository<Alarms>,
     @InjectRepository(AlarmMembers)
     private readonly alarmMembersRepository: Repository<AlarmMembers>,
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly agoraService: AgoraService,
     @InjectModel(GameData.name) private gameDataModel: Model<GameDataDocument>,
     @InjectModel(UserPlayData.name)
@@ -68,28 +62,22 @@ export class GameService {
     private dataSource: DataSource,
     @Inject(Logger) private readonly logger: LoggerService,
   ) {}
-
-  private readonly AWS_S3_STATIC_IMAGE_URL =
-    process.env.AWS_S3_STATIC_IMAGE_URL;
   async getAllGames(skip: number, take: number) {
-    if (!skip || !take) {
-      skip = 0;
-      take = 100;
-    }
-    return await this.gamesRepoistory.find({
+    return await this.gameRepoistory.find({
       skip,
       take,
     });
   }
 
   async getGameDetailsById(gameId: number): Promise<GameDetail> {
-    const game = await this.getGameById(gameId);
+    const game = await this.gameRepoistory.findById({ id: gameId }).catch(e => {
+      throw new BadRequestException();
+    });
     const gameMeta = await this.gameMetaModel
       .findOne({
         Game_id: game.id,
       })
       .exec();
-    // mongodb에서 screenshots 가져오기
     return {
       game,
       gameScreenshots: gameMeta.screenshot_urls,
@@ -98,14 +86,13 @@ export class GameService {
 
   async createNewGame(body: CreateGameDto) {
     const { screenshot_urls, keys, name, data_keys, ...bodyWithoutMeta } = body;
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const entityManager = await this.queryRunnerProvider.init();
     try {
-      const newGame = await queryRunner.manager.getRepository(Games).save({
+      const newGame = entityManager.create(Games, {
         name,
         ...bodyWithoutMeta,
       });
+      await entityManager.save(newGame);
       const newGameMeta = new this.gameMetaModel({
         Game_id: newGame.id,
         name,
@@ -114,12 +101,10 @@ export class GameService {
         screenshot_urls: screenshot_urls,
       });
       await newGameMeta.save();
-      await queryRunner.commitTransaction();
+      await this.queryRunnerProvider.releaseWithCommit();
     } catch (e) {
-      await queryRunner.rollbackTransaction();
-      throw new ForbiddenException(e);
-    } finally {
-      await queryRunner.release();
+      await this.queryRunnerProvider.releaseWithRollback();
+      throw new NotAllowedRequestException();
     }
     return 'OK';
   }
@@ -132,13 +117,13 @@ export class GameService {
         })
         .exec();
       if (!game) {
-        throw new BadRequestException('Invalid name');
+        throw new BadRequestException();
       }
       if (
         !Object.keys(d.data).every(k => game.keys.includes(k)) ||
         !game.keys.every(k => Object.keys(d.data).includes(k))
       ) {
-        throw new BadRequestException('Invalid keys');
+        throw new BadRequestException();
       }
 
       const newGameData = new this.gameDataModel({
@@ -150,133 +135,114 @@ export class GameService {
     return 'OK';
   }
 
-  //transaction
-  // game 있는지 확인
-  // keyword 있는지 확인
-  // 있으면 추가, 위에 아무거나 걸리면 exception
-  // 추가할 거를 모아서 하게끔??
   async purchaseGame(myId: number, gameId: number) {
-    // transaction
-    // 살 수 있는지 확인
-    // 사용자 코인 감소
-    // 코인 사용 기록 추가
-    // 구매 기록 추가
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const game = await this.gameRepoistory.findById({ id: gameId }).catch(e => {
+      throw new BadRequestException();
+    });
+    const user = await this.userRepository.findById({ id: myId }).catch(e => {
+      throw new BadRequestException();
+    });
+    const { coin: usersCoinLeft } = await this.assetsRepositry
+      .findOneOrFail({ where: { User_id: user.id } })
+      .catch(_ => {
+        throw new ForbiddenException();
+      });
+    const leftCoinAfterPurchasing = usersCoinLeft - game.price;
+    const entityManager = await this.queryRunnerProvider.init();
     try {
-      const game = await this.getGameById(gameId);
-      const user = await this.usersRepository
-        .findOneOrFail({ where: { id: myId } })
-        .catch(_ => {
-          throw new ForbiddenException();
-        });
-
-      const { coin: usersCoinLeft } = await this.assetsRepositry
-        .findOneOrFail({ where: { User_id: user.id } })
-        .catch(_ => {
-          throw new ForbiddenException();
-        });
       if (game.price > usersCoinLeft) {
-        throw new ForbiddenException('Invalid Order');
+        throw new NotAllowedRequestException();
       }
-      const remainCoin = usersCoinLeft - game.price;
-      await queryRunner.manager
-        .getRepository(Assets)
-        .createQueryBuilder()
-        .update(Assets)
-        .set({ coin: remainCoin })
-        .where('User_id = :id', { id: user.id })
-        .execute();
+      await entityManager.update(
+        Assets,
+        { User_id: user.id },
+        { coin: leftCoinAfterPurchasing },
+      );
 
-      const newCoinUseRecords = new CoinUseRecords();
-      newCoinUseRecords.used_coin = game.price;
-      newCoinUseRecords.purchase_time = new Date();
-      newCoinUseRecords.User_id = user.id;
-      newCoinUseRecords.remain_coin = remainCoin;
-      await queryRunner.manager
-        .getRepository(CoinUseRecords)
-        .save(newCoinUseRecords);
+      const newCoinUseRecords = entityManager.create(CoinUseRecords, {
+        used_coin: game.price,
+        purchase_time: new Date(),
+        User_id: user.id,
+        remain_coin: leftCoinAfterPurchasing,
+      });
+      await entityManager.save(newCoinUseRecords);
 
-      await queryRunner.manager.getRepository(GamePurchaseRecords).save({
+      const newPurchaseRecords = entityManager.create(GamePurchaseRecords, {
         User_id: user.id,
         Game_id: game.id,
       });
-      await queryRunner.commitTransaction();
+      await entityManager
+        .getRepository(GamePurchaseRecords)
+        .save(newPurchaseRecords);
+      await this.queryRunnerProvider.releaseWithCommit();
     } catch (e) {
-      await queryRunner.rollbackTransaction();
-      throw new ForbiddenException('Invalid Order');
-    } finally {
-      await queryRunner.release();
+      await this.queryRunnerProvider.releaseWithRollback();
+      throw new InternalServerErrorException();
     }
     return 'OK';
   }
-  private async getGameById(gameId: number) {
-    return await this.gamesRepoistory
-      .findOneOrFail({ where: { id: gameId } })
-      .catch(_ => {
-        throw new NotFoundException('Game Not Found');
-      });
-  }
 
   async rateGame(myId: number, gameId: number, score: number) {
-    let updatedRating: number | undefined;
-    const game = await this.getGameById(gameId);
-    await this.checkToOwnGame(myId, game.id);
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const game = await this.gameRepoistory.findById({ id: gameId }).catch(e => {
+      throw new BadRequestException();
+    });
+    await this.gameUtils.validGameOwnership(myId, game.id);
+    const entityManager = await this.queryRunnerProvider.init();
     try {
-      await queryRunner.manager.getRepository(GamesRatings).save({
-        Game_id: game.id,
-        User_id: myId,
+      await this.gameRepoistory.saveRating({
+        userId: myId,
+        gameId: game.id,
         score,
+        entityManager,
       });
-      const [{ gameAVGScore }] = await queryRunner.manager.query(
-        `SELECT AVG(score) as gameAVGScore from games_ratings where Game_id = ${game.id}`,
+      const [{ gameAVGScore }] = await entityManager.query(
+        `SELECT AVG(score) as gameAVGScore from games_ratings where Game_id = ?`,
+        [game.id],
       );
-      console.log('[*] gameAvgSAcore: ', gameAVGScore);
-      updatedRating = Number(Number(gameAVGScore).toFixed(2));
-      await queryRunner.manager
-        .getRepository(Games)
-        .createQueryBuilder('game')
-        .update()
-        .set({ rating: updatedRating })
-        .where('id = :id', { id: game.id })
-        .execute();
-      await queryRunner.commitTransaction();
+      const updatedRating = Number(Number(gameAVGScore).toFixed(2));
+
+      await entityManager.update(
+        Games,
+        { id: game.id },
+        { rating: updatedRating },
+      );
+
+      await this.queryRunnerProvider.releaseWithCommit();
+      return updatedRating;
     } catch (e) {
-      await queryRunner.rollbackTransaction();
-      throw new ForbiddenException(e);
-    } finally {
-      await queryRunner.release();
+      await this.queryRunnerProvider.releaseWithRollback();
+      throw new InternalServerErrorException();
     }
-    return updatedRating;
   }
-  // alarm results 저장
-  // alarm play record 추가
+
   async saveGame(myId: number, body: SaveGameDto) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const entityManager = await this.queryRunnerProvider.init();
+
     try {
       // alarm_id 받기
-      const alarmResult = await queryRunner.manager
-        .getRepository(AlarmResults)
-        .save({
+      const alarmResult = await this.alarmRepository
+        .saveResult({
           start_time: body.start_time,
           end_time: body.end_time,
           Game_id: body.Game_id,
           data: body.data,
           is_cleared: body.is_cleared,
           Alarm_id: body.Alarm_id,
+          entityManager,
+        })
+        .catch(e => {
+          throw new BadRequestException();
         });
-      await queryRunner.manager.getRepository(AlarmPlayRecords).save({
+
+      await entityManager.getRepository(AlarmPlayRecords).save({
         User_id: myId,
         Alarm_result_id: alarmResult.id,
       });
 
-      const savedData = await this.sanitizeData(body.Game_id, body.data.data);
+      const savedData = await this.gameUtils.sanitizeData(
+        body.Game_id,
+        body.data.data,
+      );
       await this.userPlayDataModel.updateOne(
         {
           User_id: myId,
@@ -288,13 +254,10 @@ export class GameService {
         },
         { upsert: true },
       );
-      await queryRunner.commitTransaction();
+      await this.queryRunnerProvider.releaseWithCommit();
     } catch (e) {
-      console.log(e);
-      await queryRunner.rollbackTransaction();
-      throw new ForbiddenException();
-    } finally {
-      await queryRunner.release();
+      await this.queryRunnerProvider.releaseWithRollback();
+      throw new InternalServerErrorException();
     }
     return 'OK';
   }
@@ -303,16 +266,15 @@ export class GameService {
     if (!alarmId) {
       return null;
     }
-    const user = await this.usersRepository
-      .findOneOrFail({ where: { id: myId } })
+    const user = await this.userRepository.findById({ id: myId }).catch(_ => {
+      throw new BadRequestException();
+    });
+    const alarm = await this.alarmRepository
+      .findById({ id: alarmId })
       .catch(_ => {
-        throw new ForbiddenException();
+        throw new BadRequestException();
       });
-    const alarm = await this.alarmsRepository
-      .findOneOrFail({ where: { id: alarmId } })
-      .catch(_ => {
-        throw new ForbiddenException();
-      });
+
     const rtcToken = this.agoraService.generateRtcToken(
       String(alarm.id),
       'publisher',
@@ -341,7 +303,7 @@ export class GameService {
       },
     });
     const userIds = alarmMemberIds.map(m => m.User_id);
-    const gameData = await this.getDataForGame(alarm.id);
+    const gameData = await this.gameUtils.getDataForGame(alarm.id);
 
     return {
       rtcToken,
@@ -352,253 +314,19 @@ export class GameService {
       Game_id: alarm.Game_id,
     };
   }
-  private async checkToOwnGame(myId: number, gameId: number) {
-    return await this.gamePurRepository
-      .createQueryBuilder('gpr')
-      .innerJoin('gpr.Game', 'g', 'g.id = :gameId', { gameId })
-      .innerJoin('gpr.User', 'u', 'u.id = :myId', { myId })
-      .getOne();
-  }
-
-  async getDataForGame(alarmId: number) {
-    return this.cacheManager.get<TPicokeData[] | TFindCarolData[]>(
-      `${alarmId}_game_data`,
-    );
-  }
 
   async readyForGame(alarmId: number) {
-    const alarm = await this.alarmsRepository
-      .findOneOrFail({ where: { id: alarmId } })
+    const alarm = await this.alarmRepository
+      .findById({ id: alarmId })
       .catch(_ => {
-        throw new ForbiddenException();
+        throw new BadRequestException();
       });
-    const alarmMemberIds = await this.alarmMembersRepository.find({
-      where: { Alarm_id: alarm.id },
-      select: {
-        User_id: true,
-      },
+    const members = await this.alarmUtils.getAlarmMembers({
+      id: alarmId,
     });
-    const userIds = alarmMemberIds.map(m => m.User_id);
-    await this.saveGameDataToCache(alarm.id, userIds);
+
+    const userIds = members.map(m => m.id);
+    await this.gameUtils.saveGameDataToCache(alarm.id, userIds);
     return 'OK';
-  }
-
-  async saveGameDataToCache(alarmId: number, userIds: number[]) {
-    let gameData = await this.getDataForGame(alarmId);
-    if (gameData != null) {
-      return;
-    }
-    const { Game_id } = await this.alarmsRepository.findOne({
-      where: { id: alarmId },
-      select: {
-        Game_id: true,
-      },
-    });
-    let gameDataForAlarm: TPicokeData[] | TFindCarolData[] | TManyFestData[];
-    switch (Game_id) {
-      case 1:
-        gameDataForAlarm = await this.prepareGamePicoke(Game_id, userIds);
-        break;
-      case 2:
-        gameDataForAlarm = await this.prepareGameDeleteRow(1, userIds);
-        break;
-      case 3:
-        const [dataForGame] = await this.gameDataModel
-          .find(
-            {
-              Game_id,
-            },
-            { data: true },
-          )
-          .exec();
-        gameDataForAlarm = await this.prepareGameFindCarol(
-          Game_id,
-          dataForGame.data['title'],
-          userIds,
-        );
-        break;
-      case 5:
-        gameDataForAlarm = await this.prepareGameManyfest(1, userIds);
-        break;
-      default:
-        throw new BadRequestException('Invalid GameId');
-    }
-    await this.cacheManager
-      .set<TPicokeData[] | TFindCarolData[] | TManyFestData[]>(
-        `${alarmId}_game_data`,
-        gameDataForAlarm,
-        60 * 10,
-      )
-      .catch(e => {
-        throw new InternalServerErrorException('Game ready error');
-      });
-    return;
-  }
-
-  async prepareGamePicoke(
-    gameId: number,
-    userIds: number[],
-  ): Promise<TPicokeData[]> {
-    const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-    const gameDatas = await this.gameDataModel
-      .aggregate([
-        { $match: { Game_id: gameId } },
-        { $sample: { size: userIds.length } },
-        { $project: { data: true } },
-      ])
-      .exec();
-
-    const dataForGame = gameDatas.map((d, idx) => {
-      const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
-      const answerIndex = Math.floor(Math.random() * randImgIndices.length);
-      const images: string[] = randImgIndices.map(
-        (i: number) =>
-          `${this.AWS_S3_STATIC_IMAGE_URL}/${d['data']['keyword']}/${d['data']['keyword']}${i}.jpg`,
-      );
-      return {
-        User_id: userIds[idx],
-        keyword: d['data']['keyword'],
-        images,
-        answerIndex,
-      };
-    });
-
-    return dataForGame;
-  }
-
-  private async prepareGameFindCarol(
-    gameId: number,
-    title: string,
-    userIds: number[],
-  ) {
-    let dataForGame = [];
-    const { data } = await this.gameDataModel
-      .findOne(
-        {
-          $and: [{ Game_id: gameId }, { 'data.title': title }],
-        },
-        { data: true },
-      )
-      .exec();
-    for await (const User_id of userIds) {
-      const playData = await this.userPlayDataModel
-        .findOne({
-          $and: [{ User_id }, { Game_id: gameId }],
-        })
-        .exec();
-      const next_read =
-        playData && playData.play_data['next_read']
-          ? playData.play_data['next_read']
-          : 1;
-      const contents = data['paragraphs'].filter(
-        p => p.paragraph_idx == next_read,
-      );
-      const dataForUser = {
-        User_id,
-        contents,
-      };
-      dataForGame = [dataForUser, ...dataForGame];
-    }
-    return dataForGame;
-  }
-
-  async prepareGameDeleteRow(
-    gameId: number,
-    userIds: number[],
-  ): Promise<TPicokeData[]> {
-    const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-    const [gameDatas] = await this.gameDataModel
-      .aggregate([
-        { $match: { Game_id: gameId } },
-        { $sample: { size: 1 } },
-        { $project: { data: true } },
-      ])
-      .exec();
-    const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
-    const answerIndex = Math.floor(Math.random() * randImgIndices.length);
-    const images: string[] = randImgIndices.map(
-      (i: number) =>
-        `${this.AWS_S3_STATIC_IMAGE_URL}/${gameDatas['data']['keyword']}/${gameDatas['data']['keyword']}${i}.jpg`,
-    );
-    const dataForGame = userIds.map(id => {
-      return {
-        User_id: id,
-        keyword: gameDatas['data']['keyword'],
-        images,
-        answerIndex,
-      };
-    });
-    return dataForGame;
-  }
-
-  async prepareGameManyfest(
-    gameId: number,
-    userIds: number[],
-  ): Promise<TManyFestData[]> {
-    const indexCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-    const [gameDatas] = await this.gameDataModel
-      .aggregate([
-        { $match: { Game_id: gameId } },
-        { $sample: { size: 1 } },
-        { $project: { data: true } },
-      ])
-      .exec();
-    const randImgIndices = this.getRandomSubarray(indexCandidates, 6);
-    const images: string[] = randImgIndices.map(
-      (i: number) =>
-        `${this.AWS_S3_STATIC_IMAGE_URL}/${gameDatas['data']['keyword']}/${gameDatas['data']['keyword']}${i}.jpg`,
-    );
-
-    const dataForGame = userIds.map(id => {
-      return {
-        User_id: id,
-        users: userIds,
-        images,
-        totalUsers: userIds.length,
-      };
-    });
-
-    return dataForGame;
-  }
-  private getRandomSubarray(arr, size) {
-    const shuffled = arr.slice(0);
-    let i = arr.length;
-    const min = i - size;
-    let temp;
-    let index;
-    while (i-- > min) {
-      index = Math.floor((i + 1) * Math.random());
-      temp = shuffled[index];
-      shuffled[index] = shuffled[i];
-      shuffled[i] = temp;
-    }
-    return shuffled.slice(min);
-  }
-
-  private async sanitizeData(gameId: number, data: object) {
-    // const GAME_KEYS = {
-    //   1: ['is_cleared'],
-    //   2: ['next_read'],
-    //   3: ['is_cleared']
-    // };
-    let GAME_KEYS: string[];
-    try {
-      const { data_keys } = await this.gameMetaModel
-        .findOne({ Game_id: gameId })
-        .exec();
-      GAME_KEYS = data_keys;
-    } catch (e) {
-      throw new BadRequestException('Invalid Request');
-    }
-    let returnData = {};
-    for (const key of GAME_KEYS) {
-      if (data[key]) {
-        returnData = { key: data[key], ...returnData };
-      }
-    }
-    return returnData;
   }
 }

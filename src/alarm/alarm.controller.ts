@@ -22,13 +22,17 @@ import { SendPushDto } from 'src/push-notification/dto/send-push.dto';
 import { JoinedAlarmsDto } from 'src/users/dto/joined-alarms.dto';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { AlarmService } from './alarm.service';
+import { AlarmUtils } from '../common/utils/alarm.utils';
 import { CreateAlarmDto } from './dto/create-alarm.dto';
 import { JoinAlarmDto } from './dto/join-alarm.dto';
 
 @ApiTags('alarm')
 @Controller('/api/alarm')
 export class AlarmController {
-  constructor(private readonly alarmService: AlarmService) {}
+  constructor(
+    private readonly alarmService: AlarmService,
+    private readonly alarmUtils: AlarmUtils,
+  ) {}
 
   @ApiOperation({
     summary: '새 알람 생성',
@@ -44,7 +48,7 @@ export class AlarmController {
   })
   @Post()
   async createNewAlarm(@User() user, @Body() body: CreateAlarmDto) {
-    await this.alarmService.clearAlarmsCache(user.id);
+    await this.alarmUtils.clearAlarmsCache(user.id);
     return await this.alarmService.createNewAlarm(user.id, body);
   }
 
@@ -57,8 +61,8 @@ export class AlarmController {
     @Param('alarmId') alarmId: number,
     @Body() data: QueryDeepPartialEntity<Alarms>,
   ) {
-    await this.alarmService.clearAlarmsCache(user.id);
-    await this.alarmService.deleteMembersCache(user.id, alarmId);
+    await this.alarmUtils.clearAlarmsCache(user.id);
+    await this.alarmUtils.deleteMembersCache(user.id, alarmId);
     return await this.alarmService.editAlarm(user, alarmId, data);
   }
 
@@ -76,8 +80,8 @@ export class AlarmController {
   })
   @Post('join')
   async joinAlarm(@User() user, @Body() { alarmId }: JoinAlarmDto) {
-    await this.alarmService.clearAlarmsCache(user.id);
-    await this.alarmService.deleteMembersCache(user.id, alarmId);
+    await this.alarmUtils.clearAlarmsCache(user.id);
+    await this.alarmUtils.deleteMembersCache(user.id, alarmId);
     return await this.alarmService.joinAlarm(user, alarmId);
   }
 
@@ -89,8 +93,8 @@ export class AlarmController {
   })
   @Post('quit')
   async quitAlarm(@User() user, @Body('alarmId') alarmId: number) {
-    await this.alarmService.clearAlarmsCache(user.id);
-    await this.alarmService.deleteMembersCache(user.id, alarmId);
+    await this.alarmUtils.clearAlarmsCache(user.id);
+    await this.alarmUtils.deleteMembersCache(user.id, alarmId);
     return await this.alarmService.quitAlarm(user.id, alarmId);
   }
 
@@ -103,7 +107,7 @@ export class AlarmController {
   })
   @Delete(':alarmId')
   async deleteAlarm(@User() user, @Param('alarmId') alarmId: number) {
-    await this.alarmService.clearAlarmsCache(user.id);
+    await this.alarmUtils.clearAlarmsCache(user.id);
     return await this.alarmService.deleteAlarm(user, alarmId);
   }
 
@@ -120,7 +124,7 @@ export class AlarmController {
   @Public()
   @Get(':alarmId')
   async getAlarm(@User() user, @Param('alarmId') alarmId) {
-    return await this.alarmService.getAlarm(user.id, alarmId);
+    return await this.alarmService.getValidAlarm(user.id, alarmId);
   }
 
   @Post('message/host/:alarmId')
@@ -129,7 +133,7 @@ export class AlarmController {
     @Param('alarmId') alarmId: number,
     @Body() sendMessageDto: SendPushDto,
   ) {
-    return await this.alarmService.sendMessageToAlarmByHost(
+    return await this.alarmUtils.sendMessageToAlarmByHost(
       user.id,
       alarmId,
       sendMessageDto.title,

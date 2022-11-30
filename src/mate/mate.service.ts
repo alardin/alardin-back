@@ -3,12 +3,13 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   LoggerService,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
+import { NotAllowedRequestException } from 'src/common/exceptions/exceptions';
 import { Alarms } from 'src/entities/alarms.entity';
 import { MateRequestRecords } from 'src/entities/mate-request.records.entity';
 import { Mates } from 'src/entities/mates.entity';
@@ -23,6 +24,7 @@ import {
   Repository,
 } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { MateRepository } from '../common/repository/mate.repository';
 
 type TMateListKakao = {
   mates: Users[];
@@ -38,8 +40,7 @@ export class MateService {
   constructor(
     private readonly pushNotiService: PushNotificationService,
     private readonly kakaoService: KakaoService,
-    @InjectRepository(Mates)
-    private readonly matesRepository: Repository<Mates>,
+    private readonly mateRepository: MateRepository,
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
     @InjectRepository(MateRequestRecords)
@@ -298,20 +299,13 @@ export class MateService {
   async removeMate(myId: number, mateId: number) {
     // push?
     // db row 삭제
-    const mate = await this.validateMate(myId, mateId);
+    const mate = await this.mateRepository.findOneMate({ myId, mateId });
     if (!mate) {
-      throw new ForbiddenException('Not Allowed');
+      throw new NotAllowedRequestException();
     }
-    try {
-      await this.matesRepository
-        .createQueryBuilder()
-        .softDelete()
-        .from(Mates)
-        .where('id = :id', { id: mate.id })
-        .execute();
-    } catch (e) {
-      throw new ForbiddenException('Invalid request');
-    }
+    await this.mateRepository.softDeleteOne({ id: mate.id }).catch(_ => {
+      throw new InternalServerErrorException();
+    });
     return 'OK';
   }
 
@@ -323,7 +317,7 @@ export class MateService {
     for await (let m of mates.mates) {
       const validMate = await this.validateMate(myId, m.id);
       if (!validMate) {
-        throw new ForbiddenException('Not Allowed');
+        throw new NotAllowedRequestException();
       }
       const alarm = await this.alarmsRepository
         .createQueryBuilder('alarms')
@@ -356,7 +350,7 @@ export class MateService {
   }
 
   async validateMate(myId: number, mateId: number) {
-    return await this.matesRepository.findOne({
+    return await this.mateRepository.findOne({
       where: [
         { Sender_id: myId, Receiver_id: mateId },
         { Sender_id: mateId, Receiver_id: myId },
@@ -365,7 +359,7 @@ export class MateService {
   }
 
   async getMateIds(myId: number) {
-    const receivedMates = await this.matesRepository
+    const receivedMates = await this.mateRepository
       .createQueryBuilder('m')
       .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
       .innerJoin('m.Sender', 's')
@@ -377,7 +371,7 @@ export class MateService {
         's.kakao_id',
       ])
       .getMany();
-    const sendedMates = await this.matesRepository
+    const sendedMates = await this.mateRepository
       .createQueryBuilder('m')
       .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
       .innerJoin('m.Receiver', 'r')
@@ -397,7 +391,7 @@ export class MateService {
   }
 
   private async getMates(myId: number) {
-    const receivedMates = await this.matesRepository
+    const receivedMates = await this.mateRepository
       .createQueryBuilder('m')
       .innerJoinAndSelect('m.Receiver', 'r', 'r.id = :myId', { myId })
       .innerJoin('m.Sender', 's')
@@ -409,7 +403,7 @@ export class MateService {
         's.kakao_id',
       ])
       .getMany();
-    const sendedMates = await this.matesRepository
+    const sendedMates = await this.mateRepository
       .createQueryBuilder('m')
       .innerJoinAndSelect('m.Sender', 's', 's.id = :myId', { myId })
       .innerJoin('m.Receiver', 'r')
@@ -428,24 +422,8 @@ export class MateService {
     return mateFinished;
   }
 
-  private async getMateById(id: number) {
-    return await this.matesRepository
-      .findOneOrFail({ where: { id } })
-      .catch(_ => {
-        throw new ForbiddenException();
-      });
-  }
-
-  private async getUserByUserId(userId: number) {
-    return await this.usersRepository
-      .findOneOrFail({ where: { id: userId } })
-      .catch(_ => {
-        throw new UnauthorizedException();
-      });
-  }
-
   private async saveMate(senderId: number, receiverId: number) {
-    const mate = await this.matesRepository.findOne({
+    const mate = await this.mateRepository.findOne({
       where: [
         {
           Sender_id: senderId,
@@ -465,7 +443,7 @@ export class MateService {
     const newMate = new Mates();
     (newMate.Sender_id = senderId), (newMate.Receiver_id = receiverId);
     try {
-      await this.matesRepository.save(newMate);
+      await this.mateRepository.save(newMate);
     } catch (e) {
       throw new ForbiddenException('Invalid request');
     }

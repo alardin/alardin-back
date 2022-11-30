@@ -8,6 +8,7 @@ import { Users } from 'src/entities/users.entity';
 import { MateRequestRecords } from 'src/entities/mate-request.records.entity';
 import { Alarms } from 'src/entities/alarms.entity';
 import { KakaoModule } from 'src/external/kakao/kakao.module';
+import { MateRepository } from '../common/repository/mate.repository';
 
 @Module({
   imports: [
@@ -15,8 +16,8 @@ import { KakaoModule } from 'src/external/kakao/kakao.module';
     KakaoModule,
     TypeOrmModule.forFeature([Mates, Users, MateRequestRecords, Alarms]),
   ],
-  providers: [MateService, Logger],
+  providers: [MateService, Logger, MateRepository],
   controllers: [MateController],
-  exports: [MateService],
+  exports: [MateService, MateRepository],
 })
 export class MateModule {}

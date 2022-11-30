@@ -10,7 +10,7 @@ import {
 import { PremiumOrders } from './premium.orders.entity';
 import { Users } from './users.entity';
 
-@Entity({ name: 'premium_refund', schema: 'alardin' })
+@Entity({ name: 'premium_refunds', schema: 'alardin' })
 export class PremiumRefunds {
   @PrimaryGeneratedColumn()
   id: number;

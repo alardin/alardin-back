@@ -9,8 +9,8 @@ const dataSource = new DataSource({
   port: +process.env.DB_PORT,
   host: process.env.DB_HOST,
   database: process.env.DB_DATABASE,
-  entities: ['dist/**/**/*.entity{.ts,.js}'],
-  migrations: ['src/migrations/*.ts'],
+  entities: [`${__dirname}/../**/**/*.entity{.ts,.js}`],
+  migrations: ['../../src/migrations/*.ts'],
   logging: process.env.NODE_ENV === 'development' ? true : false,
   synchronize: false,
 });

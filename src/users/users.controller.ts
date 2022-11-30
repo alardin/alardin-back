@@ -39,11 +39,17 @@ import { OthersProfileDto } from './dto/others.profile.dto';
 import { UserAlarmsDto } from './dto/user-alarms.dto';
 import { PushNotificationService } from 'src/push-notification/push-notification.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserRepository } from '../common/repository/users.repository';
 
 @ApiTags('users')
 @Controller('api/users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   @ApiResponse({
     status: 200,

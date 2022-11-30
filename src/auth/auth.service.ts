@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
+import { InvalidTokenException } from 'src/common/exceptions/exceptions';
 import { Users } from 'src/entities/users.entity';
 import { DataSource, Repository } from 'typeorm';
 import { AccessAndRefreshToken } from './auth';

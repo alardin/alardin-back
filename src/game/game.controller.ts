@@ -32,11 +32,15 @@ import { RateGameDto, RateResponse } from './dto/rate-game.dto';
 import { SaveGameDto } from './dto/save-game.dto';
 import { StartGameDto } from './dto/start-game.response.dto';
 import { GameService } from './game.service';
+import { GameUtils } from '../common/utils/game.utils';
 
 @ApiTags('game')
 @Controller('api/game')
 export class GameController {
-  constructor(private readonly gameService: GameService) {}
+  constructor(
+    private readonly gameService: GameService,
+    private readonly gameUtils: GameUtils,
+  ) {}
 
   @ApiOperation({
     summary: '전체 게임 목록 조회',
@@ -58,8 +62,11 @@ export class GameController {
    */
   @Public()
   @Get()
-  async getAllGames(@Query('skip') skip: number, @Query('take') take: number) {
-    return this.gameService.getAllGames(skip, take);
+  async getAllGames(
+    @Query('offset') offset?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.gameService.getAllGames(offset || 0, limit || 20);
   }
 
   @ApiOperation({

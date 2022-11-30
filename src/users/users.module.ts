@@ -1,4 +1,4 @@
-import { forwardRef, Logger, Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { AwsModule } from 'src/aws/aws.module';
@@ -11,6 +11,7 @@ import { KakaoModule } from 'src/external/kakao/kakao.module';
 import { MateModule } from 'src/mate/mate.module';
 import { PushNotificationModule } from 'src/push-notification/push-notification.module';
 import { UsersController } from './users.controller';
+import { UserRepository } from '../common/repository/users.repository';
 import { UsersService } from './users.service';
 
 @Module({
@@ -29,7 +30,7 @@ import { UsersService } from './users.service';
     ]),
   ],
   controllers: [UsersController],
-  providers: [UsersService, Logger],
-  exports: [UsersService],
+  providers: [UsersService, Logger, UserRepository],
+  exports: [UsersService, UserRepository],
 })
 export class UsersModule {}
