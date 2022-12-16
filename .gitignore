@@ -41,3 +41,4 @@ api_test.py
 push.sh
 envs
 .github/workflows
+appspec.yml
