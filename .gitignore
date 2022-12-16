@@ -40,3 +40,4 @@ api_test.py
 *.sql
 push.sh
 envs
+.github/workflows
